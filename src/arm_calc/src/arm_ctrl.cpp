@@ -190,12 +190,31 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
     planners_ready_ = true;
 }
 
+void ArmCtrlNode::capture_idle_hold_from_current_state() {
+    idle_hold_point_.position = current_joint_state_.position;
+    idle_hold_point_.velocity.setZero();
+    idle_hold_point_.acceleration.setZero();
+    idle_hold_point_.torque.setZero();
+    idle_hold_initialized_ = true;
+}
+
+void ArmCtrlNode::set_idle_hold_point(const JointTrajectoryPoint& point) {
+    idle_hold_point_ = point;
+    idle_hold_point_.velocity.setZero();
+    idle_hold_point_.acceleration.setZero();
+    idle_hold_point_.torque.setZero();
+    idle_hold_initialized_ = true;
+}
+
 void ArmCtrlNode::apply_requested_mode(double now_sec) {
     if (!has_joint_state_) {
         return;
     }
 
     if (!execute_trajectory_) {
+        if (active_motion_mode_ != MotionMode::kIdle || !idle_hold_initialized_) {
+            capture_idle_hold_from_current_state();
+        }
         active_motion_mode_ = MotionMode::kIdle;
         enter_idle_mode();
         return;
@@ -216,10 +235,9 @@ void ArmCtrlNode::apply_requested_mode(double now_sec) {
 }
 
 void ArmCtrlNode::enter_idle_mode() {
-    idle_hold_point_.position = current_joint_state_.position;
-    idle_hold_point_.velocity.setZero();
-    idle_hold_point_.acceleration.setZero();
-    idle_hold_point_.torque.setZero();
+    if (!idle_hold_initialized_) {
+        capture_idle_hold_from_current_state();
+    }
 }
 
 bool ArmCtrlNode::is_trajectory_running(double now_sec) const {
@@ -263,13 +281,12 @@ void ArmCtrlNode::publish_control_loop() {
     switch (active_motion_mode_) {
         case MotionMode::kIdle:
             target_point = idle_hold_point_;
+            RCLCPP_INFO(get_logger(),"target_point=(%lf,%lf,%lf)",target_point.position[0],target_point.position[1],target_point.position[2]);
             break;
         case MotionMode::kJointSpace:
             target_point = joint_space_move_->sample(now_sec);
             if (!joint_space_move_->active(now_sec) && joint_space_move_->started()) {
-                idle_hold_point_ = target_point;
-                idle_hold_point_.velocity.setZero();
-                idle_hold_point_.acceleration.setZero();
+                set_idle_hold_point(target_point);
                 set_execute_trajectory_flag(false);
                 active_motion_mode_ = MotionMode::kIdle;
                 requested_motion_mode_ = MotionMode::kIdle;
@@ -280,9 +297,7 @@ void ArmCtrlNode::publish_control_loop() {
         case MotionMode::kCartesianSpace:
             target_point = cartesian_space_move_->sample(now_sec);
             if (!cartesian_space_move_->active(now_sec) && cartesian_space_move_->started()) {
-                idle_hold_point_ = target_point;
-                idle_hold_point_.velocity.setZero();
-                idle_hold_point_.acceleration.setZero();
+                set_idle_hold_point(target_point);
                 set_execute_trajectory_flag(false);
                 active_motion_mode_ = MotionMode::kIdle;
                 requested_motion_mode_ = MotionMode::kIdle;
@@ -356,10 +371,11 @@ void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point
 }
 
 void ArmCtrlNode::on_joint_state(const robot_interfaces::msg::Arm& msg) {
+    const bool was_initialized = has_joint_state_;
     current_joint_state_ = from_arm_message(msg);
     has_joint_state_ = true;
-    if (active_motion_mode_ == MotionMode::kIdle || !execute_trajectory_) {
-        enter_idle_mode();
+    if (!was_initialized) {
+        capture_idle_hold_from_current_state();
     }
 
     if (!planners_ready_) {

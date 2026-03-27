@@ -11,6 +11,7 @@ namespace {
 
 constexpr char kStateTopic[] = "myjoints_state";
 constexpr char kTargetTopic[] = "myjoints_target";
+constexpr double kTargetLogPeriodSec = 0.1;
 
 }  // namespace
 
@@ -97,6 +98,7 @@ controller_interface::CallbackReturn DogController::on_configure(const rclcpp_li
 
 controller_interface::CallbackReturn DogController::on_activate(const rclcpp_lifecycle::State& previous_state) {
     (void)previous_state;
+    last_target_log_time_ = rclcpp::Time(0, 0, get_node()->get_clock()->get_clock_type());
     return controller_interface::ControllerInterface::CallbackReturn::SUCCESS;
 }
 
@@ -120,6 +122,20 @@ controller_interface::return_type DogController::update(const rclcpp::Time& time
     }
 
     state_publisher_->publish(joints_state_);
+
+    if (last_target_log_time_.nanoseconds() == 0 ||
+        (time - last_target_log_time_).seconds() >= kTargetLogPeriodSec) {
+        // RCLCPP_INFO(
+        //     get_node()->get_logger(),
+        //     "Joint targets joint1=%.6f joint2=%.6f joint3=%.6f joint4=%.6f joint5=%.6f joint6=%.6f",
+        //     static_cast<double>(joints_target_.motor[0].rad),
+        //     static_cast<double>(joints_target_.motor[1].rad),
+        //     static_cast<double>(joints_target_.motor[2].rad),
+        //     static_cast<double>(joints_target_.motor[3].rad),
+        //     static_cast<double>(joints_target_.motor[4].rad),
+        //     static_cast<double>(joints_target_.motor[5].rad));
+        last_target_log_time_ = time;
+    }
 
     for (std::size_t i = 0; i < kJointCount; ++i) {
         double effort = joint_kp_[i] * (static_cast<double>(joints_target_.motor[i].rad) - static_cast<double>(joints_state_.motor[i].rad)) +

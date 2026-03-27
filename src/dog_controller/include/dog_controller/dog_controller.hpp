@@ -5,6 +5,7 @@
 #include <controller_interface/controller_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/subscription.hpp>
+#include <rclcpp/time.hpp>
 #include <string>
 #include <vector>
 
@@ -40,7 +41,8 @@ private:
 
     double joint_torque_filter_gate_{0.8};
     double joint_omega_filter_gate_{0.8};
-    double command_effort_limit_{20.0};
+    double command_effort_limit_{80.0};
+    rclcpp::Time last_target_log_time_{0, 0, RCL_ROS_TIME};
 };
 
 }  // namespace dog_controller

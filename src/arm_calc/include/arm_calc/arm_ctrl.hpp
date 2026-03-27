@@ -36,6 +36,8 @@ private:
     std::string load_local_urdf() const;
     void refresh_plan(double now_sec);
     void apply_requested_mode(double now_sec);
+    void capture_idle_hold_from_current_state();
+    void set_idle_hold_point(const JointTrajectoryPoint& point);
     void enter_idle_mode();
     bool is_trajectory_running(double now_sec) const;
     bool can_switch_mode_immediately() const;
@@ -57,6 +59,7 @@ private:
 
     JointState current_joint_state_{};
     bool has_joint_state_{false};
+    bool idle_hold_initialized_{false};
     bool planners_ready_{false};
     MotionMode active_motion_mode_{MotionMode::kIdle};
     MotionMode requested_motion_mode_{MotionMode::kIdle};
