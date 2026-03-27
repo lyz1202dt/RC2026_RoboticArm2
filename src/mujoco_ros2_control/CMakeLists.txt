@@ -51,21 +51,11 @@ set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
 # Fetch MuJoCo
 include(FetchContent)
-set(MUJOCO_LOCAL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/mujoco-3.2.7")
-
-if(EXISTS "${MUJOCO_LOCAL_SOURCE_DIR}/CMakeLists.txt")
-  message(STATUS "Using local MuJoCo source: ${MUJOCO_LOCAL_SOURCE_DIR}")
-  FetchContent_Declare(
-    mujoco
-    SOURCE_DIR "${MUJOCO_LOCAL_SOURCE_DIR}"
-  )
-else()
-  FetchContent_Declare(
-    mujoco
-    GIT_REPOSITORY https://github.com/google-deepmind/mujoco.git
-    GIT_TAG 3.2.7  # MuJoCo version
-  )
-endif()
+FetchContent_Declare(
+  mujoco
+  GIT_REPOSITORY https://github.com/google-deepmind/mujoco.git
+  GIT_TAG 3.2.7  # MuJoCo version
+)
 
 # Optionally set MuJoCo build options
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -75,13 +65,6 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(BUILD_SIMULATE ON CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(mujoco)
-FetchContent_GetProperties(mujoco)
-
-if(NOT mujoco_SOURCE_DIR)
-  set(mujoco_SOURCE_DIR "${MUJOCO_LOCAL_SOURCE_DIR}")
-endif()
-
-message(STATUS "MuJoCo source dir: ${mujoco_SOURCE_DIR}")
 
 # Install the ccd-config.cmake to the appropriate location
 install(FILES ${CMAKE_BINARY_DIR}/_deps/ccd-build/ccd-config.cmake
@@ -112,8 +95,8 @@ include_directories(
     ${OpenCV_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
     ${pcl_conversions_INCLUDE_DIRS}
-    ${mujoco_SOURCE_DIR}/include
-    ${mujoco_SOURCE_DIR}/simulate
+    ${CMAKE_BINARY_DIR}/_deps/mujoco-src/include
+    ${CMAKE_BINARY_DIR}/_deps/mujoco-src/simulate
     ${CMAKE_BINARY_DIR}
 )
 
