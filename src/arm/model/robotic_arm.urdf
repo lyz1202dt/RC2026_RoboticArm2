@@ -435,7 +435,7 @@
     type="revolute">
     <origin
       xyz="0.073796 0.0036822 8.8922E-05"
-      rpy="0 -1.5708 0" />
+      rpy="0 -1.5708 3.14" />
     <parent
       link="link5" />
     <child

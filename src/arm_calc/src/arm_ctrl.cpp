@@ -16,6 +16,7 @@ namespace {
 constexpr char kJointStateTopic[] = "myjoints_state";
 constexpr char kJointTargetTopic[] = "myjoints_target";
 constexpr char kVisualTargetTopic[] = "visual_target_pose";
+constexpr char kJointSpaceTargetTopic[] = "joint_space_target";
 constexpr char kRvizJointTopic[] = "joint_states";
 constexpr char kMarkerTopic[] = "visualization_marker_array";
 
@@ -48,10 +49,10 @@ ArmCtrlNode::ArmCtrlNode(const rclcpp::NodeOptions& options)
 }
 
 void ArmCtrlNode::declare_parameters() {
-    this->declare_parameter<std::string>("motion_mode", "joint_space");
+    this->declare_parameter<int>("motion_mode", 0);
     this->declare_parameter<double>("trajectory_duration", 3.0);
     this->declare_parameter<double>("control_period", 0.02);
-    this->declare_parameter<bool>("auto_start", true);
+    this->declare_parameter<bool>("execute_trajectory", false);
     this->declare_parameter<double>("visual_servo_kp", 2.0);
     this->declare_parameter<double>("visual_servo_max_linear_acceleration", 0.5);
     this->declare_parameter<std::string>("base_link", "base_link");
@@ -68,6 +69,8 @@ void ArmCtrlNode::create_interfaces() {
 
     visual_target_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         kVisualTargetTopic, 10, std::bind(&ArmCtrlNode::on_visual_target, this, std::placeholders::_1));
+    joint_space_target_sub_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
+        kJointSpaceTargetTopic, 10, std::bind(&ArmCtrlNode::on_joint_space_target, this, std::placeholders::_1));
 
     joint_target_pub_ = this->create_publisher<robot_interfaces::msg::Arm>(kJointTargetTopic, 10);
     rviz_joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(kRvizJointTopic, 10);
@@ -82,11 +85,12 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     tip_link_ = this->get_parameter("tip_link").as_string();
     trajectory_duration_sec_ = this->get_parameter("trajectory_duration").as_double();
     control_period_sec_ = this->get_parameter("control_period").as_double();
-    auto_start_ = this->get_parameter("auto_start").as_bool();
+    execute_trajectory_ = this->get_parameter("execute_trajectory").as_bool();
     visual_servo_kp_ = std::max(this->get_parameter("visual_servo_kp").as_double(), 0.0);
     visual_servo_max_linear_acceleration_ =
         std::max(this->get_parameter("visual_servo_max_linear_acceleration").as_double(), 0.0);
-    motion_mode_ = parse_motion_mode(this->get_parameter("motion_mode").as_string());
+    requested_motion_mode_ = parse_motion_mode(this->get_parameter("motion_mode").as_int());
+    active_motion_mode_ = MotionMode::kIdle;
 
     const std::vector<double> joint_target = get_double_array_param(*this, "joint_target", kJointDoF);
     for (std::size_t i = 0; i < kJointDoF; ++i) {
@@ -158,18 +162,21 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
         return;
     }
 
-    switch (motion_mode_) {
+    switch (active_motion_mode_) {
+        case MotionMode::kIdle:
+            enter_idle_mode();
+            break;
         case MotionMode::kJointSpace:
             joint_space_move_->set_start_state(current_joint_state_);
             joint_space_move_->set_goal_state(joint_target_state_, trajectory_duration_sec_);
-            if (auto_start_) {
+            if (execute_trajectory_) {
                 joint_space_move_->start(now_sec);
             }
             break;
         case MotionMode::kCartesianSpace:
             cartesian_space_move_->set_start_state(current_joint_state_);
             cartesian_space_move_->set_goal_state(cartesian_target_, trajectory_duration_sec_);
-            if (auto_start_) {
+            if (execute_trajectory_) {
                 cartesian_space_move_->start(now_sec);
             }
             break;
@@ -183,20 +190,105 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
     planners_ready_ = true;
 }
 
+void ArmCtrlNode::apply_requested_mode(double now_sec) {
+    if (!has_joint_state_) {
+        return;
+    }
+
+    if (!execute_trajectory_) {
+        active_motion_mode_ = MotionMode::kIdle;
+        enter_idle_mode();
+        return;
+    }
+
+    if (active_motion_mode_ == requested_motion_mode_) {
+        if (active_motion_mode_ == MotionMode::kIdle && requested_motion_mode_ != MotionMode::kIdle) {
+            active_motion_mode_ = requested_motion_mode_;
+            refresh_plan(now_sec);
+        }
+        return;
+    }
+
+    if (can_switch_mode_immediately() || !is_trajectory_running(now_sec)) {
+        active_motion_mode_ = requested_motion_mode_;
+        refresh_plan(now_sec);
+    }
+}
+
+void ArmCtrlNode::enter_idle_mode() {
+    idle_hold_point_.position = current_joint_state_.position;
+    idle_hold_point_.velocity.setZero();
+    idle_hold_point_.acceleration.setZero();
+    idle_hold_point_.torque.setZero();
+}
+
+bool ArmCtrlNode::is_trajectory_running(double now_sec) const {
+    switch (active_motion_mode_) {
+        case MotionMode::kJointSpace:
+            return joint_space_move_ && joint_space_move_->started() && joint_space_move_->active(now_sec);
+        case MotionMode::kCartesianSpace:
+            return cartesian_space_move_ && cartesian_space_move_->started() && cartesian_space_move_->active(now_sec);
+        case MotionMode::kVisualServo:
+            return execute_trajectory_;
+        case MotionMode::kIdle:
+        default:
+            return false;
+    }
+}
+
+bool ArmCtrlNode::can_switch_mode_immediately() const {
+    return active_motion_mode_ == MotionMode::kIdle || active_motion_mode_ == MotionMode::kVisualServo;
+}
+
+void ArmCtrlNode::set_execute_trajectory_flag(bool value) {
+    if (execute_trajectory_ == value) {
+        return;
+    }
+
+    execute_trajectory_ = value;
+    updating_execute_parameter_ = true;
+    this->set_parameter(rclcpp::Parameter("execute_trajectory", value));
+    updating_execute_parameter_ = false;
+}
+
 void ArmCtrlNode::publish_control_loop() {
     if (!has_joint_state_ || !planners_ready_) {
         return;
     }
 
     const double now_sec = this->get_clock()->now().seconds();
+    apply_requested_mode(now_sec);
     JointTrajectoryPoint target_point;
 
-    switch (motion_mode_) {
+    switch (active_motion_mode_) {
+        case MotionMode::kIdle:
+            target_point = idle_hold_point_;
+            break;
         case MotionMode::kJointSpace:
             target_point = joint_space_move_->sample(now_sec);
+            if (!joint_space_move_->active(now_sec) && joint_space_move_->started()) {
+                idle_hold_point_ = target_point;
+                idle_hold_point_.velocity.setZero();
+                idle_hold_point_.acceleration.setZero();
+                set_execute_trajectory_flag(false);
+                active_motion_mode_ = MotionMode::kIdle;
+                requested_motion_mode_ = MotionMode::kIdle;
+                enter_idle_mode();
+                target_point = idle_hold_point_;
+            }
             break;
         case MotionMode::kCartesianSpace:
             target_point = cartesian_space_move_->sample(now_sec);
+            if (!cartesian_space_move_->active(now_sec) && cartesian_space_move_->started()) {
+                idle_hold_point_ = target_point;
+                idle_hold_point_.velocity.setZero();
+                idle_hold_point_.acceleration.setZero();
+                set_execute_trajectory_flag(false);
+                active_motion_mode_ = MotionMode::kIdle;
+                requested_motion_mode_ = MotionMode::kIdle;
+                enter_idle_mode();
+                target_point = idle_hold_point_;
+            }
             break;
         case MotionMode::kVisualServo:
             visual_servo_move_->set_current_joint_state(current_joint_state_);
@@ -266,6 +358,9 @@ void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point
 void ArmCtrlNode::on_joint_state(const robot_interfaces::msg::Arm& msg) {
     current_joint_state_ = from_arm_message(msg);
     has_joint_state_ = true;
+    if (active_motion_mode_ == MotionMode::kIdle || !execute_trajectory_) {
+        enter_idle_mode();
+    }
 
     if (!planners_ready_) {
         refresh_plan(this->get_clock()->now().seconds());
@@ -281,8 +376,25 @@ void ArmCtrlNode::on_visual_target(const geometry_msgs::msg::PoseStamped& msg) {
         visual_servo_move_->set_target_pose(visual_target_);
     }
 
-    if (motion_mode_ == MotionMode::kVisualServo && has_joint_state_) {
+    if (requested_motion_mode_ == MotionMode::kVisualServo && has_joint_state_) {
         planners_ready_ = true;
+    }
+}
+
+void ArmCtrlNode::on_joint_space_target(const std_msgs::msg::Float64MultiArray& msg) {
+    if (msg.data.size() < kJointDoF) {
+        RCLCPP_WARN(this->get_logger(), "joint_space_target requires at least 6 elements");
+        return;
+    }
+
+    for (std::size_t i = 0; i < kJointDoF; ++i) {
+        joint_target_state_.position[static_cast<int>(i)] = msg.data[i];
+    }
+
+    if (has_joint_state_ && active_motion_mode_ == MotionMode::kIdle &&
+        requested_motion_mode_ == MotionMode::kJointSpace && execute_trajectory_) {
+        active_motion_mode_ = MotionMode::kJointSpace;
+        refresh_plan(this->get_clock()->now().seconds());
     }
 }
 
@@ -292,13 +404,20 @@ rcl_interfaces::msg::SetParametersResult ArmCtrlNode::on_parameters_changed(cons
 
     for (const auto& param : params) {
         if (param.get_name() == "motion_mode") {
-            motion_mode_ = parse_motion_mode(param.as_string());
+            requested_motion_mode_ = parse_motion_mode(param.as_int());
         } else if (param.get_name() == "trajectory_duration") {
             trajectory_duration_sec_ = std::max(param.as_double(), 0.1);
         } else if (param.get_name() == "control_period") {
             control_period_sec_ = std::max(param.as_double(), 0.005);
-        } else if (param.get_name() == "auto_start") {
-            auto_start_ = param.as_bool();
+        } else if (param.get_name() == "execute_trajectory") {
+            if (!updating_execute_parameter_) {
+                execute_trajectory_ = param.as_bool();
+            }
+            if (!execute_trajectory_) {
+                requested_motion_mode_ = MotionMode::kIdle;
+                active_motion_mode_ = MotionMode::kIdle;
+                enter_idle_mode();
+            }
         } else if (param.get_name() == "visual_servo_kp") {
             visual_servo_kp_ = std::max(param.as_double(), 0.0);
             if (visual_servo_move_) {
@@ -346,22 +465,30 @@ rcl_interfaces::msg::SetParametersResult ArmCtrlNode::on_parameters_changed(cons
 
     planners_ready_ = false;
     if (has_joint_state_) {
-        refresh_plan(this->get_clock()->now().seconds());
+        apply_requested_mode(this->get_clock()->now().seconds());
+        if (active_motion_mode_ != MotionMode::kIdle) {
+            refresh_plan(this->get_clock()->now().seconds());
+        } else {
+            planners_ready_ = true;
+        }
     }
     return result;
 }
 
-ArmCtrlNode::MotionMode ArmCtrlNode::parse_motion_mode(const std::string& mode_name) {
-    if (mode_name == "joint_space") {
+ArmCtrlNode::MotionMode ArmCtrlNode::parse_motion_mode(int mode_value) {
+    if (mode_value == 0) {
+        return MotionMode::kIdle;
+    }
+    if (mode_value == 1) {
         return MotionMode::kJointSpace;
     }
-    if (mode_name == "cartesian_space") {
+    if (mode_value == 2) {
         return MotionMode::kCartesianSpace;
     }
-    if (mode_name == "visual_servo") {
+    if (mode_value == 3) {
         return MotionMode::kVisualServo;
     }
-    throw std::invalid_argument("unsupported motion_mode: " + mode_name);
+    throw std::invalid_argument("unsupported motion_mode value: " + std::to_string(mode_value));
 }
 
 JointState ArmCtrlNode::from_arm_message(const robot_interfaces::msg::Arm& msg) {

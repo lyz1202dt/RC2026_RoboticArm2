@@ -76,6 +76,10 @@ bool JointSpaceMove::active(double current_time_sec) const {
     return started_ && (current_time_sec - start_time_sec_) <= duration_sec_;
 }
 
+bool JointSpaceMove::started() const {
+    return started_;
+}
+
 JCartesianSpaceMove::JCartesianSpaceMove(std::shared_ptr<ArmCalc> arm_calc)
     : arm_calc_(std::move(arm_calc)) {}
 
@@ -122,6 +126,10 @@ JointTrajectoryPoint JCartesianSpaceMove::sample(double current_time_sec) {
 
 bool JCartesianSpaceMove::active(double current_time_sec) const {
     return started_ && (current_time_sec - start_time_sec_) <= duration_sec_;
+}
+
+bool JCartesianSpaceMove::started() const {
+    return started_;
 }
 
 CartesianTrajectoryPoint JCartesianSpaceMove::build_cartesian_target(double current_time_sec) const {

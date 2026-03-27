@@ -25,6 +25,7 @@ public:
     void start(double start_time_sec);
     JointTrajectoryPoint sample(double current_time_sec) const;
     bool active(double current_time_sec) const;
+    bool started() const;
 
 private:
     arm_calc::TrajectoryCalc trajectory_;
@@ -44,6 +45,7 @@ public:
     void start(double start_time_sec);
     JointTrajectoryPoint sample(double current_time_sec);
     bool active(double current_time_sec) const;
+    bool started() const;
 
 private:
     CartesianTrajectoryPoint build_cartesian_target(double current_time_sec) const;

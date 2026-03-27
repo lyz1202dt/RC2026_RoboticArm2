@@ -29,12 +29,24 @@ controller_interface::CallbackReturn DogController::on_init() {
     joint_kd_ = std::vector<double>(kJointCount, 3.0);
 
     for (std::size_t i = 0; i < kJointCount; ++i) {
-        node->declare_parameter("joint" + std::to_string(i + 1) + "_kp", 50.0);
-        node->declare_parameter("joint" + std::to_string(i + 1) + "_kd", 3.0);
+        const std::string kp_name = "joint" + std::to_string(i + 1) + "_kp";
+        const std::string kd_name = "joint" + std::to_string(i + 1) + "_kd";
+        if (!node->has_parameter(kp_name)) {
+            node->declare_parameter(kp_name, 50.0);
+        }
+        if (!node->has_parameter(kd_name)) {
+            node->declare_parameter(kd_name, 3.0);
+        }
     }
-    node->declare_parameter("joint_torque_filter_gate", 0.8);
-    node->declare_parameter("joint_omega_filter_gate", 0.8);
-    node->declare_parameter("command_effort_limit", 20.0);
+    if (!node->has_parameter("joint_torque_filter_gate")) {
+        node->declare_parameter("joint_torque_filter_gate", 0.8);
+    }
+    if (!node->has_parameter("joint_omega_filter_gate")) {
+        node->declare_parameter("joint_omega_filter_gate", 0.8);
+    }
+    if (!node->has_parameter("command_effort_limit")) {
+        node->declare_parameter("command_effort_limit", 20.0);
+    }
 
     param_cb_ = node->add_on_set_parameters_callback([this](const std::vector<rclcpp::Parameter>& params) {
         rcl_interfaces::msg::SetParametersResult result;

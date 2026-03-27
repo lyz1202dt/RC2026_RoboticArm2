@@ -16,6 +16,7 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcl_interfaces REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
@@ -48,6 +49,10 @@ add_executable(arm_calc
   src/arm_action/basic_moves.cpp
 )
 
+add_executable(arm_calc_test
+  src/arm_test_node.cpp
+)
+
 
 target_include_directories(arm_calc
   PUBLIC
@@ -59,12 +64,21 @@ target_include_directories(arm_calc
 
 
 target_link_libraries(arm_calc Eigen3::Eigen)
+target_link_libraries(arm_calc_test Eigen3::Eigen)
+
+target_include_directories(arm_calc_test
+  PUBLIC
+    ${EIGEN3_INCLUDE_DIRS}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 ament_target_dependencies(
   arm_calc
   ament_index_cpp
   rclcpp
   rcl_interfaces
+  std_msgs
   geometry_msgs
   sensor_msgs
   visualization_msgs
@@ -77,10 +91,19 @@ ament_target_dependencies(
   
 )
 
+ament_target_dependencies(
+  arm_calc_test
+  rclcpp
+  rcl_interfaces
+  std_msgs
+  geometry_msgs
+)
+
 
 
 install(TARGETS
 arm_calc
+arm_calc_test
 DESTINATION lib/${PROJECT_NAME}
 )
 
