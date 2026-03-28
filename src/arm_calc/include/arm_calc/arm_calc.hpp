@@ -29,6 +29,9 @@ public:
     JointVector joint_torque_dynamic(const JointVector& joint_pos,
                                      const JointVector& joint_vel,
                                      const CartesianVector& cartesian_acc);
+    JointVector joint_torque_inverse_dynamics(const JointVector& joint_pos,
+                                              const JointVector& joint_vel,
+                                              const JointVector& joint_acc);
     JointVector joint_torque_cartesian_wrench(const JointVector& joint_pos, const CartesianVector& cartesian_wrench);
 
     CartesianPose end_pose(const JointVector& joint_pos);

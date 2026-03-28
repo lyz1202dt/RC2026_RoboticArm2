@@ -69,6 +69,12 @@ JointVector ArmCalc::joint_acc(const JointVector& joint_pos, const JointVector& 
 JointVector ArmCalc::joint_torque_dynamic(const JointVector& joint_pos,
                                           const JointVector& joint_vel,
                                           const CartesianVector& cartesian_acc) {
+    return joint_torque_inverse_dynamics(joint_pos, joint_vel, joint_acc(joint_pos, joint_vel, cartesian_acc));
+}
+
+JointVector ArmCalc::joint_torque_inverse_dynamics(const JointVector& joint_pos,
+                                                   const JointVector& joint_vel,
+                                                   const JointVector& joint_acc) {
     const KDL::JntArray kdl_joint_pos = to_kdl_joints(joint_pos);
     const KDL::JntArray kdl_joint_vel = to_kdl_joints(joint_vel);
 
@@ -76,11 +82,10 @@ JointVector ArmCalc::joint_torque_dynamic(const JointVector& joint_pos,
     dynamic_solver_.JntToCoriolis(kdl_joint_pos, kdl_joint_vel, coriolis_);
     dynamic_solver_.JntToMass(kdl_joint_pos, mass_matrix_);
 
-    JointVector acceleration = joint_acc(joint_pos, joint_vel, cartesian_acc);
     JointMatrix mass = mass_matrix_.data;
     JointVector coriolis = from_kdl_joints(coriolis_);
     JointVector gravity = from_kdl_joints(gravity_);
-    return mass * acceleration + coriolis + gravity;
+    return mass * joint_acc + coriolis + gravity;
 }
 
 JointVector ArmCalc::joint_torque_cartesian_wrench(const JointVector& joint_pos, const CartesianVector& cartesian_wrench) {
@@ -136,6 +141,9 @@ JointTrajectoryPoint ArmCalc::signal_arm_calc(const CartesianTrajectoryPoint& ca
     int result = -1;
     point.position = joint_pos(cartesian_target.pose, &result);
     if (result < 0) {
+        point.velocity.setZero();
+        point.acceleration.setZero();
+        point.torque = joint_torque_inverse_dynamics(point.position, point.velocity, point.acceleration);
         return point;
     }
 

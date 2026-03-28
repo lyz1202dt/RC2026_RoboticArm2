@@ -42,6 +42,7 @@ private:
     bool is_trajectory_running(double now_sec) const;
     bool can_switch_mode_immediately() const;
     void set_execute_trajectory_flag(bool value);
+    JointTrajectoryPoint build_preview_target() const;
     void publish_control_loop();
     void publish_joint_target(const JointTrajectoryPoint& point);
     void publish_visualization(const JointTrajectoryPoint& target_point);

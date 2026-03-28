@@ -38,9 +38,24 @@ Eigen::Vector3d ClampVectorNorm(const Eigen::Vector3d& vector, double limit) {
     return vector * (limit / norm);
 }
 
+JointTrajectoryPoint BuildJointPoint(std::shared_ptr<ArmCalc> arm_calc,
+                                     const JointVector& position,
+                                     const JointVector& velocity,
+                                     const JointVector& acceleration) {
+    JointTrajectoryPoint point;
+    point.position = position;
+    point.velocity = velocity;
+    point.acceleration = acceleration;
+    if (arm_calc) {
+        point.torque = arm_calc->joint_torque_inverse_dynamics(position, velocity, acceleration);
+    }
+    return point;
+}
+
 }  // namespace
 
-JointSpaceMove::JointSpaceMove() = default;
+JointSpaceMove::JointSpaceMove(std::shared_ptr<ArmCalc> arm_calc)
+    : arm_calc_(std::move(arm_calc)) {}
 
 void JointSpaceMove::set_start_state(const JointState& state) {
     start_state_ = state;
@@ -60,15 +75,11 @@ void JointSpaceMove::start(double start_time_sec) {
 
 JointTrajectoryPoint JointSpaceMove::sample(double current_time_sec) const {
     if (!started_) {
-        JointTrajectoryPoint point;
-        point.position = start_state_.position;
-        point.velocity = start_state_.velocity;
-        point.torque = start_state_.torque;
-        return point;
+        return BuildJointPoint(arm_calc_, start_state_.position, start_state_.velocity, JointVector::Zero());
     }
 
     JointTrajectoryPoint point = trajectory_.sample(current_time_sec - start_time_sec_);
-    point.torque = goal_state_.torque;
+    point.torque = arm_calc_->joint_torque_inverse_dynamics(point.position, point.velocity, point.acceleration);
     return point;
 }
 
@@ -116,10 +127,7 @@ void JCartesianSpaceMove::start(double start_time_sec) {
 
 JointTrajectoryPoint JCartesianSpaceMove::sample(double current_time_sec) {
     if (!started_ || !arm_calc_) {
-        JointTrajectoryPoint point;
-        point.position = start_joint_state_.position;
-        point.velocity = start_joint_state_.velocity;
-        return point;
+        return BuildJointPoint(arm_calc_, start_joint_state_.position, start_joint_state_.velocity, JointVector::Zero());
     }
     return arm_calc_->signal_arm_calc(build_cartesian_target(current_time_sec));
 }
@@ -174,12 +182,8 @@ void VisualServoMove::set_max_linear_acceleration(double max_linear_acceleration
 }
 
 JointTrajectoryPoint VisualServoMove::sample(double current_time_sec) {
-    JointTrajectoryPoint point;
     if (!arm_calc_ || !has_joint_state_) {
-        point.position = current_joint_state_.position;
-        point.velocity = current_joint_state_.velocity;
-        point.torque = current_joint_state_.torque;
-        return point;
+        return BuildJointPoint(arm_calc_, current_joint_state_.position, current_joint_state_.velocity, JointVector::Zero());
     }
 
     current_cartesian_state_ = arm_calc_->end_state(current_joint_state_.position, current_joint_state_.velocity);
@@ -193,10 +197,7 @@ JointTrajectoryPoint VisualServoMove::sample(double current_time_sec) {
     }
 
     if (!has_target_pose_) {
-        point.position = current_joint_state_.position;
-        point.velocity = current_joint_state_.velocity;
-        point.torque = current_joint_state_.torque;
-        return point;
+        return BuildJointPoint(arm_calc_, current_joint_state_.position, current_joint_state_.velocity, JointVector::Zero());
     }
 
     const double dt = std::clamp(current_time_sec - last_sample_time_sec_, 1e-4, 0.1);

@@ -18,7 +18,7 @@ using arm_calc::JointVector;
 
 class JointSpaceMove {
 public:
-    JointSpaceMove();
+    explicit JointSpaceMove(std::shared_ptr<ArmCalc> arm_calc);
 
     void set_start_state(const JointState& state);
     void set_goal_state(const JointState& state, double duration);
@@ -28,6 +28,7 @@ public:
     bool started() const;
 
 private:
+    std::shared_ptr<ArmCalc> arm_calc_;
     arm_calc::TrajectoryCalc trajectory_;
     JointState start_state_{};
     JointState goal_state_{};

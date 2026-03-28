@@ -37,6 +37,15 @@ geometry_msgs::msg::Quaternion ToMsgQuaternion(const Eigen::Quaterniond& q) {
     return msg;
 }
 
+JointTrajectoryPoint BuildStaticJointTarget(const std::shared_ptr<ArmCalc>& arm_calc, const JointVector& position) {
+    JointTrajectoryPoint point;
+    point.position = position;
+    point.velocity.setZero();
+    point.acceleration.setZero();
+    point.torque = arm_calc->joint_torque_inverse_dynamics(position, JointVector::Zero(), JointVector::Zero());
+    return point;
+}
+
 }  // namespace
 
 ArmCtrlNode::ArmCtrlNode(const rclcpp::NodeOptions& options)
@@ -114,7 +123,7 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     }
 
     arm_calc_ = std::make_shared<ArmCalc>(arm_chain_);
-    joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>();
+    joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(arm_calc_);
     cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(arm_calc_);
     visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(arm_calc_);
     visual_servo_move_->set_kp(visual_servo_kp_);
@@ -165,6 +174,7 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
     switch (active_motion_mode_) {
         case MotionMode::kIdle:
             enter_idle_mode();
+            RCLCPP_INFO(get_logger(),"进入IDEL模式");
             break;
         case MotionMode::kJointSpace:
             joint_space_move_->set_start_state(current_joint_state_);
@@ -172,6 +182,7 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
             if (execute_trajectory_) {
                 joint_space_move_->start(now_sec);
             }
+            RCLCPP_INFO(get_logger(),"进入关节空间轨迹执行模式");
             break;
         case MotionMode::kCartesianSpace:
             cartesian_space_move_->set_start_state(current_joint_state_);
@@ -179,12 +190,14 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
             if (execute_trajectory_) {
                 cartesian_space_move_->start(now_sec);
             }
+            RCLCPP_INFO(get_logger(),"进入笛卡尔空间轨迹执行模式");
             break;
         case MotionMode::kVisualServo:
             visual_servo_move_->set_kp(visual_servo_kp_);
             visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
             visual_servo_move_->set_current_joint_state(current_joint_state_);
             visual_servo_move_->set_target_pose(visual_target_);
+            RCLCPP_INFO(get_logger(),"进入视觉伺服模式");
             break;
     }
     planners_ready_ = true;
@@ -194,7 +207,8 @@ void ArmCtrlNode::capture_idle_hold_from_current_state() {
     idle_hold_point_.position = current_joint_state_.position;
     idle_hold_point_.velocity.setZero();
     idle_hold_point_.acceleration.setZero();
-    idle_hold_point_.torque.setZero();
+    idle_hold_point_.torque = arm_calc_->joint_torque_inverse_dynamics(
+        idle_hold_point_.position, JointVector::Zero(), JointVector::Zero());
     idle_hold_initialized_ = true;
 }
 
@@ -202,7 +216,8 @@ void ArmCtrlNode::set_idle_hold_point(const JointTrajectoryPoint& point) {
     idle_hold_point_ = point;
     idle_hold_point_.velocity.setZero();
     idle_hold_point_.acceleration.setZero();
-    idle_hold_point_.torque.setZero();
+    idle_hold_point_.torque = arm_calc_->joint_torque_inverse_dynamics(
+        idle_hold_point_.position, JointVector::Zero(), JointVector::Zero());
     idle_hold_initialized_ = true;
 }
 
@@ -269,6 +284,36 @@ void ArmCtrlNode::set_execute_trajectory_flag(bool value) {
     updating_execute_parameter_ = false;
 }
 
+JointTrajectoryPoint ArmCtrlNode::build_preview_target() const {
+    switch (requested_motion_mode_) {
+        case MotionMode::kJointSpace:
+            return BuildStaticJointTarget(arm_calc_, joint_target_state_.position);
+        case MotionMode::kCartesianSpace: {
+            int result = -1;
+            const JointVector seed = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
+            const JointVector preview_position = arm_calc_->joint_pos(cartesian_target_, &result, seed);
+            if (result < 0) {
+                RCLCPP_WARN(this->get_logger(), "Failed to solve IK for Cartesian preview target, keeping current display");
+                return idle_hold_point_;
+            }
+            return BuildStaticJointTarget(arm_calc_, preview_position);
+        }
+        case MotionMode::kVisualServo: {
+            int result = -1;
+            const JointVector seed = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
+            const JointVector preview_position = arm_calc_->joint_pos(visual_target_, &result, seed);
+            if (result < 0) {
+                RCLCPP_WARN(this->get_logger(), "Failed to solve IK for visual target preview, keeping current display");
+                return idle_hold_point_;
+            }
+            return BuildStaticJointTarget(arm_calc_, preview_position);
+        }
+        case MotionMode::kIdle:
+        default:
+            return idle_hold_point_;
+    }
+}
+
 void ArmCtrlNode::publish_control_loop() {
     if (!has_joint_state_ || !planners_ready_) {
         return;
@@ -281,7 +326,9 @@ void ArmCtrlNode::publish_control_loop() {
     switch (active_motion_mode_) {
         case MotionMode::kIdle:
             target_point = idle_hold_point_;
-            RCLCPP_INFO(get_logger(),"target_point=(%lf,%lf,%lf)",target_point.position[0],target_point.position[1],target_point.position[2]);
+            target_point.torque =
+                arm_calc_->joint_torque_inverse_dynamics(target_point.position, JointVector::Zero(), JointVector::Zero());
+            //RCLCPP_INFO(get_logger(),"target_point=(%lf,%lf,%lf)",target_point.position[0],target_point.position[1],target_point.position[2]);
             break;
         case MotionMode::kJointSpace:
             target_point = joint_space_move_->sample(now_sec);
@@ -311,14 +358,16 @@ void ArmCtrlNode::publish_control_loop() {
             break;
     }
 
+    JointTrajectoryPoint rviz_point = execute_trajectory_ ? target_point : build_preview_target();
     publish_joint_target(target_point);
-    publish_visualization(target_point);
+    const rclcpp::Time stamp = this->get_clock()->now();
+    rviz_joint_pub_->publish(to_joint_state_msg(rviz_point, stamp));
+    publish_visualization(rviz_point);
 }
 
 void ArmCtrlNode::publish_joint_target(const JointTrajectoryPoint& point) {
-    const rclcpp::Time stamp = this->get_clock()->now();
     joint_target_pub_->publish(to_arm_message(point));
-    rviz_joint_pub_->publish(to_joint_state_msg(point, stamp));
+    RCLCPP_INFO(get_logger(),"joint2=(%lf,%lf,%lf)",point.position[1],point.velocity[1],point.torque[1]);
 }
 
 void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point) {
@@ -384,12 +433,22 @@ void ArmCtrlNode::on_joint_state(const robot_interfaces::msg::Arm& msg) {
 }
 
 void ArmCtrlNode::on_visual_target(const geometry_msgs::msg::PoseStamped& msg) {
-    visual_target_.position = Eigen::Vector3d(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z);
-    visual_target_.orientation = NormalizeQuaternion(Eigen::Quaterniond(
-        msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z));
+    const CartesianPose target_pose{
+        Eigen::Vector3d(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z),
+        NormalizeQuaternion(Eigen::Quaterniond(
+            msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z))};
+    visual_target_ = target_pose;
+    cartesian_target_ = target_pose;
 
     if (visual_servo_move_) {
         visual_servo_move_->set_target_pose(visual_target_);
+    }
+
+    if (requested_motion_mode_ == MotionMode::kCartesianSpace && has_joint_state_) {
+        planners_ready_ = false;
+        if (active_motion_mode_ == MotionMode::kCartesianSpace && execute_trajectory_) {
+            refresh_plan(this->get_clock()->now().seconds());
+        }
     }
 
     if (requested_motion_mode_ == MotionMode::kVisualServo && has_joint_state_) {

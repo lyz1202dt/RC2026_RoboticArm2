@@ -53,12 +53,10 @@ private:
         result.successful = true;
 
         for (const auto& param : params) {
-            if (param.get_name() == "publish_joint_target" && !updating_trigger_params_ && param.as_bool()) {
+            if (param.get_name() == "publish_joint_target" &&  param.as_bool()) {
                 publish_joint_target();
-                reset_trigger_parameter("publish_joint_target");
-            } else if (param.get_name() == "publish_pose_target" && !updating_trigger_params_ && param.as_bool()) {
+            } else if (param.get_name() == "publish_pose_target" &&  param.as_bool()) {
                 publish_pose_target();
-                reset_trigger_parameter("publish_pose_target");
             }
         }
 
@@ -96,13 +94,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Published pose target in frame %s", msg.header.frame_id.c_str());
     }
 
-    void reset_trigger_parameter(const std::string& name) {
-        updating_trigger_params_ = true;
-        this->set_parameter(rclcpp::Parameter(name, false));
-        updating_trigger_params_ = false;
-    }
 
-    bool updating_trigger_params_{false};
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_target_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_target_pub_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
