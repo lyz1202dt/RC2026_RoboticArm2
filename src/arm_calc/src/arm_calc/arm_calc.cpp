@@ -2,8 +2,6 @@
 
 #include <Eigen/Geometry>
 
-#include <algorithm>
-
 namespace arm_calc {
 
 namespace {
@@ -17,15 +15,13 @@ CartesianVector ToCartesianVector(const Eigen::Vector3d& linear, const Eigen::Ve
 
 }  // namespace
 
-ArmCalc::ArmCalc(const KDL::Chain& chain, const KDL::JntArray& joint_min, const KDL::JntArray& joint_max)
+ArmCalc::ArmCalc(const KDL::Chain& chain)
     : chain_(chain),
       fk_solver_(chain_),
       jacobian_solver_(chain_),
       jdot_solver_(chain_),
       vel_solver_(chain_),
-      joint_min_(joint_min),
-      joint_max_(joint_max),
-      ik_solver_(chain_, joint_min_, joint_max_, fk_solver_, vel_solver_, 200, 1e-6),
+      ik_solver_(chain_, Eigen::Matrix<double, 6, 1>::Ones(), 1e-6, 200, 1e-10),
       dynamic_solver_(chain_, KDL::Vector(0.0, 0.0, -9.81)),
       mass_matrix_(chain_.getNrOfJoints()),
       coriolis_(chain_.getNrOfJoints()),
@@ -44,21 +40,8 @@ JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
 
 JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
     KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
-    for (unsigned int i = 0; i < seed.rows(); ++i) {
-        seed(i) = std::clamp(seed(i), joint_min_(i), joint_max_(i));
-    }
     KDL::Frame target_frame = to_kdl_frame(pose);
     *result = ik_solver_.CartToJnt(seed, target_frame, seed);
-    if (*result >= 0) {
-        constexpr double kJointLimitTolerance = 1e-6;
-        for (unsigned int i = 0; i < seed.rows(); ++i) {
-            if (seed(i) < joint_min_(i) - kJointLimitTolerance || seed(i) > joint_max_(i) + kJointLimitTolerance) {
-                *result = -4;
-                break;
-            }
-            seed(i) = std::clamp(seed(i), joint_min_(i), joint_max_(i));
-        }
-    }
     if (*result >= 0) {
         last_joint_solution_ = seed;
     }

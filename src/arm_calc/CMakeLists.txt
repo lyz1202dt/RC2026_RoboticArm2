@@ -26,7 +26,6 @@ find_package(robot_interfaces REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(orocos_kdl REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(urdf REQUIRED)
 
 find_package(Eigen3 REQUIRED PATHS /usr/include/eigen3)
 
@@ -89,7 +88,6 @@ ament_target_dependencies(
   kdl_parser
   orocos_kdl
   tf2_geometry_msgs 
-  urdf
   
 )
 

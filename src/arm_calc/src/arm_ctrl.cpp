@@ -4,9 +4,7 @@
 #include <kdl_parser/kdl_parser.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <urdf/model.h>
 
-#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -21,7 +19,6 @@ constexpr char kVisualTargetTopic[] = "visual_target_pose";
 constexpr char kJointSpaceTargetTopic[] = "joint_space_target";
 constexpr char kRvizJointTopic[] = "joint_states";
 constexpr char kMarkerTopic[] = "visualization_marker_array";
-constexpr double kUnlimitedJointBound = 1e6;
 
 geometry_msgs::msg::Point ToPoint(const Eigen::Vector3d& value) {
     geometry_msgs::msg::Point point;
@@ -47,48 +44,6 @@ JointTrajectoryPoint BuildStaticJointTarget(const std::shared_ptr<ArmCalc>& arm_
     point.acceleration.setZero();
     point.torque = arm_calc->joint_torque_inverse_dynamics(position, JointVector::Zero(), JointVector::Zero());
     return point;
-}
-
-std::pair<KDL::JntArray, KDL::JntArray> BuildJointLimits(const KDL::Chain& chain, const std::string& urdf_xml) {
-    urdf::Model model;
-    if (!model.initString(urdf_xml)) {
-        throw std::runtime_error("failed to parse URDF for joint limits");
-    }
-
-    const unsigned int joint_count = chain.getNrOfJoints();
-    KDL::JntArray joint_min(joint_count);
-    KDL::JntArray joint_max(joint_count);
-
-    unsigned int joint_index = 0;
-    for (unsigned int i = 0; i < chain.getNrOfSegments(); ++i) {
-        const KDL::Joint& joint = chain.getSegment(i).getJoint();
-        if (joint.getType() == KDL::Joint::None) {
-            continue;
-        }
-
-        const auto urdf_joint = model.getJoint(joint.getName());
-        if (!urdf_joint) {
-            throw std::runtime_error("missing URDF joint description for " + joint.getName());
-        }
-
-        if (urdf_joint->type == urdf::Joint::CONTINUOUS) {
-            joint_min(joint_index) = -kUnlimitedJointBound;
-            joint_max(joint_index) = kUnlimitedJointBound;
-        } else if (urdf_joint->limits) {
-            joint_min(joint_index) = urdf_joint->limits->lower;
-            joint_max(joint_index) = urdf_joint->limits->upper;
-        } else {
-            joint_min(joint_index) = -kUnlimitedJointBound;
-            joint_max(joint_index) = kUnlimitedJointBound;
-        }
-        ++joint_index;
-    }
-
-    if (joint_index != joint_count) {
-        throw std::runtime_error("joint limit extraction count mismatch");
-    }
-
-    return {joint_min, joint_max};
 }
 
 }  // namespace
@@ -167,8 +122,7 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
         throw std::runtime_error("failed to build KDL chain from " + base_link_ + " to " + tip_link_);
     }
 
-    const auto [joint_min, joint_max] = BuildJointLimits(arm_chain_, urdf_xml);
-    arm_calc_ = std::make_shared<ArmCalc>(arm_chain_, joint_min, joint_max);
+    arm_calc_ = std::make_shared<ArmCalc>(arm_chain_);
     joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(arm_calc_);
     cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(arm_calc_);
     visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(arm_calc_);
