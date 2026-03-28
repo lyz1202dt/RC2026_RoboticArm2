@@ -25,7 +25,5 @@
     <geom name="ground" type="plane" size="50 50 0.3" pos="0 0 0" material="groundplane" contype="1" conaffinity="1"/>
     <light name="main_light" pos="0 0 4" dir="0 0 -1" directional="true"/>
 
-    <camera name="overview" pos="1.6 -1.6 1.1" xyaxes="0.707 0.707 0 -0.3 0.3 0.905"/>
-
   </worldbody>
 </mujoco>

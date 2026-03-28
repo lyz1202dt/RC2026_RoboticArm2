@@ -70,6 +70,7 @@ private:
     bool updating_execute_parameter_{false};
     double visual_servo_kp_{2.0};
     double visual_servo_max_linear_acceleration_{0.5};
+    double last_ee_log_time_sec_{-1.0};
 
     std::vector<std::string> joint_names_{"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
     std::string base_link_{"base_link"};

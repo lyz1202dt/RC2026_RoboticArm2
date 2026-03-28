@@ -22,6 +22,7 @@
   <depend>kdl_parser</depend>
   <depend>orocos_kdl</depend>
   <depend>tf2_geometry_msgs</depend>
+  <depend>urdf</depend>
 
 
   <test_depend>ament_lint_auto</test_depend>

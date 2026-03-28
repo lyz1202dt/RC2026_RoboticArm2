@@ -2,10 +2,10 @@
 
 #include "arm_calc/common_types.hpp"
 
+#include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chain.hpp>
 #include <kdl/chaindynparam.hpp>
-#include <kdl/chainfksolverpos_recursive.hpp>
-#include <kdl/chainiksolverpos_lma.hpp>
+#include <kdl/chainiksolverpos_nr_jl.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainjnttojacdotsolver.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
@@ -17,7 +17,7 @@ namespace arm_calc {
 
 class ArmCalc {
 public:
-    explicit ArmCalc(const KDL::Chain& chain);
+    ArmCalc(const KDL::Chain& chain, const KDL::JntArray& joint_min, const KDL::JntArray& joint_max);
     ~ArmCalc() = default;
 
     JointVector joint_pos(const CartesianPose& pose, int* result);
@@ -55,7 +55,9 @@ private:
     KDL::ChainJntToJacSolver jacobian_solver_;
     KDL::ChainJntToJacDotSolver jdot_solver_;
     KDL::ChainIkSolverVel_pinv vel_solver_;
-    KDL::ChainIkSolverPos_LMA ik_solver_;
+    KDL::JntArray joint_min_;
+    KDL::JntArray joint_max_;
+    KDL::ChainIkSolverPos_NR_JL ik_solver_;
     KDL::ChainDynParam dynamic_solver_;
 
     KDL::JntSpaceInertiaMatrix mass_matrix_;
