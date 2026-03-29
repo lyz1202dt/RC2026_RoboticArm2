@@ -14,7 +14,7 @@ def generate_launch_description():
 
     urdf_path = os.path.join(arm_share, "model", "robotic_arm.urdf")
     controller_yaml = os.path.join(launch_pack_share, "config", "ros2_controller.yaml")
-    rviz_path = os.path.join(launch_pack_share, "rviz", "arm_display_config.rviz")
+    rviz_path = os.path.join(launch_pack_share, "rviz", "display_config.rviz")
 
     with open(urdf_path, "r", encoding="utf-8") as inf:
         robot_desc = inf.read()
