@@ -39,9 +39,22 @@ def generate_launch_description():
         arguments=["-d", rviz_path],
     )
 
+    static_tf_camera = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "0.1", "0.09", "-0.03",  # x, y, z translation
+            "0.0", "0.7071068", "0.0", "0.7071068",  # quaternion (x, y, z, w) - 90° rotation about Y
+            "link4",
+            "camera_link"
+        ],
+        output="screen",
+    )
+
     return LaunchDescription([
         arm_driver,
         robot_state_pub,
         arm_calc,
         rviz2,
+        static_tf_camera
     ])
