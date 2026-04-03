@@ -59,12 +59,35 @@ FetchContent_Declare(
 
 # Optionally set MuJoCo build options
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(MUJOCO_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(MUJOCO_TEST_PYTHON_UTIL OFF CACHE BOOL "" FORCE)
-set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(MUJOCO_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(SIMULATE_BUILD_EXECUTABLE OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-set(BUILD_SIMULATE ON CACHE BOOL "" FORCE)
+set(MUJOCO_BUILD_SIMULATE ON CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(mujoco)
+FetchContent_GetProperties(mujoco)
+if(NOT mujoco_POPULATED)
+  FetchContent_Populate(mujoco)
+
+  # MuJoCo prefers lld when available, but in this environment GCC LTO + lld
+  # drops the exported MuJoCo API symbols. Prefer gold to match the known-good
+  # configuration used by the sibling workspace.
+  foreach(_mujoco_link_options_file IN ITEMS
+    "${mujoco_SOURCE_DIR}/cmake/MujocoLinkOptions.cmake"
+    "${mujoco_SOURCE_DIR}/simulate/cmake/MujocoLinkOptions.cmake"
+    "${mujoco_SOURCE_DIR}/sample/cmake/MujocoLinkOptions.cmake"
+  )
+    if(EXISTS "${_mujoco_link_options_file}")
+      file(READ "${_mujoco_link_options_file}" _mujoco_link_options)
+      string(REPLACE "-fuse-ld=lld" "-fuse-ld=gold"
+        _mujoco_link_options "${_mujoco_link_options}")
+      file(WRITE "${_mujoco_link_options_file}" "${_mujoco_link_options}")
+    endif()
+  endforeach()
+endif()
+
+add_subdirectory(${mujoco_SOURCE_DIR} ${mujoco_BINARY_DIR})
 
 # Install the ccd-config.cmake to the appropriate location
 install(FILES ${CMAKE_BINARY_DIR}/_deps/ccd-build/ccd-config.cmake
@@ -151,8 +174,7 @@ target_link_libraries(${PROJECT_NAME}
 
 # Add GUI simulation library
 add_library(simulate_gui SHARED src/simulate_gui.cpp)
-target_link_libraries(simulate_gui PUBLIC glfw)
-target_link_libraries(simulate_gui PRIVATE
+target_link_libraries(simulate_gui PUBLIC
     mujoco::mujoco
     mujoco::libsimulate
     mujoco::platform_ui_adapter
@@ -160,7 +182,13 @@ target_link_libraries(simulate_gui PRIVATE
 )
 
 # Link simulate_gui to the main project
-target_link_libraries(${PROJECT_NAME} simulate_gui)
+target_link_libraries(${PROJECT_NAME}
+    simulate_gui
+    mujoco::mujoco
+    mujoco::libsimulate
+    mujoco::platform_ui_adapter
+    glfw
+)
 
 # Install targets
 install(TARGETS
