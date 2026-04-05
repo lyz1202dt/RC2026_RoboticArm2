@@ -34,16 +34,16 @@ def generate_launch_description():
     # This is a 90-degree rotation about y-axis
     # Quaternion for 90-degree rotation about y-axis: (0, 0.7071, 0, 0.7071)
     static_tf_camera = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        arguments=[
-            "0.1", "0.09", "-0.03",  # x, y, z translation
-            "0.0", "0.7071068", "0.0", "0.7071068",  # quaternion (x, y, z, w) - 90° rotation about Y
-            "link4",
-            "camera_link"
-        ],
-        output="screen",
-    )
+    package="tf2_ros",
+    executable="static_transform_publisher",
+    arguments=[
+        "0.1", "0.09", "-0.03",  # x, y, z
+        "0.7071068", "0.0", "0.7071068", "0.0",  # 新四元数
+        "link4",
+        "camera_link"
+    ],
+    output="screen",
+)
     
     # arm_task node
     arm_task = Node(

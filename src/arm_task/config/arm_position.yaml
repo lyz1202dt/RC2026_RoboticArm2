@@ -2,7 +2,7 @@
 # Defines predefined joint positions for the robotic arm
 
 # Ready position - used as preparation position for grasp/place operations
-ready_position: [0.0, -0.9, -0.8, 0.0, 0.0, 0.0]
+ready_position: [0.0, 0.361, -2.39, 0.471, 0.0, 0.0]
 
 # Predefined arm positions
 # Each position has an index (used as 1x in arm_task parameter, e.g., 10 for position 0)

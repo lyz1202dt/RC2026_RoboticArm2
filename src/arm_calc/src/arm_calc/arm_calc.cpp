@@ -137,9 +137,13 @@ void ArmCalc::get_joint_pd(std::size_t index, double& kp, double& kd) const {
 }
 
 JointTrajectoryPoint ArmCalc::signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target) {
+    return signal_arm_calc(cartesian_target, from_kdl_joints(last_joint_solution_));
+}
+
+JointTrajectoryPoint ArmCalc::signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target, const JointVector& seed_joint_pos) {
     JointTrajectoryPoint point;
     int result = -1;
-    point.position = joint_pos(cartesian_target.pose, &result);
+    point.position = joint_pos(cartesian_target.pose, &result, seed_joint_pos);
     if (result < 0) {
         point.velocity.setZero();
         point.acceleration.setZero();

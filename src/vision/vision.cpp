@@ -266,9 +266,32 @@ int main(int argc, char** argv)
     auto tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
 
     // ---------- 启动 USB 摄像头 ----------
-    VideoCapture cap(1);
-    if (!cap.isOpened()) {
-        cerr << "无法打开摄像头" << endl;
+    VideoCapture cap;
+    const int camera_index = 0;
+    const std::array<int, 3> backends = {CAP_V4L2, CAP_ANY, CAP_GSTREAMER};
+    bool opened = false;
+    for (int backend : backends) {
+        cap.release();
+        if (!cap.open(camera_index, backend)) {
+            cerr << "后端 " << backend << " 打开摄像头索引 " << camera_index
+                 << " 失败\n";
+            continue;
+        }
+
+        std::string backend_name = "unknown";
+        try {
+            backend_name = cap.getBackendName();
+        } catch (...) {
+            backend_name = "unavailable";
+        }
+        cout << "摄像头打开成功，索引=" << camera_index
+             << "，后端=" << backend_name << "\n";
+        opened = true;
+        break;
+    }
+
+    if (!opened || !cap.isOpened()) {
+        cerr << "无法打开摄像头，请检查设备索引和占用情况\n";
         rclcpp::shutdown();
         return -1;
     }
@@ -282,6 +305,12 @@ int main(int argc, char** argv)
     // 计算去畸变映射
     Mat frame_tmp;
     cap >> frame_tmp;
+    if (frame_tmp.empty()) {
+        cerr << "摄像头已打开，但读取首帧失败\n";
+        cap.release();
+        rclcpp::shutdown();
+        return -1;
+    }
     Size imgSize = frame_tmp.size();
     
     Mat newK = getOptimalNewCameraMatrix(K, D, imgSize, 0.0, imgSize);

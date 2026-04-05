@@ -67,6 +67,7 @@ class VisualServoMove {
 public:
     explicit VisualServoMove(std::shared_ptr<ArmCalc> arm_calc);
 
+    void start(const JointState& state, double start_time_sec);
     void set_current_joint_state(const JointState& state);
     void set_target_pose(const CartesianPose& pose);
     void set_kp(double kp);
@@ -78,16 +79,19 @@ private:
     JointState current_joint_state_{};
     CartesianState current_cartesian_state_{};
     CartesianPose target_pose_{};
+    CartesianPose latched_target_pose_{};
     bool has_joint_state_{false};
     bool has_target_pose_{false};
+    bool has_latched_target_pose_{false};
     bool servo_initialized_{false};
     double last_sample_time_sec_{0.0};
-    double kp_{2.0};
+    double kp_{0.6};
     double max_linear_acceleration_{0.5};
 
     Eigen::Vector3d desired_position_{Eigen::Vector3d::Zero()};
     Eigen::Vector3d desired_velocity_{Eigen::Vector3d::Zero()};
     Eigen::Vector3d desired_acceleration_{Eigen::Vector3d::Zero()};
+    JointVector desired_joint_seed_{JointVector::Zero()};
 };
 
 }  // namespace arm_action

@@ -95,7 +95,7 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     trajectory_duration_sec_ = this->get_parameter("trajectory_duration").as_double();
     control_period_sec_ = this->get_parameter("control_period").as_double();
     execute_trajectory_ = this->get_parameter("execute_trajectory").as_bool();
-    visual_servo_kp_ = std::max(this->get_parameter("visual_servo_kp").as_double(), 0.0);
+    //visual_servo_kp_ = std::max(this->get_parameter("visual_servo_kp").as_double(), 0.0);
     visual_servo_max_linear_acceleration_ =
         std::max(this->get_parameter("visual_servo_max_linear_acceleration").as_double(), 0.0);
     requested_motion_mode_ = parse_motion_mode(this->get_parameter("motion_mode").as_int());
@@ -126,7 +126,7 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(arm_calc_);
     cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(arm_calc_);
     visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(arm_calc_);
-    visual_servo_move_->set_kp(visual_servo_kp_);
+    //visual_servo_move_->set_kp(visual_servo_kp_);
     visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
 }
 
@@ -193,9 +193,9 @@ void ArmCtrlNode::refresh_plan(double now_sec) {
             RCLCPP_INFO(get_logger(),"进入笛卡尔空间轨迹执行模式");
             break;
         case MotionMode::kVisualServo:
-            visual_servo_move_->set_kp(visual_servo_kp_);
+            //visual_servo_move_->set_kp(visual_servo_kp_);
             visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
-            visual_servo_move_->set_current_joint_state(current_joint_state_);
+            visual_servo_move_->start(current_joint_state_, now_sec);
             visual_servo_move_->set_target_pose(visual_target_);
             RCLCPP_INFO(get_logger(),"进入视觉伺服模式");
             break;
@@ -301,7 +301,14 @@ JointTrajectoryPoint ArmCtrlNode::build_preview_target() const {
         case MotionMode::kVisualServo: {
             int result = -1;
             const JointVector seed = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
-            const JointVector preview_position = arm_calc_->joint_pos(visual_target_, &result, seed);
+
+            tf2::Quaternion q;
+            q.setRPY(0.0, 1.57, 0.0);
+            CartesianPose visual_preview_target = visual_target_;
+            visual_preview_target.orientation = NormalizeQuaternion(
+                Eigen::Quaterniond(q.w(), q.x(), q.y(), q.z()));
+
+            const JointVector preview_position = arm_calc_->joint_pos(visual_preview_target, &result, seed);
             if (result < 0) {
                 RCLCPP_WARN(this->get_logger(), "Failed to solve IK for visual target preview, keeping current display");
                 return idle_hold_point_;
@@ -509,9 +516,9 @@ rcl_interfaces::msg::SetParametersResult ArmCtrlNode::on_parameters_changed(cons
                 enter_idle_mode();
             }
         } else if (param.get_name() == "visual_servo_kp") {
-            visual_servo_kp_ = std::max(param.as_double(), 0.0);
+            //visual_servo_kp_ = std::max(param.as_double(), 0.0);
             if (visual_servo_move_) {
-                visual_servo_move_->set_kp(visual_servo_kp_);
+                //visual_servo_move_->set_kp(visual_servo_kp_);
             }
         } else if (param.get_name() == "visual_servo_max_linear_acceleration") {
             visual_servo_max_linear_acceleration_ = std::max(param.as_double(), 0.0);

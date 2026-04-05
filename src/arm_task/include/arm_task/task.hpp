@@ -37,6 +37,7 @@ private:
     void execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration);
     void execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
+    bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
     
     // Helper methods
     bool get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out);
@@ -88,11 +89,12 @@ private:
     std::string base_frame_{"base_link"};
     std::string camera_frame_{"camera_link"};
     std::string object_frame_{"target_object"};
+    std::string tip_frame_{"link6"};
     std::string arm_calc_node_name_{"arm_calc_node"};
     double approach_distance_{0.1};  // meters above target
-    double trajectory_duration_{3.0};  // seconds
-    double visual_servo_kp_{2.0};
-    double visual_servo_max_linear_acc_{0.5};
+    double trajectory_duration_{4.0};  // seconds
+    double visual_servo_kp_{0.1};
+    double visual_servo_max_linear_acc_{0.1};
     int air_pump_pin_{0};  // Parameter service index for air pump control
     
     // Joint positions from YAML
