@@ -8,6 +8,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -76,8 +77,13 @@ private:
     // Thread safety
     std::mutex task_mutex_;
     std::mutex pose_mutex_;
+    std::mutex visual_servo_state_mutex_;
+    std::condition_variable visual_servo_state_cv_;
     std::thread task_thread_;
     std::thread visual_servo_thread_;
+
+    bool visual_servo_result_ready_{false};
+    bool visual_servo_succeeded_{false};
     
     // Task data
     geometry_msgs::msg::PoseStamped target_object_pose_;

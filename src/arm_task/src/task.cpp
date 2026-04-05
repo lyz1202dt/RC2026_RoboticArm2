@@ -383,6 +383,12 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
 
         std::this_thread::sleep_for(100ms);
 
+        {
+            std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+            visual_servo_result_ready_ = false;
+            visual_servo_succeeded_    = false;
+        }
+
         // Start visual servo publishing thread
         visual_servo_active_ = false;
         if (visual_servo_thread_.joinable()) {
@@ -399,46 +405,27 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
 }
 
 bool ArmTaskNode::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {
-    const auto start_time = this->now();
+    std::unique_lock<std::mutex> lock(visual_servo_state_mutex_);
+    const bool completed = visual_servo_state_cv_.wait_for(
+        lock,
+        std::chrono::duration<double>(timeout_sec),
+        [this]() { return visual_servo_result_ready_ || shutdown_requested_ || !visual_servo_active_; });
 
-    while (!shutdown_requested_ && visual_servo_active_) {
-        try {
-            const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
-            const auto target_tf =
-                tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+    if (visual_servo_result_ready_) {
+        return visual_servo_succeeded_;
+    }
 
-            const double dx = target_tf.transform.translation.x - ee_tf.transform.translation.x;
-            const double dy = target_tf.transform.translation.y - ee_tf.transform.translation.y;
-            const double dz = target_tf.transform.translation.z - ee_tf.transform.translation.z;
-            const double position_error = std::sqrt(dx * dx + dy * dy + dz * dz);
+    if (!completed) {
+        RCLCPP_WARN(this->get_logger(), "视觉伺服在 %.1f s 内未收敛到 %.3f m，主动停止视觉伺服", timeout_sec, position_tolerance_m);
+    } else {
+        RCLCPP_WARN(this->get_logger(), "视觉伺服在线程结束前未报告收敛结果，主动停止视觉伺服");
+    }
 
-            RCLCPP_INFO_THROTTLE(
-                this->get_logger(),
-                *this->get_clock(),
-                500,
-                "视觉伺服位置误差: %.4f m, ee=(%.3f, %.3f, %.3f), target=(%.3f, %.3f, %.3f)",
-                position_error,
-                ee_tf.transform.translation.x,
-                ee_tf.transform.translation.y,
-                ee_tf.transform.translation.z,
-                target_tf.transform.translation.x,
-                target_tf.transform.translation.y,
-                target_tf.transform.translation.z);
-
-            if (position_error < position_tolerance_m) {
-                RCLCPP_INFO(this->get_logger(), "视觉伺服收敛，位置误差 %.4f m 小于阈值 %.4f m", position_error, position_tolerance_m);
-                return true;
-            }
-        } catch (const tf2::TransformException& ex) {
-            RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "检查视觉伺服收敛时获取TF失败: %s", ex.what());
-        }
-
-        if ((this->now() - start_time).seconds() > timeout_sec) {
-            RCLCPP_WARN(this->get_logger(), "视觉伺服在 %.1f s 内未收敛到 %.3f m，结束等待", timeout_sec, position_tolerance_m);
-            return false;
-        }
-
-        std::this_thread::sleep_for(100ms);
+    lock.unlock();
+    visual_servo_active_ = false;
+    visual_servo_state_cv_.notify_all();
+    if (visual_servo_thread_.joinable()) {
+        visual_servo_thread_.join();
     }
 
     return false;
@@ -448,10 +435,23 @@ void ArmTaskNode::visual_servo_publish_thread() {
     RCLCPP_INFO(this->get_logger(), "视觉伺服线程开始执行");
 
     rclcpp::Rate rate(100); // 100 Hz
-    constexpr double kCameraDataLockDistanceMeters = 0.3;
+    constexpr double kCameraDataLockDistanceMeters = 0.35;
+    constexpr double kVisualServoConvergencePositionToleranceMeters = kVisualServoExitPositionToleranceMeters;
     bool camera_data_locked = false;
     geometry_msgs::msg::PoseStamped last_trusted_pose;
     bool has_last_trusted_pose = false;
+
+    auto publish_visual_servo_result = [this](bool succeeded) {
+        {
+            std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+            if (visual_servo_result_ready_) {
+                return;
+            }
+            visual_servo_result_ready_ = true;
+            visual_servo_succeeded_    = succeeded;
+        }
+        visual_servo_state_cv_.notify_all();
+    };
 
     while (visual_servo_active_ && !shutdown_requested_) {
         geometry_msgs::msg::PoseStamped pose_to_publish;
@@ -496,6 +496,38 @@ void ArmTaskNode::visual_servo_publish_thread() {
         if (camera_data_locked && has_last_trusted_pose) {
             pose_to_publish = last_trusted_pose;
             has_pose        = true;
+
+            try {
+                const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+                const double dx = pose_to_publish.pose.position.x - ee_tf.transform.translation.x;
+                const double dy = pose_to_publish.pose.position.y - ee_tf.transform.translation.y;
+                const double dz = pose_to_publish.pose.position.z - ee_tf.transform.translation.z;
+                const double position_error = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(),
+                    *this->get_clock(),
+                    500,
+                    "视觉伺服位置误差: %.4f m, ee=(%.3f, %.3f, %.3f), locked_target=(%.3f, %.3f, %.3f)",
+                    position_error,
+                    ee_tf.transform.translation.x,
+                    ee_tf.transform.translation.y,
+                    ee_tf.transform.translation.z,
+                    pose_to_publish.pose.position.x,
+                    pose_to_publish.pose.position.y,
+                    pose_to_publish.pose.position.z);
+
+                if (position_error < kVisualServoConvergencePositionToleranceMeters) {
+                    RCLCPP_INFO(
+                        this->get_logger(), "视觉伺服收敛，位置误差 %.4f m 小于阈值 %.4f m",
+                        position_error, kVisualServoConvergencePositionToleranceMeters);
+                    publish_visual_servo_result(true);
+                    visual_servo_active_ = false;
+                    break;
+                }
+            } catch (const tf2::TransformException& ex) {
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "检查视觉伺服收敛时获取TF失败: %s", ex.what());
+            }
         }
 
         if (!has_pose) {
@@ -518,12 +550,15 @@ void ArmTaskNode::visual_servo_publish_thread() {
             visual_target_pub_->publish(pose_to_publish);
         } else {
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "No object pose available for visual servo");
+            publish_visual_servo_result(false);
             visual_servo_active_ = false;
             break;
         }
 
         rate.sleep();
     }
+
+    publish_visual_servo_result(false);
 
     RCLCPP_INFO(this->get_logger(), "视觉伺服线程结束执行");
 }
