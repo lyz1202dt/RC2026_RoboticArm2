@@ -19,7 +19,7 @@ public:
 private:
     bool exit_thread;
     void legsSubscribCb(const robot_interfaces::msg::Arm &msg);
-    void publishLegState(const Arm_t *arm_state);
+    void publishLegState(const ArmState_t *arm_state);
 
     std::unique_ptr<CDCTrans> cdc_trans;
     std::unique_ptr<std::thread> usb_event_handle_thread;
@@ -28,7 +28,7 @@ private:
     rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_subscriber;
     OnSetParametersCallbackHandle::SharedPtr param_server_handle;
 
-    Arm_t arm_target;
+    ArmTarget_t arm_target;
     std::vector<double> joint_pos;
     std::vector<double> joint_vel;
 
@@ -36,6 +36,8 @@ private:
     int publish_cnt{100};
     int cur_sub_cnt{0};
     int cur_pub_cnt{0};
+
+    bool enable_air_pump{false};
 };
 
 #endif

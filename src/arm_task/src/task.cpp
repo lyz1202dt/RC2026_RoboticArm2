@@ -16,7 +16,7 @@ namespace {
 constexpr double kVisualServoExitPositionToleranceMeters = 0.05;
 constexpr double kVisualServoConvergenceTimeoutSec       = 30.0;
 
-}
+} // namespace
 
 ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     : Node("arm_task", options) {
@@ -231,7 +231,7 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // 强制规定姿态
     tf2::Quaternion quat;
-    quat.setRPY(0, M_PI / 2, 0);
+    quat.setRPY(0, (M_PI / 2), 0);
     object_pose.pose.orientation.w = quat.getW();
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
@@ -251,8 +251,38 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // 5. Activate air pump to grasp object
     RCLCPP_INFO(this->get_logger(), "启动气泵");
-    set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", true));
-    std::this_thread::sleep_for(500ms);
+    set_parameter_on_remote_node("driver_node", rclcpp::Parameter("enable_air_pump", true));
+    std::this_thread::sleep_for(50ms);
+
+    RCLCPP_INFO(this->get_logger(), "向前推进一段距离以确保吸取稳固");
+    bool tf_success = true;
+    geometry_msgs::msg::PoseStamped new_object_pos;
+    try {
+        const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+
+        new_object_pos.header.frame_id = base_frame_;
+        new_object_pos.header.stamp    = this->now();
+
+        new_object_pos.pose.position.x = ee_tf.transform.translation.x + 0.05; // 例如前推 5 cm
+        new_object_pos.pose.position.y = ee_tf.transform.translation.y;
+        new_object_pos.pose.position.z = ee_tf.transform.translation.z;
+
+        // new_object_pos.pose.orientation = ee_tf.transform.rotation;
+        tf2::Quaternion q;
+        q.setRPY(0, (M_PI / 2)-0.3, 0);     //吸取时姿态角补偿
+        new_object_pos.pose.orientation.w  = q.getW();
+        new_object_pos.pose.orientation.x  = q.getX();
+        new_object_pos.pose.orientation.y  = q.getY();
+        new_object_pos.pose.orientation.z  = q.getZ();
+    } catch (const tf2::TransformException& ex) {
+        tf_success = false;
+        RCLCPP_ERROR(this->get_logger(), "获取当前末端位姿失败: %s", ex.what());
+    }
+
+    if (tf_success) {
+        execute_cartesian_space_trajectory(new_object_pos, 1.0);
+        std::this_thread::sleep_for(1s);
+    }
 
     // 6. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
@@ -290,7 +320,7 @@ void ArmTaskNode::execute_place_flow() {
 
     // 4. Deactivate air pump to release object
     RCLCPP_INFO(this->get_logger(), "Deactivating air pump");
-    set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", false));
+    set_parameter_on_remote_node("driver_node", rclcpp::Parameter("enable_air_pump", false));
     std::this_thread::sleep_for(500ms);
 
     // 5. Move back to ready position
@@ -406,10 +436,9 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
 
 bool ArmTaskNode::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {
     std::unique_lock<std::mutex> lock(visual_servo_state_mutex_);
-    const bool completed = visual_servo_state_cv_.wait_for(
-        lock,
-        std::chrono::duration<double>(timeout_sec),
-        [this]() { return visual_servo_result_ready_ || shutdown_requested_ || !visual_servo_active_; });
+    const bool completed = visual_servo_state_cv_.wait_for(lock, std::chrono::duration<double>(timeout_sec), [this]() {
+        return visual_servo_result_ready_ || shutdown_requested_ || !visual_servo_active_;
+    });
 
     if (visual_servo_result_ready_) {
         return visual_servo_succeeded_;
@@ -435,9 +464,9 @@ void ArmTaskNode::visual_servo_publish_thread() {
     RCLCPP_INFO(this->get_logger(), "视觉伺服线程开始执行");
 
     rclcpp::Rate rate(100); // 100 Hz
-    constexpr double kCameraDataLockDistanceMeters = 0.35;
+    constexpr double kCameraDataLockDistanceMeters                  = 0.35;
     constexpr double kVisualServoConvergencePositionToleranceMeters = kVisualServoExitPositionToleranceMeters;
-    bool camera_data_locked = false;
+    bool camera_data_locked                                         = false;
     geometry_msgs::msg::PoseStamped last_trusted_pose;
     bool has_last_trusted_pose = false;
 
@@ -480,14 +509,13 @@ void ArmTaskNode::visual_servo_publish_thread() {
                 if (distance_to_target < kCameraDataLockDistanceMeters) {
                     camera_data_locked = true;
                     RCLCPP_INFO(
-                        this->get_logger(), "camera_data_locked=true, %s 到 %s 距离为 %.3f m",
-                        camera_frame_.c_str(), object_frame_.c_str(), distance_to_target);
+                        this->get_logger(), "camera_data_locked=true, %s 到 %s 距离为 %.3f m", camera_frame_.c_str(), object_frame_.c_str(),
+                        distance_to_target);
                 }
 
                 RCLCPP_INFO_THROTTLE(
                     get_logger(), *this->get_clock(), 100, "得到目标(%lf, %lf, %lf)", pose_to_publish.pose.position.x,
-                    pose_to_publish.pose.position.y,
-                    pose_to_publish.pose.position.z);
+                    pose_to_publish.pose.position.y, pose_to_publish.pose.position.z);
             } catch (const tf2::TransformException& ex) {
                 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "获取变换失败: %s", ex.what());
             }
@@ -499,28 +527,21 @@ void ArmTaskNode::visual_servo_publish_thread() {
 
             try {
                 const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
-                const double dx = pose_to_publish.pose.position.x - ee_tf.transform.translation.x;
-                const double dy = pose_to_publish.pose.position.y - ee_tf.transform.translation.y;
-                const double dz = pose_to_publish.pose.position.z - ee_tf.transform.translation.z;
+                const double dx  = pose_to_publish.pose.position.x - ee_tf.transform.translation.x;
+                const double dy  = pose_to_publish.pose.position.y - ee_tf.transform.translation.y;
+                const double dz  = pose_to_publish.pose.position.z - ee_tf.transform.translation.z;
                 const double position_error = std::sqrt(dx * dx + dy * dy + dz * dz);
 
                 RCLCPP_INFO_THROTTLE(
-                    this->get_logger(),
-                    *this->get_clock(),
-                    500,
-                    "视觉伺服位置误差: %.4f m, ee=(%.3f, %.3f, %.3f), locked_target=(%.3f, %.3f, %.3f)",
-                    position_error,
-                    ee_tf.transform.translation.x,
-                    ee_tf.transform.translation.y,
-                    ee_tf.transform.translation.z,
-                    pose_to_publish.pose.position.x,
-                    pose_to_publish.pose.position.y,
-                    pose_to_publish.pose.position.z);
+                    this->get_logger(), *this->get_clock(), 500,
+                    "视觉伺服位置误差: %.4f m, ee=(%.3f, %.3f, %.3f), locked_target=(%.3f, %.3f, %.3f)", position_error,
+                    ee_tf.transform.translation.x, ee_tf.transform.translation.y, ee_tf.transform.translation.z,
+                    pose_to_publish.pose.position.x, pose_to_publish.pose.position.y, pose_to_publish.pose.position.z);
 
                 if (position_error < kVisualServoConvergencePositionToleranceMeters) {
                     RCLCPP_INFO(
-                        this->get_logger(), "视觉伺服收敛，位置误差 %.4f m 小于阈值 %.4f m",
-                        position_error, kVisualServoConvergencePositionToleranceMeters);
+                        this->get_logger(), "视觉伺服收敛，位置误差 %.4f m 小于阈值 %.4f m", position_error,
+                        kVisualServoConvergencePositionToleranceMeters);
                     publish_visual_servo_result(true);
                     visual_servo_active_ = false;
                     break;
@@ -585,8 +606,7 @@ bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped&
     }
 }
 
-void ArmTaskNode::set_parameter_on_remote_node(
-    const std::string& node_name, const std::string& /* param_name */, const rclcpp::Parameter& param) {
+void ArmTaskNode::set_parameter_on_remote_node(const std::string& node_name, const rclcpp::Parameter& param) {
     auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(this, node_name);
 
     if (param_client->wait_for_service(1s)) {

@@ -28,17 +28,12 @@ def generate_launch_description():
         description="Whether to start RViz2 together with simulation",
     )
     
-    # Static transform from link4 to camera_link
-    # Based on robotic_arm.xml: camera at pos="0.1 0.09 -0.03" relative to link4
-    # xyaxes="0 0 1 0 1 0" means x-axis points in z direction, y-axis points in y direction
-    # This is a 90-degree rotation about y-axis
-    # Quaternion for 90-degree rotation about y-axis: (0, 0.7071, 0, 0.7071)
     static_tf_camera = Node(
     package="tf2_ros",
     executable="static_transform_publisher",
     arguments=[
         "0.1", "0.09", "-0.03",  # x, y, z
-        "0.7071068", "0.0", "0.7071068", "0.0",  # 新四元数
+        "0.7071068", "0.0", "0.7071068", "0.0",
         "link4",
         "camera_link"
     ],

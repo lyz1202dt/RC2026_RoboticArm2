@@ -1,9 +1,10 @@
 // 负责上位机和下位机双向数据通信
 
-#include "robot_interfaces/msg/arm.hpp" // 机械臂数据结构
-#include "sensor_msgs/msg/joint_state.hpp" // 关节状态
+#include "robot_interfaces/msg/arm.hpp"                      // 机械臂数据结构
+#include "sensor_msgs/msg/joint_state.hpp"                   // 关节状态
 #include <chrono>
-#include <rclcpp/parameter.hpp> // 在运行时动态修改节点配置
+#include <rclcpp/logging.hpp>
+#include <rclcpp/parameter.hpp>                              // 在运行时动态修改节点配置
 #include <rclcpp/time.hpp>
 #include <serialnode.hpp>
 
@@ -12,16 +13,21 @@ using namespace std::chrono_literals;
 SerialNode::SerialNode()
     : Node("driver_node") {
 
-    arm_target.pack_type = 1; // 初始化目标数据包的消息类型为1
+    arm_target.pack_type = 1;                                // 初始化目标数据包的消息类型为1
 
     this->declare_parameter<bool>("enable_air_pump", false); // 使能气泵
 
     // 参数变化的回调函数
-    param_server_handle = this->add_on_set_parameters_callback([this](const std::vector<rclcpp::Parameter>& param) {
+    param_server_handle = this->add_on_set_parameters_callback([this](const std::vector<rclcpp::Parameter>& params) {
         rcl_interfaces::msg::SetParametersResult result;
-        (void)param;
+
+        for (const auto& param : params) {
+            if (param.get_name() == "enable_air_pump") {
+                enable_air_pump = param.as_bool();
+                RCLCPP_INFO(this->get_logger(), "气泵状态变更:%d", enable_air_pump ? 1 : 0);
+            }
+        }
         result.successful = true;
-        RCLCPP_INFO(this->get_logger(), "参数更新");
         return result;
     });
 
@@ -33,16 +39,15 @@ SerialNode::SerialNode()
     joint_publisher = this->create_publisher<robot_interfaces::msg::Arm>("myjoints_state", 10);
 
     joint_subscriber = this->create_subscription<robot_interfaces::msg::Arm>(
-        "myjoints_target", 10, std::bind(&SerialNode::legsSubscribCb, this, std::placeholders::_1)
-    );
+        "myjoints_target", 10, std::bind(&SerialNode::legsSubscribCb, this, std::placeholders::_1));
 
 
     cdc_trans = std::make_unique<CDCTrans>();                           // 创建CDC传输对象
     cdc_trans->regeiser_recv_cb([this](const uint8_t* data, int size) { // 注册接收回调
         // RCLCPP_INFO(this->get_logger(), "接收到了数据包,长度%d", size);
-        if (size == sizeof(Arm_t))        // 验证包长度，可以被视作四条腿的状态数据包
+        if (size == sizeof(ArmState_t))   // 验证包长度，可以被视作四条腿的状态数据包
         {
-            const Arm_t* pack = reinterpret_cast<const Arm_t*>(data);
+            const ArmState_t* pack = reinterpret_cast<const ArmState_t*>(data);
             if (pack->pack_type == 1)     // 确认包类型正确
                 publishLegState(pack);
         }
@@ -72,7 +77,7 @@ SerialNode::~SerialNode() {
     }
 }
 
-void SerialNode::publishLegState(const Arm_t* arm_state) {
+void SerialNode::publishLegState(const ArmState_t* arm_state) {
     robot_interfaces::msg::Arm msg;
     for (int i = 0; i < 6; i++) {
         msg.motor[i].rad    = arm_state->joints[i].rad;
@@ -95,5 +100,8 @@ void SerialNode::legsSubscribCb(const robot_interfaces::msg::Arm& msg) {
         arm_target.joints[i].omega  = msg.motor[i].omega;
         arm_target.joints[i].torque = msg.motor[i].torque;
     }
-    cdc_trans->send_struct(arm_target); // 一旦订阅到最新的包，立即发送到下位机（下位机用定时器保证匀速率发送方便断开检测）
+    arm_target.air_pump = enable_air_pump ? 1 : 0;
+    //RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 50, "air_pump:%d", arm_target.air_pump);
+
+    cdc_trans->send_struct(arm_target);          // 一旦订阅到最新的包，立即发送到下位机
 }

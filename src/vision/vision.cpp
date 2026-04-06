@@ -267,7 +267,7 @@ int main(int argc, char** argv)
 
     // ---------- 启动 USB 摄像头 ----------
     VideoCapture cap;
-    const int camera_index = 0;
+    const int camera_index = 2;
     const std::array<int, 3> backends = {CAP_V4L2, CAP_ANY, CAP_GSTREAMER};
     bool opened = false;
     for (int backend : backends) {
