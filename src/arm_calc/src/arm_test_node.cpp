@@ -12,11 +12,11 @@ namespace arm_calc {
 
 namespace {
 
-constexpr std::size_t kJointCount = 6;
+constexpr std::size_t kJointCount = 4;
 constexpr char kJointSpaceTargetTopic[] = "joint_space_target";
 constexpr char kVisualTargetTopic[] = "visual_target_pose";
 constexpr std::array<const char*, kJointCount> kJointParameterNames = {
-    "joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
+    "joint1", "joint2", "joint3", "joint4"};
 constexpr std::array<const char*, 3> kPosePositionParameterNames = {"pose_x", "pose_y", "pose_z"};
 constexpr std::array<const char*, 3> kPoseEulerParameterNames = {"pose_roll", "pose_pitch", "pose_yaw"};
 
@@ -37,9 +37,9 @@ private:
         for (const auto* name : kJointParameterNames) {
             this->declare_parameter<double>(name, 0.0);
         }
-        this->declare_parameter<double>("pose_x", 0.7);
+        this->declare_parameter<double>("pose_x", 1.2);
         this->declare_parameter<double>("pose_y", 0.0);
-        this->declare_parameter<double>("pose_z", 0.15);
+        this->declare_parameter<double>("pose_z", -0.3);
         this->declare_parameter<double>("pose_roll", 0.0);
         this->declare_parameter<double>("pose_pitch", 0.0);
         this->declare_parameter<double>("pose_yaw", 0.0);

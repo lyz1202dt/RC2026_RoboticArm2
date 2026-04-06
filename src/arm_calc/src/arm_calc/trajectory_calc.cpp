@@ -5,22 +5,22 @@
 
 namespace arm_calc {
 
-void TrajectoryCalc::set_start_state(const JointVector& position,
-                                     const JointVector& velocity,
-                                     const JointVector& acceleration) {
+void TrajectoryCalc::set_start_state(const JointVector& position) {
+                                    //  const JointVector& velocity,
+                                    //  const JointVector& acceleration) {
     start_position_ = position;
-    start_velocity_ = velocity;
-    start_acceleration_ = acceleration;
+    // start_velocity_ = velocity;
+    // start_acceleration_ = acceleration;
 }
 
 void TrajectoryCalc::set_goal_state(const JointVector& position,
-                                    double duration,
-                                    const JointVector& velocity,
-                                    const JointVector& acceleration) {
+                                        double duration) {
+                                    // const JointVector& velocity,
+                                    // const JointVector& acceleration) {
     duration_ = std::max(duration, 1e-3);
     goal_position_ = position;
-    goal_velocity_ = velocity;
-    goal_acceleration_ = acceleration;
+    // goal_velocity_ = velocity;
+    // goal_acceleration_ = acceleration;
 
     for (std::size_t i = 0; i < kJointDoF; ++i) {
         segments_[i] = build_segment(start_position_[static_cast<int>(i)],
@@ -44,10 +44,10 @@ JointTrajectoryPoint TrajectoryCalc::sample(double time_from_start) const {
     for (std::size_t i = 0; i < kJointDoF; ++i) {
         const auto& poly = segments_[i];
         point.position[static_cast<int>(i)] = eval_position(poly, t);
-        point.velocity[static_cast<int>(i)] = eval_velocity(poly, t);
-        point.acceleration[static_cast<int>(i)] = eval_acceleration(poly, t);
-    }
-    return point;
+        // point.velocity[static_cast<int>(i)] = eval_velocity(poly, t);
+        // point.acceleration[static_cast<int>(i)] = eval_acceleration(poly, t);
+    }           
+    return point;   
 }
 
 TrajectoryCalc::QuinticPolynomial TrajectoryCalc::build_segment(double p0, double v0, double a0,

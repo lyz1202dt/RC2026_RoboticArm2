@@ -1,57 +1,51 @@
-// 负责上位机和下位机双向数据通信
-
-#include "robot_interfaces/msg/arm.hpp" // 机械臂数据结构
-#include "sensor_msgs/msg/joint_state.hpp" // 关节状态
+#include "serialnode.hpp"
+#include "cdc_trans.hpp"
+#include "data_pack.h"
 #include <chrono>
-#include <rclcpp/parameter.hpp> // 在运行时动态修改节点配置
-#include <rclcpp/time.hpp>
-#include <serialnode.hpp>
+#include <memory>
+#include <rclcpp/logging.hpp>
+#include <robot_interfaces/msg/arm.hpp>
+#include <robot_interfaces/msg/arm4.hpp>
+#include <thread>
+
+
 
 using namespace std::chrono_literals;
 
-SerialNode::SerialNode()
-    : Node("driver_node") {
-
-    arm_target.pack_type = 1; // 初始化目标数据包的消息类型为1
-
-    this->declare_parameter<bool>("enable_air_pump", false); // 使能气泵
-
-    // 参数变化的回调函数
-    param_server_handle = this->add_on_set_parameters_callback([this](const std::vector<rclcpp::Parameter>& param) {
-        rcl_interfaces::msg::SetParametersResult result;
-        (void)param;
-        result.successful = true;
-        RCLCPP_INFO(this->get_logger(), "参数更新");
-        return result;
-    });
-
-    // 初始化状态
-    exit_thread = false;
-
-    // 先创建 publisher/subscriber，确保回调中 publish 时 publisher 已就绪
-    // joint_publisher = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
-    joint_publisher = this->create_publisher<robot_interfaces::msg::Arm>("myjoints_state", 10);
-
-    joint_subscriber = this->create_subscription<robot_interfaces::msg::Arm>(
-        "myjoints_target", 10, std::bind(&SerialNode::legsSubscribCb, this, std::placeholders::_1)
-    );
 
 
-    cdc_trans = std::make_unique<CDCTrans>();                           // 创建CDC传输对象
+ArmNode::ArmNode()
+    : Node("arm_node") {   
+
+         exit_thread = false;
+    
+   
+    //arm_pub = this->create_publisher<robot_interfaces::msg::Arm>("arm_status", 10);
+
+    arm_sub = this->create_subscription<robot_interfaces::msg::Arm>(
+        "myjoints_target", 10, std::bind(&ArmNode::armSubscribCb, this, std::placeholders::_1));
+
+
+    
+
+     cdc_trans = std::make_unique<CDCTrans>();  
+
+     /*                         // 创建CDC传输对象
     cdc_trans->regeiser_recv_cb([this](const uint8_t* data, int size) { // 注册接收回调
         // RCLCPP_INFO(this->get_logger(), "接收到了数据包,长度%d", size);
-        if (size == sizeof(Arm_t))        // 验证包长度，可以被视作四条腿的状态数据包
+        if (size == sizeof(state_pack_t)) // 验证包长度，可以被视作四条腿的状态数据包
         {
-            const Arm_t* pack = reinterpret_cast<const Arm_t*>(data);
-            if (pack->pack_type == 1)     // 确认包类型正确
-                publishLegState(pack);
+            const state_pack_t* pack = reinterpret_cast<const state_pack_t*>(data);
+            if (pack->pack_type == 0)         // 确认包类型正确
+                publishArmState(pack);        // 一旦接收，立即发布狗臂状态
+            else
+                RCLCPP_ERROR(this->get_logger(), "接收到错误的数据包类型%d", pack->pack_type);
         }
     });
-    if (!cdc_trans->open(0x0483, 0x5740)) // 开启USB_CDC传输接口
-    {
-        RCLCPP_ERROR(get_logger(), "串口打开失败，无法驱动物理机械臂！");
+      */
+
+    if (!cdc_trans->open(0x0483, 0x5740))     // 开启USB_CDC传输接口
         exit_thread = true;
-    }
 
     // 创建线程处理CDC消息（在 open 之后、publisher 创建之后）
     usb_event_handle_thread = std::make_unique<std::thread>([this]() {
@@ -59,9 +53,14 @@ SerialNode::SerialNode()
             cdc_trans->process_once();
         } while (!exit_thread);
     });
+
+    base_time=this->get_clock()->now();
 }
 
-SerialNode::~SerialNode() {
+
+
+
+ArmNode::~ArmNode() {
     // 请求线程退出并等待其结束，保证安全关闭
     exit_thread = true;
     if (usb_event_handle_thread && usb_event_handle_thread->joinable()) {
@@ -72,28 +71,45 @@ SerialNode::~SerialNode() {
     }
 }
 
-void SerialNode::publishLegState(const Arm_t* arm_state) {
+/*
+void ArmNode::publishArmState(const state_pack_t *arm_state){
     robot_interfaces::msg::Arm msg;
-    for (int i = 0; i < 6; i++) {
-        msg.motor[i].rad    = arm_state->joints[i].rad;
-        msg.motor[i].omega  = arm_state->joints[i].omega;
-        msg.motor[i].torque = arm_state->joints[i].torque;
-    }
-    msg.motor[5].rad = arm_target.joints[5].rad; // 欺骗Moveit认为不存在的关节6到达目标位置
-    joint_publisher->publish(msg);
+    msg.servo2.low=arm_state->servo2.low;
+    msg.servo2.up=arm_state->servo2.up;
+    msg.rob01.rad=arm_state->robstride01.state.rad;
+    msg.rob01.omega=arm_state->robstride01.state.omega;
+    msg.rob01.torque=arm_state->robstride01.state.torque;
+    msg.rob02.rad=arm_state->GM6020.Angle_DEG;
+    msg.rob02.omega=arm_state->GM6020.Speed;
+    msg.rob02.torque=arm_state->GM6020.TorqueCurrent;
 
-    cur_pub_cnt++;
-    if (cur_pub_cnt == publish_cnt) {
-        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 50, "发布电机状态");
-        cur_pub_cnt = 0;
+    arm_pub->publish(msg);
+     
+}
+*/
+
+
+void ArmNode::armSubscribCb(const robot_interfaces::msg::Arm& msg) {
+   
+    arm_target.servo1.up=msg.motor[3].rad;
+    arm_target.servo1.low=msg.motor[2].rad;
+    arm_target.rob01.except_pos=-msg.motor[1].rad;
+    arm_target.rob02.target_pos=msg.motor[0].rad;
+    arm_target.rob02.target_pos=arm_target.rob02.target_pos+0.0f;
+    arm_target.pack_type=0x01; // 0x01 代表这是一个机械臂目标数据包    
+    
+    cdc_trans->send_struct(arm_target); // 一旦订阅到最新的包，立即发送到下位机
+
+    target_log_print_cnt++;
+    if (target_log_update_cnt/4 == target_log_print_cnt) {
+        target_log_print_cnt = 0;
+        RCLCPP_INFO(this->get_logger(), "订阅到电机目标值 %f %f %f %f",
+            arm_target.rob02.target_pos,
+            arm_target.rob01.except_pos,
+            arm_target.servo1.low,
+            arm_target.servo1.up);
     }
+
+    first_update = false;
 }
 
-void SerialNode::legsSubscribCb(const robot_interfaces::msg::Arm& msg) {
-    for (int i = 0; i < 6; i++) {
-        arm_target.joints[i].rad    = msg.motor[i].rad;
-        arm_target.joints[i].omega  = msg.motor[i].omega;
-        arm_target.joints[i].torque = msg.motor[i].torque;
-    }
-    cdc_trans->send_struct(arm_target); // 一旦订阅到最新的包，立即发送到下位机（下位机用定时器保证匀速率发送方便断开检测）
-}

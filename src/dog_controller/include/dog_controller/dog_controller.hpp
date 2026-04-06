@@ -26,7 +26,7 @@ public:
     controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
 private:
-    static constexpr std::size_t kJointCount = 6;
+    static constexpr std::size_t kJointCount = 4;
 
     rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr state_publisher_;
     rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr target_subscriber_;

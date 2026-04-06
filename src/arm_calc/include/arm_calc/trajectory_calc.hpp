@@ -17,14 +17,19 @@ public:
 
     TrajectoryCalc() = default;
 
-    void set_start_state(const JointVector& position,
-                         const JointVector& velocity = JointVector::Zero(),
-                         const JointVector& acceleration = JointVector::Zero());
+    void set_start_state(const JointVector& position);
 
     void set_goal_state(const JointVector& position,
-                        double duration,
-                        const JointVector& velocity = JointVector::Zero(),
-                        const JointVector& acceleration = JointVector::Zero());
+                                        double duration);
+
+    // void set_start_state(const JointVector& position,
+    //                      const JointVector& velocity = JointVector::Zero(),
+    //                      const JointVector& acceleration = JointVector::Zero());
+
+    // void set_goal_state(const JointVector& position,
+    //                     double duration,
+    //                     const JointVector& velocity = JointVector::Zero(),
+    //                     const JointVector& acceleration = JointVector::Zero());
 
     JointTrajectoryPoint sample(double time_from_start) const;
 

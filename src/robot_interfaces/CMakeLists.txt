@@ -18,6 +18,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Joint.msg"
   "msg/Arm.msg"
   "msg/Armmode.msg"
+  "msg/Arm4.msg"
+  "msg/GM6020.msg"
+  "msg/RobStride.msg"
+  "msg/Servo.msg"
 )
 
 if(BUILD_TESTING)

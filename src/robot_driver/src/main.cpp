@@ -1,10 +1,10 @@
-#include <serialnode.hpp>
-#include <rclcpp/rclcpp.hpp>
+#include "serialnode.hpp"
 
-int main(int argc,char **argv)
+int main(int argc,char**argv)
 {
     rclcpp::init(argc,argv);
-    rclcpp::spin(std::make_shared<SerialNode>());
+    rclcpp::spin(std::make_shared<ArmNode>());
     rclcpp::shutdown();
     return 0;
 }
+

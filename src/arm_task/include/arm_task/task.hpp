@@ -8,6 +8,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -37,6 +38,7 @@ private:
     void execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration);
     void execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
+    bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
     
     // Helper methods
     bool get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out);
@@ -75,8 +77,13 @@ private:
     // Thread safety
     std::mutex task_mutex_;
     std::mutex pose_mutex_;
+    std::mutex visual_servo_state_mutex_;
+    std::condition_variable visual_servo_state_cv_;
     std::thread task_thread_;
     std::thread visual_servo_thread_;
+
+    bool visual_servo_result_ready_{false};
+    bool visual_servo_succeeded_{false};
     
     // Task data
     geometry_msgs::msg::PoseStamped target_object_pose_;
@@ -88,16 +95,18 @@ private:
     std::string base_frame_{"base_link"};
     std::string camera_frame_{"camera_link"};
     std::string object_frame_{"target_object"};
+    std::string tip_frame_{"link5"};
     std::string arm_calc_node_name_{"arm_calc_node"};
     double approach_distance_{0.1};  // meters above target
-    double trajectory_duration_{3.0};  // seconds
-    double visual_servo_kp_{2.0};
-    double visual_servo_max_linear_acc_{0.5};
+    double trajectory_duration_{4.0};  // seconds
+    double visual_servo_kp_{0.1};
+    double visual_servo_max_linear_acc_{0.1};
     int air_pump_pin_{0};  // Parameter service index for air pump control
     
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
     std::vector<double> ready_position_;  // Preparation position
+    std::vector<double> home_position_{0.0, 0.0, 0.0, 0.0}; 
     
     // Parameter callback handle
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;

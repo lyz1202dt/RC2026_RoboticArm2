@@ -25,7 +25,7 @@ controller_interface::CallbackReturn DogController::on_init() {
         kTargetTopic, rclcpp::SensorDataQoS(),
         [this](const robot_interfaces::msg::Arm& msg) { joints_target_ = msg; });
 
-    joints_name_ = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
+    joints_name_ = {"joint1", "joint2", "joint3", "joint4"};
     joint_kp_ = std::vector<double>(kJointCount, 50.0);
     joint_kd_ = std::vector<double>(kJointCount, 3.0);
 
@@ -127,13 +127,11 @@ controller_interface::return_type DogController::update(const rclcpp::Time& time
         (time - last_target_log_time_).seconds() >= kTargetLogPeriodSec) {
         // RCLCPP_INFO(
         //     get_node()->get_logger(),
-        //     "Joint targets joint1=%.6f joint2=%.6f joint3=%.6f joint4=%.6f joint5=%.6f joint6=%.6f",
+        //     "Joint targets joint1=%.6f joint2=%.6f joint3=%.6f joint4=%.6f",
         //     static_cast<double>(joints_target_.motor[0].rad),
         //     static_cast<double>(joints_target_.motor[1].rad),
         //     static_cast<double>(joints_target_.motor[2].rad),
-        //     static_cast<double>(joints_target_.motor[3].rad),
-        //     static_cast<double>(joints_target_.motor[4].rad),
-        //     static_cast<double>(joints_target_.motor[5].rad));
+        //     static_cast<double>(joints_target_.motor[3].rad));
         last_target_log_time_ = time;
     }
 

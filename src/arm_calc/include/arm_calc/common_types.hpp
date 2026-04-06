@@ -6,7 +6,7 @@
 
 namespace arm_calc {
 
-constexpr std::size_t kJointDoF = 6;
+constexpr std::size_t kJointDoF = 4;
 
 using JointVector = Eigen::Matrix<double, static_cast<int>(kJointDoF), 1>;
 using JointMatrix = Eigen::Matrix<double, static_cast<int>(kJointDoF), static_cast<int>(kJointDoF)>;
@@ -14,15 +14,15 @@ using CartesianVector = Eigen::Matrix<double, 6, 1>;
 
 struct JointState {
     JointVector position{JointVector::Zero()};
-    JointVector velocity{JointVector::Zero()};
-    JointVector torque{JointVector::Zero()};
+    //JointVector velocity{JointVector::Zero()};
+    //JointVector torque{JointVector::Zero()};
 };
 
 struct JointTrajectoryPoint {
     JointVector position{JointVector::Zero()};
-    JointVector velocity{JointVector::Zero()};
-    JointVector acceleration{JointVector::Zero()};
-    JointVector torque{JointVector::Zero()};
+    //JointVector velocity{JointVector::Zero()};
+    //JointVector acceleration{JointVector::Zero()};
+    //ointVector torque{JointVector::Zero()};
 };
 
 struct CartesianPose {
@@ -32,8 +32,8 @@ struct CartesianPose {
 
 struct CartesianState {
     CartesianPose pose{};
-    Eigen::Vector3d linear_velocity{Eigen::Vector3d::Zero()};
-    Eigen::Vector3d angular_velocity{Eigen::Vector3d::Zero()};
+        // Eigen::Vector3d linear_velocity{Eigen::Vector3d::Zero()};
+        // Eigen::Vector3d angular_velocity{Eigen::Vector3d::Zero()};
 };
 
 struct CartesianTrajectoryPoint {

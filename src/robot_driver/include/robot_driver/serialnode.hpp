@@ -2,40 +2,48 @@
 #define __SERIALNODE_HPP__
 
 #include <memory>
-#include <thread>
 #include <rclcpp/rclcpp.hpp>
-#include <cdc_trans.hpp>
+#include "cdc_trans.hpp"
 #include <robot_interfaces/msg/arm.hpp>
-#include <sensor_msgs/msg/joint_state.hpp>
-#include <data_pack.h>
+#include <robot_interfaces/msg/arm4.hpp>
+#include "data_pack.h"
+#include <thread>
+#include "sensor_msgs/msg/imu.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 
 
-class SerialNode : public rclcpp::Node
+
+
+
+class ArmNode : public rclcpp::Node
 {
 public:
-    SerialNode();
-    ~SerialNode();
-
+    ArmNode();
+    ~ArmNode();
 private:
     bool exit_thread;
-    void legsSubscribCb(const robot_interfaces::msg::Arm &msg);
-    void publishLegState(const Arm_t *arm_state);
+    bool first_update{true};
+    int state_log_print_cnt{0};
+    int target_log_print_cnt{0};
+    int state_log_update_cnt{50};
+    int target_log_update_cnt{50};
+    bool enable_control{false};
+    void armSubscribCb(const robot_interfaces::msg::Arm &msg);
+   // void publishArmState(const state_pack_t *arm_state);
+    
 
     std::unique_ptr<CDCTrans> cdc_trans;
     std::unique_ptr<std::thread> usb_event_handle_thread;
+    target_pack_t arm_target;
+    state_pack_t arm_state;
+    //rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr arm_pub;
+    rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr arm_sub;
     
-    rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr joint_publisher;
-    rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_subscriber;
-    OnSetParametersCallbackHandle::SharedPtr param_server_handle;
+    OnSetParametersCallbackHandle::SharedPtr param_server_;
+    
 
-    Arm_t arm_target;
-    std::vector<double> joint_pos;
-    std::vector<double> joint_vel;
-
-    int subscrib_cnt{20};
-    int publish_cnt{100};
-    int cur_sub_cnt{0};
-    int cur_pub_cnt{0};
+    rclcpp::Time base_time;
+    bool runned{false};
 };
 
 #endif

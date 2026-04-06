@@ -35,7 +35,7 @@ public:
     JointVector joint_torque_cartesian_wrench(const JointVector& joint_pos, const CartesianVector& cartesian_wrench);
 
     CartesianPose end_pose(const JointVector& joint_pos);
-    CartesianState end_state(const JointVector& joint_pos, const JointVector& joint_vel);
+    CartesianState end_state(const JointVector& joint_pos);
     KDL::Jacobian jacobian(const JointVector& joint_pos);
 
     void set_joint_pd(std::size_t index, double kp, double kd);
@@ -66,6 +66,7 @@ private:
     KDL::JntArrayVel joint_vel_cache_;
     KDL::Twist jdot_qdot_cache_;
 
+  
     JointVector kp_{JointVector::Constant(50.0)};
     JointVector kd_{JointVector::Constant(3.0)};
 };

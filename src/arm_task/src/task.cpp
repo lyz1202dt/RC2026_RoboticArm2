@@ -1,6 +1,7 @@
 #include "arm_task/task.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <chrono>
+#include <cmath>
 #include <rclcpp/logging.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <thread>
@@ -9,6 +10,13 @@
 using namespace std::chrono_literals;
 
 namespace arm_task {
+
+namespace {
+
+constexpr double kVisualServoExitPositionToleranceMeters = 0.015;
+constexpr double kVisualServoConvergenceTimeoutSec       = 20.0;
+
+} // namespace
 
 ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     : Node("arm_task", options) {
@@ -24,23 +32,25 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     this->declare_parameter<bool>("stop_visual_servo", false);
     this->declare_parameter<double>("trajectory_duration", 3.0);
     this->declare_parameter<double>("approach_distance", 0.1);
-    this->declare_parameter<double>("visual_servo_kp", 2.0);
+    this->declare_parameter<double>("visual_servo_kp", 1.6);
     this->declare_parameter<double>("visual_servo_max_linear_acc", 0.5);
     this->declare_parameter<int>("air_pump_pin", 0);
     this->declare_parameter<std::string>("base_frame", "base_link");
     this->declare_parameter<std::string>("camera_frame", "camera_link");
     this->declare_parameter<std::string>("object_frame", "target_object");
+    this->declare_parameter<std::string>("tip_frame", "link5");
     this->declare_parameter<std::string>("arm_calc_node_name", "arm_calc_node");
 
     // Get parameters
     this->get_parameter("trajectory_duration", trajectory_duration_);
     this->get_parameter("approach_distance", approach_distance_);
-    this->get_parameter("visual_servo_kp", visual_servo_kp_);
+    // this->get_parameter("visual_servo_kp", visual_servo_kp_);
     this->get_parameter("visual_servo_max_linear_acc", visual_servo_max_linear_acc_);
     this->get_parameter("air_pump_pin", air_pump_pin_);
     this->get_parameter("base_frame", base_frame_);
     this->get_parameter("camera_frame", camera_frame_);
     this->get_parameter("object_frame", object_frame_);
+    this->get_parameter("tip_frame", tip_frame_);
     this->get_parameter("arm_calc_node_name", arm_calc_node_name_);
 
     // Load arm positions from YAML
@@ -153,7 +163,7 @@ void ArmTaskNode::execute_task_state_machine() {
     int32_t current_mode = arm_task_mode_.load();
 
     if (current_mode == 0) {
-       //CPP_INFO(this->get_logger(), "空闲任务");
+        // CPP_INFO(this->get_logger(), "空闲任务");
         return;
     }
 
@@ -169,11 +179,11 @@ void ArmTaskNode::execute_task_state_machine() {
     try {
         if (current_mode == 1) {
             // Grasp flow
-            RCLCPP_INFO(this->get_logger(), "Starting grasp flow");
+            RCLCPP_INFO(this->get_logger(), "开始抓取任务");
             execute_grasp_flow();
         } else if (current_mode == 2) {
             // Place flow
-            RCLCPP_INFO(this->get_logger(), "Starting place flow");
+            RCLCPP_INFO(this->get_logger(), "开始放置任务");
             execute_place_flow();
         } else if (current_mode >= 10 && current_mode < 20) {
             // Move to position x
@@ -199,7 +209,7 @@ void ArmTaskNode::execute_grasp_flow() {
     // 1. Move to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
 
     // 2. Wait for object pose from camera
     RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
@@ -229,26 +239,33 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // 3. Move to approach position (distance above target)
     RCLCPP_INFO(this->get_logger(), "移动到接近位置");
-    auto approach_pose = create_approach_pose(object_pose, -0.1);
+    auto approach_pose = create_approach_pose(object_pose, 0.06);
     execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
-    // 4. Execute visual servo to grasp object
-    RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
-    execute_visual_servo(object_pose);
-    std::this_thread::sleep_for(3000ms); // Wait for visual servo to complete
-
-
-    visual_servo_active_ = false;
-
-    // 5. Activate air pump to grasp object
+     // 5. Activate air pump to grasp object
     RCLCPP_INFO(this->get_logger(), "启动气泵");
     set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", true));
     std::this_thread::sleep_for(500ms);
 
+    // 4. Execute visual servo to grasp object
+    RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
+    execute_visual_servo(object_pose);
+    wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
+    visual_servo_active_ = false;
+
+    // 执行视觉伺服后，立即停止
+    RCLCPP_INFO(this->get_logger(), "视觉伺服已收敛，停止视觉伺服模式");
+    if (arm_calc_param_client_->wait_for_service(2s)) {
+        arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", false)});
+        std::this_thread::sleep_for(100ms); // 给 arm_calc 一点时间切到 Idle
+    } else {
+        RCLCPP_ERROR(this->get_logger(), "视觉伺服停止失败");
+    }                                         
+
     // 6. Move back to ready position
-    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
-    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
+    RCLCPP_INFO(this->get_logger(), "移动到载块位置");
+    execute_joint_space_trajectory(home_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
     RCLCPP_INFO(this->get_logger(), "抓取流程完成");
@@ -256,7 +273,7 @@ void ArmTaskNode::execute_grasp_flow() {
 
 void ArmTaskNode::execute_place_flow() {
     // 1. Move to ready position
-    RCLCPP_INFO(this->get_logger(), "Moving to ready position");
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
@@ -265,32 +282,32 @@ void ArmTaskNode::execute_place_flow() {
     {
         std::lock_guard<std::mutex> lock(pose_mutex_);
         if (!has_place_target_) {
-            RCLCPP_ERROR(this->get_logger(), "No place target pose available");
+            RCLCPP_ERROR(this->get_logger(), "没有检测到期望位置");
             return;
         }
         place_pose = place_target_pose_;
     }
 
     RCLCPP_INFO(
-        this->get_logger(), "Place target: [%.3f, %.3f, %.3f]", place_pose.pose.position.x, place_pose.pose.position.y,
+        this->get_logger(), "放置位置: [%.3f, %.3f, %.3f]", place_pose.pose.position.x, place_pose.pose.position.y,
         place_pose.pose.position.z);
 
     // 3. Execute Cartesian trajectory to place position
-    RCLCPP_INFO(this->get_logger(), "Moving to place position");
+    RCLCPP_INFO(this->get_logger(), "移动到目标放置位置");
     execute_cartesian_space_trajectory(place_pose, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
     // 4. Deactivate air pump to release object
-    RCLCPP_INFO(this->get_logger(), "Deactivating air pump");
+    RCLCPP_INFO(this->get_logger(), "关掉气泵");
     set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", false));
     std::this_thread::sleep_for(500ms);
 
     // 5. Move back to ready position
-    RCLCPP_INFO(this->get_logger(), "Moving back to ready position");
-    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
+    RCLCPP_INFO(this->get_logger(), "返回准备位置");
+    execute_joint_space_trajectory(home_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
-    RCLCPP_INFO(this->get_logger(), "Place flow completed");
+    RCLCPP_INFO(this->get_logger(), "放块任务结束");
 }
 
 void ArmTaskNode::execute_move_to_position(int position_index) {
@@ -308,7 +325,7 @@ void ArmTaskNode::execute_move_to_position(int position_index) {
 }
 
 void ArmTaskNode::stop_arm_motion() {
-    RCLCPP_INFO(this->get_logger(), "Stopping arm motion");
+    RCLCPP_INFO(this->get_logger(), "停止机械臂运动");
     if (arm_calc_param_client_->wait_for_service(5s)) {
         arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", false)});
     } else {
@@ -317,7 +334,7 @@ void ArmTaskNode::stop_arm_motion() {
 }
 
 void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration) {
-    RCLCPP_INFO(this->get_logger(), "Executing joint space trajectory");
+    RCLCPP_INFO(this->get_logger(), "执行关节轨迹规划");
 
     // Publish joint target
     std_msgs::msg::Float64MultiArray msg;
@@ -340,7 +357,7 @@ void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& join
 
 void ArmTaskNode::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration) {
 
-    RCLCPP_INFO(this->get_logger(), "Executing Cartesian space trajectory");
+    RCLCPP_INFO(this->get_logger(), "执行笛卡尔空间轨迹规划");
 
     // Publish visual target
     visual_target_pub_->publish(target_pose);
@@ -360,7 +377,7 @@ void ArmTaskNode::execute_cartesian_space_trajectory(const geometry_msgs::msg::P
 }
 
 void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose) {
-    RCLCPP_INFO(this->get_logger(), "Executing visual servo");
+    RCLCPP_INFO(this->get_logger(), "执行视觉伺服规划");
 
     // Store target pose for publishing thread
     {
@@ -371,17 +388,22 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
 
     // Set visual servo parameters
     if (arm_calc_param_client_->wait_for_service(5s)) {
-        arm_calc_param_client_->set_parameters(
-            {rclcpp::Parameter("visual_servo_kp", visual_servo_kp_),
-             rclcpp::Parameter("visual_servo_max_linear_acceleration", visual_servo_max_linear_acc_), rclcpp::Parameter("motion_mode", 3)});
+        arm_calc_param_client_->set_parameters({rclcpp::Parameter("motion_mode", 3)});
 
         std::this_thread::sleep_for(100ms);
 
+        {
+            std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+            visual_servo_result_ready_ = false;
+            visual_servo_succeeded_    = false;
+        }
+
         // Start visual servo publishing thread
-        visual_servo_active_ = true;
+        visual_servo_active_ = false;
         if (visual_servo_thread_.joinable()) {
             visual_servo_thread_.join();
         }
+        visual_servo_active_ = true;
         visual_servo_thread_ = std::thread(&ArmTaskNode::visual_servo_publish_thread, this);
 
         // Start execution
@@ -391,20 +413,124 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
     }
 }
 
+bool ArmTaskNode::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {
+    std::unique_lock<std::mutex> lock(visual_servo_state_mutex_);
+    const bool completed = visual_servo_state_cv_.wait_for(lock, std::chrono::duration<double>(timeout_sec), [this]() {
+        return visual_servo_result_ready_ || shutdown_requested_ || !visual_servo_active_;
+    });
+
+    if (visual_servo_result_ready_) {
+        return visual_servo_succeeded_;
+    }
+
+    if (!completed) {
+        RCLCPP_WARN(this->get_logger(), "视觉伺服在 %.1f s 内未收敛到 %.3f m，主动停止视觉伺服", timeout_sec, position_tolerance_m);
+    } else {
+        RCLCPP_WARN(this->get_logger(), "视觉伺服在线程结束前未报告收敛结果，主动停止视觉伺服");
+    }
+
+    lock.unlock();
+    visual_servo_active_ = false;
+    visual_servo_state_cv_.notify_all();
+    if (visual_servo_thread_.joinable()) {
+        visual_servo_thread_.join();
+    }
+
+    return false;
+}
+
 void ArmTaskNode::visual_servo_publish_thread() {
     RCLCPP_INFO(this->get_logger(), "视觉伺服线程开始执行");
 
     rclcpp::Rate rate(100); // 100 Hz
+    constexpr double kCameraDataLockDistanceMeters                  = 0.35;
+    constexpr double kVisualServoConvergencePositionToleranceMeters = kVisualServoExitPositionToleranceMeters;
+    bool camera_data_locked                                         = false;
+    geometry_msgs::msg::PoseStamped last_trusted_pose;
+    bool has_last_trusted_pose = false;
+
+    auto publish_visual_servo_result = [this](bool succeeded) {
+        {
+            std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+            if (visual_servo_result_ready_) {
+                return;
+            }
+            visual_servo_result_ready_ = true;
+            visual_servo_succeeded_    = succeeded;
+        }
+        visual_servo_state_cv_.notify_all();
+    };
 
     while (visual_servo_active_ && !shutdown_requested_) {
         geometry_msgs::msg::PoseStamped pose_to_publish;
         bool has_pose = false;
 
-        // Try to get current object pose from TF
-        if (get_object_pose_in_base_frame(pose_to_publish)) {
-            has_pose = true;
-            RCLCPP_INFO(get_logger(), "得到目标");
-        } else {
+        if (!camera_data_locked) {
+            // Try to get current object pose from TF
+            try {
+                auto target_in_base =
+                    tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
+                pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
+                pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
+                pose_to_publish.pose.position.z = target_in_base.transform.translation.z;
+                pose_to_publish.header.frame_id = base_frame_;
+                pose_to_publish.header.stamp    = this->now();
+                has_pose                        = true;
+                last_trusted_pose               = pose_to_publish;
+                has_last_trusted_pose           = true;
+
+                auto target_in_camera =
+                    tf_buffer_->lookupTransform(camera_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
+                const auto& translation = target_in_camera.transform.translation;
+                const double distance_to_target =
+                    std::sqrt(translation.x * translation.x + translation.y * translation.y + translation.z * translation.z);
+
+                if (distance_to_target < kCameraDataLockDistanceMeters) {
+                    camera_data_locked = true;
+                    RCLCPP_INFO(
+                        this->get_logger(), "camera_data_locked=true, %s 到 %s 距离为 %.3f m", camera_frame_.c_str(), object_frame_.c_str(),
+                        distance_to_target);
+                }
+
+                RCLCPP_INFO_THROTTLE(
+                    get_logger(), *this->get_clock(), 100, "得到目标(%lf, %lf, %lf)", pose_to_publish.pose.position.x,
+                    pose_to_publish.pose.position.y, pose_to_publish.pose.position.z);
+            } catch (const tf2::TransformException& ex) {
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 100, "获取变换失败: %s", ex.what());
+            }
+        }
+
+        if (camera_data_locked && has_last_trusted_pose) {
+            pose_to_publish = last_trusted_pose;
+            has_pose        = true;
+
+            try {
+                const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+                const double dx  = pose_to_publish.pose.position.x - ee_tf.transform.translation.x;
+                const double dy  = pose_to_publish.pose.position.y - ee_tf.transform.translation.y;
+                const double dz  = pose_to_publish.pose.position.z - ee_tf.transform.translation.z;
+                const double position_error = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), *this->get_clock(), 500,
+                    "视觉伺服位置误差: %.4f m, ee=(%.3f, %.3f, %.3f), locked_target=(%.3f, %.3f, %.3f)", position_error,
+                    ee_tf.transform.translation.x, ee_tf.transform.translation.y, ee_tf.transform.translation.z,
+                    pose_to_publish.pose.position.x, pose_to_publish.pose.position.y, pose_to_publish.pose.position.z);
+
+                if (position_error < kVisualServoConvergencePositionToleranceMeters) {
+                    RCLCPP_INFO(
+                        this->get_logger(), "视觉伺服收敛，位置误差 %.4f m 小于阈值 %.4f m", position_error,
+                        kVisualServoConvergencePositionToleranceMeters);
+                    publish_visual_servo_result(true);
+                    visual_servo_active_ = false;
+                    break;
+                }
+            } catch (const tf2::TransformException& ex) {
+                RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "检查视觉伺服收敛时获取TF失败: %s", ex.what());
+            }
+        }
+
+        if (!has_pose) {
             // Fall back to stored pose
             std::lock_guard<std::mutex> lock(pose_mutex_);
             if (has_object_pose_) {
@@ -418,21 +544,21 @@ void ArmTaskNode::visual_servo_publish_thread() {
         pose_to_publish.pose.orientation.w = q.w();
         pose_to_publish.pose.orientation.x = q.x();
         pose_to_publish.pose.orientation.y = q.y();
-        pose_to_publish.pose.orientation.x = q.z();
-        RCLCPP_INFO(
-            get_logger(), "期望坐标:(%lf,%lf,%lf", pose_to_publish.pose.position.x, pose_to_publish.pose.position.y,
-            pose_to_publish.pose.position.z);
+        pose_to_publish.pose.orientation.z = q.z();
 
         if (has_pose) {
             visual_target_pub_->publish(pose_to_publish);
         } else {
             RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "No object pose available for visual servo");
+            publish_visual_servo_result(false);
             visual_servo_active_ = false;
             break;
         }
 
         rate.sleep();
     }
+
+    publish_visual_servo_result(false);
 
     RCLCPP_INFO(this->get_logger(), "视觉伺服线程结束执行");
 }
@@ -473,7 +599,7 @@ void ArmTaskNode::set_parameter_on_remote_node(
 geometry_msgs::msg::PoseStamped ArmTaskNode::create_approach_pose(const geometry_msgs::msg::PoseStamped& target_pose, double distance) {
 
     geometry_msgs::msg::PoseStamped approach_pose = target_pose;
-    approach_pose.pose.position.x += distance;
+    approach_pose.pose.position.z += distance;
 
     return approach_pose;
 }

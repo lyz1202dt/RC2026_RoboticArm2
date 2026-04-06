@@ -47,13 +47,13 @@ private:
     void publish_joint_target(const JointTrajectoryPoint& point);
     void publish_visualization(const JointTrajectoryPoint& target_point);
 
-    void on_joint_state(const robot_interfaces::msg::Arm& msg);
+    void on_joint_state(const JointTrajectoryPoint& point);
     void on_visual_target(const geometry_msgs::msg::PoseStamped& msg);
     void on_joint_space_target(const std_msgs::msg::Float64MultiArray& msg);
     rcl_interfaces::msg::SetParametersResult on_parameters_changed(const std::vector<rclcpp::Parameter>& params);
 
     static MotionMode parse_motion_mode(int mode_value);
-    static JointState from_arm_message(const robot_interfaces::msg::Arm& msg);
+    static JointState from_arm_message(const JointTrajectoryPoint& point);
     static robot_interfaces::msg::Arm to_arm_message(const JointTrajectoryPoint& point);
     static sensor_msgs::msg::JointState to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp);
     static std::vector<double> get_double_array_param(const rclcpp::Node& node, const std::string& name, std::size_t expected_size);
@@ -72,9 +72,9 @@ private:
     double visual_servo_max_linear_acceleration_{0.5};
     double last_ee_log_time_sec_{-1.0};
 
-    std::vector<std::string> joint_names_{"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
+    std::vector<std::string> joint_names_{"joint1", "joint2", "joint3", "joint4"};
     std::string base_link_{"base_link"};
-    std::string tip_link_{"link6"};
+    std::string tip_link_{"link4"};
     CartesianPose cartesian_target_{};
     CartesianPose visual_target_{};
     JointState joint_target_state_{};

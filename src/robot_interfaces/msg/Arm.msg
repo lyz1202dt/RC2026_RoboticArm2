@@ -1,1 +1,1 @@
-Joint[6] motor
+Joint[4] motor
