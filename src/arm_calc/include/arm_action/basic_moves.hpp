@@ -85,7 +85,7 @@ private:
     bool has_latched_target_pose_{false};
     bool servo_initialized_{false};
     double last_sample_time_sec_{0.0};
-    double kp_{0.6};
+    double kp_{0.4};
     double max_linear_acceleration_{0.5};
 
     Eigen::Vector3d desired_position_{Eigen::Vector3d::Zero()};

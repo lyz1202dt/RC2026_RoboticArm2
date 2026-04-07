@@ -243,6 +243,10 @@ void ArmTaskNode::execute_grasp_flow() {
     // execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
     // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
+    RCLCPP_INFO(this->get_logger(), "启动气泵");
+    set_parameter_on_remote_node("driver_node", rclcpp::Parameter("enable_air_pump", true));
+    std::this_thread::sleep_for(50ms);
+
     // 4. Execute visual servo to grasp object
     RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
     execute_visual_servo(object_pose);
@@ -250,9 +254,7 @@ void ArmTaskNode::execute_grasp_flow() {
     visual_servo_active_ = false;
 
     // 5. Activate air pump to grasp object
-    RCLCPP_INFO(this->get_logger(), "启动气泵");
-    set_parameter_on_remote_node("driver_node", rclcpp::Parameter("enable_air_pump", true));
-    std::this_thread::sleep_for(50ms);
+    
 
     RCLCPP_INFO(this->get_logger(), "向前推进一段距离以确保吸取稳固");
     bool tf_success = true;
