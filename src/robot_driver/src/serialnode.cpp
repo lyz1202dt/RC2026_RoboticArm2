@@ -6,6 +6,7 @@
 #include <rclcpp/logging.hpp>
 #include <robot_interfaces/msg/arm.hpp>
 #include <robot_interfaces/msg/arm4.hpp>
+#include <robot_interfaces/msg/vis.hpp>
 #include <thread>
 
 
@@ -28,7 +29,7 @@ ArmNode::ArmNode()
 
     
 
-     cdc_trans = std::make_unique<CDCTrans>();  
+     cdc_trans = std::make_unique<CDCTrans>();          
 
      /*                         // 创建CDC传输对象
     cdc_trans->regeiser_recv_cb([this](const uint8_t* data, int size) { // 注册接收回调

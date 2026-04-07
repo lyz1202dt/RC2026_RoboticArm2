@@ -22,7 +22,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/GM6020.msg"
   "msg/RobStride.msg"
   "msg/Servo.msg"
+  "msg/Vis.msg"
 )
+
+ament_export_dependencies(rosidl_default_runtime)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

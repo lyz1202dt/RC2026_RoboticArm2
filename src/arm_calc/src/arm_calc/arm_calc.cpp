@@ -44,76 +44,76 @@ JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
 }
 
 
-// Eigen::Vector4d ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
-//     KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
-//     KDL::Frame frame;
+Eigen::Vector4d ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
+    KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
+    KDL::Frame frame;
 
-//     // 1️⃣ 位置
-//     const Eigen::Vector3d& target_pos = pose.position;
-//     frame.p = KDL::Vector(target_pos[0], target_pos[1], target_pos[2]);
+    // 1️⃣ 位置
+    const Eigen::Vector3d& target_pos = pose.position;
+    frame.p = KDL::Vector(target_pos[0], target_pos[1], target_pos[2]);
 
-//     // 2️⃣ 从输入四元数提取 pitch
-//     KDL::Rotation input_rot =
-//         KDL::Rotation::Quaternion(pose.orientation.x(), pose.orientation.y(),
-//                                   pose.orientation.z(), pose.orientation.w());
-//     double roll, pitch, yaw;
-//     input_rot.GetRPY(roll, pitch, yaw);
+    // 2️⃣ 从输入四元数提取 pitch
+    KDL::Rotation input_rot =
+        KDL::Rotation::Quaternion(pose.orientation.x(), pose.orientation.y(),
+                                  pose.orientation.z(), pose.orientation.w());
+    double roll, pitch, yaw;
+    input_rot.GetRPY(roll, pitch, yaw);
 
-//     // ===== wrist pitch 连续性修正 =====
-//     double prev_pitch = last_joint_solution_(3); // 上一帧 joint4
-//     if (std::abs(pitch - prev_pitch) > M_PI/2.0) {
-//         if (pitch > prev_pitch) {
-//             pitch -= 2*M_PI;
-//         } else {
-//             pitch += 2*M_PI;
-//         }
-//     }
-//     // =================================
+    // ===== wrist pitch 连续性修正 =====
+    double prev_pitch = last_joint_solution_(3); // 上一帧 joint4
+    if (std::abs(pitch - prev_pitch) > M_PI/2.0) {
+        if (pitch > prev_pitch) {
+            pitch -= 2*M_PI;
+        } else {
+            pitch += 2*M_PI;
+        }
+    }
+    // =================================
 
-//     // 3️⃣ 先确定平面 → Axis-Angle 构建旋转矩阵
-//     KDL::Vector P(target_pos[0], target_pos[1], target_pos[2]);
-//     KDL::Vector U(0.0, 0.0, 1.0);
+    // 3️⃣ 先确定平面 → Axis-Angle 构建旋转矩阵
+    KDL::Vector P(target_pos[0], target_pos[1], target_pos[2]);
+    KDL::Vector U(0.0, 0.0, 1.0);
 
-//     double ax  = -target_pos[1];
-//     double ay  = target_pos[0];
-//     double az  = 0.0;
-//     double len = std::sqrt(ax * ax + ay * ay);
+    double ax  = -target_pos[1];
+    double ay  = target_pos[0];
+    double az  = 0.0;
+    double len = std::sqrt(ax * ax + ay * ay);
 
-//     if (len < 1e-8) {
-//         // r≈0 奇异情况
-//         frame.M = KDL::Rotation::RPY(0.0, pitch, 0.0);
-//     } else {
-//         ax /= len;
-//         ay /= len;
+    if (len < 1e-8) {
+        // r≈0 奇异情况
+        frame.M = KDL::Rotation::RPY(0.0, pitch, 0.0);
+    } else {
+        ax /= len;
+        ay /= len;
 
-//         // Axis-Angle → 四元数
-//         double half = pitch * 0.5;
-//         double qw   = std::cos(half);
-//         double qx   = ax * std::sin(half);
-//         double qy   = ay * std::sin(half);
-//         double qz   = az * std::sin(half);
+        // Axis-Angle → 四元数
+        double half = pitch * 0.5;
+        double qw   = std::cos(half);
+        double qx   = ax * std::sin(half);
+        double qy   = ay * std::sin(half);
+        double qz   = az * std::sin(half);
 
-//         // 四元数归一化
-//         double qnorm = std::sqrt(qw*qw + qx*qx + qy*qy + qz*qz);
-//         if (qnorm > 1e-12) {
-//             qw /= qnorm;
-//             qx /= qnorm;
-//             qy /= qnorm;
-//             qz /= qnorm;
-//         }
+        // 四元数归一化
+        double qnorm = std::sqrt(qw*qw + qx*qx + qy*qy + qz*qz);
+        if (qnorm > 1e-12) {
+            qw /= qnorm;
+            qx /= qnorm;
+            qy /= qnorm;
+            qz /= qnorm;
+        }
 
-//         frame.M = KDL::Rotation::Quaternion(qx, qy, qz, qw);
-//     }
+        frame.M = KDL::Rotation::Quaternion(qx, qy, qz, qw);
+    }
 
-//     // 4️⃣ IK 求解
-//     *result = ik_solver_.CartToJnt(seed, frame, seed);
+    // 4️⃣ IK 求解
+    *result = ik_solver_.CartToJnt(seed, frame, seed);
 
-//     if (*result >= 0) {
-//         last_joint_solution_ = seed; // 更新上一帧解
-//     }
+    if (*result >= 0) {
+        last_joint_solution_ = seed; // 更新上一帧解
+    }
 
-//     return from_kdl_joints(seed);
-// }
+    return from_kdl_joints(seed);
+}
 
 // Eigen::Vector4d ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
 //     KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
@@ -228,15 +228,15 @@ JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
 
 
 
-JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
-    KDL::JntArray seed      = to_kdl_joints(seed_joint_pos);
-    KDL::Frame target_frame = to_kdl_frame(pose);
-    *result                 = ik_solver_.CartToJnt(seed, target_frame, seed);
-    if (*result >= 0) {
-        last_joint_solution_ = seed;
-    }
-    return from_kdl_joints(seed);
-}
+// JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
+//     KDL::JntArray seed      = to_kdl_joints(seed_joint_pos);
+//     KDL::Frame target_frame = to_kdl_frame(pose);
+//     *result                 = ik_solver_.CartToJnt(seed, target_frame, seed);
+//     if (*result >= 0) {
+//         last_joint_solution_ = seed;
+//     }
+//     return from_kdl_joints(seed);
+// }
 
 // JointVector ArmCalc::joint_vel(const JointVector& joint_pos, const CartesianVector& cartesian_twist) {
 //     KDL::JntArray joints = to_kdl_joints(joint_pos);
