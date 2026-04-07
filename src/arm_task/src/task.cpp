@@ -119,6 +119,8 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
             RCLCPP_INFO(this->get_logger(), "Loaded ready position with %zu joints", ready_position_.size());
         }
 
+       
+
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Failed to load arm positions: %s", e.what());
     }
@@ -192,6 +194,10 @@ void ArmTaskNode::execute_task_state_machine() {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始放置任务");
             execute_place_flow();
+        } else if (current_mode == 3) {
+            // Place flow
+            RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
+            execute_place_flow_rad();
         } else if (current_mode >= 10 && current_mode < 20) {
             // Move to position x
             int position_index = current_mode - 10;
@@ -669,5 +675,29 @@ geometry_msgs::msg::PoseStamped ArmTaskNode::create_approach_pose(const geometry
 
     return approach_pose;
 }
+
+void ArmTaskNode::execute_place_flow_rad() {
+    // 1. Move to ready position
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
+    execute_joint_space_trajectory(grasp_position, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+
+    // 4. Deactivate air pump to release object
+    RCLCPP_INFO(this->get_logger(), "打开气泵");
+    set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", true));
+    std::this_thread::sleep_for(3000ms);
+
+    // 5. Move back to ready position
+    RCLCPP_INFO(this->get_logger(), "返回准备位置");
+    execute_joint_space_trajectory(home_position_, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+    RCLCPP_INFO(this->get_logger(), "任务结束");
+}
+
+
+
+
 
 } // namespace arm_task

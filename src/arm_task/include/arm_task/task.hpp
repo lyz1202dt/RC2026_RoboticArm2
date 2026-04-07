@@ -38,6 +38,8 @@ private:
     void execute_grasp_flow();
     void execute_place_flow();
     void execute_move_to_position(int position_index);
+    void execute_place_flow_rad();
+
 
     // Arm control operations (private methods)
     void stop_arm_motion();
@@ -109,6 +111,7 @@ private:
     std::map<int, std::vector<double>> arm_positions_;
     std::vector<double> ready_position_; // Preparation position
     std::vector<double> home_position_{0.0, 0.0, 0.0, 0.0};
+    std::vector<double> grasp_position{0.0, 3.14159, 1.5708, 1.5708};
 
     // Parameter callback handle
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
