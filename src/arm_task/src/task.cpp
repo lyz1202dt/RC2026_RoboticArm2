@@ -209,7 +209,7 @@ void ArmTaskNode::execute_grasp_flow() {
     // 1. Move to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
 
     // 2. Wait for object pose from camera
     RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
@@ -248,48 +248,30 @@ void ArmTaskNode::execute_grasp_flow() {
     std::this_thread::sleep_for(50ms);
 
     // 4. Execute visual servo to grasp object
-    RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
-    execute_visual_servo(object_pose);
-    wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
-    visual_servo_active_ = false;
-
+    // RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
+    // execute_visual_servo(object_pose);
+    // wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
+    // visual_servo_active_ = false;
     // 5. Activate air pump to grasp object
-    
+
+    RCLCPP_INFO(this->get_logger(), "执行抓取动作");
+    execute_cartesian_space_trajectory(object_pose, 1.0);
+    wait_for_trajectory_completion(1.0);
 
     RCLCPP_INFO(this->get_logger(), "向前推进一段距离以确保吸取稳固");
-    bool tf_success = true;
-    geometry_msgs::msg::PoseStamped new_object_pos;
-    try {
-        const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
-
-        new_object_pos.header.frame_id = base_frame_;
-        new_object_pos.header.stamp    = this->now();
-
-        new_object_pos.pose.position.x = ee_tf.transform.translation.x + 0.05; // 例如前推 5 cm
-        new_object_pos.pose.position.y = ee_tf.transform.translation.y;
-        new_object_pos.pose.position.z = ee_tf.transform.translation.z;
-
-        // new_object_pos.pose.orientation = ee_tf.transform.rotation;
-        tf2::Quaternion q;
-        q.setRPY(0, (M_PI / 2)-0.3, 0);     //吸取时姿态角补偿
-        new_object_pos.pose.orientation.w  = q.getW();
-        new_object_pos.pose.orientation.x  = q.getX();
-        new_object_pos.pose.orientation.y  = q.getY();
-        new_object_pos.pose.orientation.z  = q.getZ();
-    } catch (const tf2::TransformException& ex) {
-        tf_success = false;
-        RCLCPP_ERROR(this->get_logger(), "获取当前末端位姿失败: %s", ex.what());
-    }
-
-    if (tf_success) {
-        execute_cartesian_space_trajectory(new_object_pos, 1.0);
-        std::this_thread::sleep_for(1s);
-    }
+    object_pose.pose.position.x+=0.06;
+    quat.setRPY(0, (M_PI / 2)-0.25, 0);
+    object_pose.pose.orientation.w = quat.getW();
+    object_pose.pose.orientation.x = quat.getX();
+    object_pose.pose.orientation.y = quat.getY();
+    object_pose.pose.orientation.z = quat.getZ();
+    execute_cartesian_space_trajectory(object_pose, 1.0);
+    wait_for_trajectory_completion(1.0);
 
     // 6. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
 
     RCLCPP_INFO(this->get_logger(), "抓取流程完成");
 }
@@ -298,7 +280,7 @@ void ArmTaskNode::execute_place_flow() {
     // 1. Move to ready position
     RCLCPP_INFO(this->get_logger(), "Moving to ready position");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
 
     // 2. Check for place target pose
     geometry_msgs::msg::PoseStamped place_pose;
@@ -318,7 +300,7 @@ void ArmTaskNode::execute_place_flow() {
     // 3. Execute Cartesian trajectory to place position
     RCLCPP_INFO(this->get_logger(), "Moving to place position");
     execute_cartesian_space_trajectory(place_pose, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
 
     // 4. Deactivate air pump to release object
     RCLCPP_INFO(this->get_logger(), "Deactivating air pump");
@@ -328,7 +310,7 @@ void ArmTaskNode::execute_place_flow() {
     // 5. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "Moving back to ready position");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
 
     RCLCPP_INFO(this->get_logger(), "Place flow completed");
 }
@@ -342,7 +324,7 @@ void ArmTaskNode::execute_move_to_position(int position_index) {
     const auto& joint_angles = arm_positions_[position_index];
     RCLCPP_INFO(this->get_logger(), "Moving to position %d", position_index);
     execute_joint_space_trajectory(joint_angles, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
 
     RCLCPP_INFO(this->get_logger(), "Move to position %d completed", position_index);
 }
@@ -434,6 +416,56 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
     } else {
         RCLCPP_ERROR(this->get_logger(), "Parameter service for %s not available", arm_calc_node_name_.c_str());
     }
+}
+
+bool ArmTaskNode::wait_for_trajectory_completion(double timeout_sec) {
+    if (!arm_calc_param_client_->wait_for_service(1s)) {
+        RCLCPP_WARN(this->get_logger(), "Parameter service for %s not available while waiting trajectory completion", arm_calc_node_name_.c_str());
+        std::this_thread::sleep_for(std::chrono::duration<double>(timeout_sec));
+        return false;
+    }
+
+    const auto start_time = std::chrono::steady_clock::now();
+    bool observed_running = false;
+
+    while (!shutdown_requested_) {
+        const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+        if (elapsed > timeout_sec) {
+            RCLCPP_WARN(
+                this->get_logger(), "Timed out waiting for %s trajectory completion after %.2f s", arm_calc_node_name_.c_str(),
+                timeout_sec);
+            return false;
+        }
+
+        auto future = arm_calc_param_client_->get_parameters({"execute_trajectory"});
+        const auto future_status = future.wait_for(200ms);
+        if (future_status != std::future_status::ready) {
+            std::this_thread::sleep_for(50ms);
+            continue;
+        }
+
+        bool execute_trajectory = false;
+        try {
+            const auto result = future.get();
+            if (!result.empty() && result.front().get_type() == rclcpp::ParameterType::PARAMETER_BOOL) {
+                execute_trajectory = result.front().as_bool();
+            }
+        } catch (const std::exception& e) {
+            RCLCPP_WARN(this->get_logger(), "Failed to query %s execute_trajectory: %s", arm_calc_node_name_.c_str(), e.what());
+            std::this_thread::sleep_for(50ms);
+            continue;
+        }
+
+        if (execute_trajectory) {
+            observed_running = true;
+        } else if (observed_running) {
+            return true;
+        }
+
+        std::this_thread::sleep_for(50ms);
+    }
+
+    return false;
 }
 
 bool ArmTaskNode::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {

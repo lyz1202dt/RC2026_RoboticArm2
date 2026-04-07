@@ -63,6 +63,7 @@ def generate_launch_description():
         arguments=["dog_controller", "--controller-manager", "/controller_manager"],
         output="screen",
     )
+    
 
     arm_calc = Node(
         package="arm_calc",

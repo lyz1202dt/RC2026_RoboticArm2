@@ -39,6 +39,7 @@ private:
     void execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
     bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
+    bool wait_for_trajectory_completion(double timeout_sec);
     
     // Helper methods
     bool get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out);
