@@ -24,7 +24,7 @@ public:
     ~ArmTaskNode();
 
 private:
-    // Task execution thread
+    //任务执行线程
     void task_execution_thread();
     
     // State machine for task execution
@@ -33,15 +33,23 @@ private:
     void execute_place_flow();
     void execute_move_to_position(int position_index);
     
-    // Arm control operations (private methods)
+    //机械臂运动控制接口
+
+    //停止机械臂的任何动作
     void stop_arm_motion();
+    //执行关节空间轨迹
     void execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration);
+    //执行笛卡尔空间轨迹
     void execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
+    //执行视觉伺服控制
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
+    //等待视觉伺服收敛
     bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
+    //等待轨迹执行完成
     bool wait_for_trajectory_completion(double timeout_sec);
     
-    // Helper methods
+
+    //辅助方法
     bool get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out);
     void set_parameter_on_remote_node(const std::string& node_name, 
                                        const rclcpp::Parameter& param);
@@ -99,6 +107,7 @@ private:
     std::string arm_calc_node_name_{"arm_calc_node"};
     double approach_distance_{0.1};  // meters above target
     double trajectory_duration_{4.0};  // seconds
+    double grasp_time_{5.0};  // seconds
     double visual_servo_kp_{0.1};
     double visual_servo_max_linear_acc_{0.1};
     int air_pump_pin_{0};  // Parameter service index for air pump control

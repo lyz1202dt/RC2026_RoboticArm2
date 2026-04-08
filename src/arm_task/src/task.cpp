@@ -31,6 +31,7 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     this->declare_parameter<int32_t>("arm_task", 0);
     this->declare_parameter<bool>("stop_visual_servo", false);
     this->declare_parameter<double>("trajectory_duration", 3.0);
+    this->declare_parameter<double>("grasp_time", 5.0);
     this->declare_parameter<double>("approach_distance", 0.1);
     this->declare_parameter<double>("visual_servo_kp", 2.0);
     this->declare_parameter<double>("visual_servo_max_linear_acc", 0.5);
@@ -43,6 +44,7 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
 
     // Get parameters
     this->get_parameter("trajectory_duration", trajectory_duration_);
+    this->get_parameter("grasp_time", grasp_time_);
     this->get_parameter("approach_distance", approach_distance_);
     // this->get_parameter("visual_servo_kp", visual_servo_kp_);
     this->get_parameter("visual_servo_max_linear_acc", visual_servo_max_linear_acc_);
@@ -134,6 +136,9 @@ rcl_interfaces::msg::SetParametersResult ArmTaskNode::on_parameters_changed(cons
             int32_t new_mode = param.as_int();
             arm_task_mode_   = new_mode;
             RCLCPP_INFO(this->get_logger(), "Task mode changed to: %d", new_mode);
+        } else if (param.get_name() == "grasp_time") {
+            grasp_time_ = std::max(param.as_double(), 0.1);
+            RCLCPP_INFO(this->get_logger(), "Grasp time updated to: %.2f s", grasp_time_);
         } else if (param.get_name() == "stop_visual_servo") {
             bool stop = param.as_bool();
             if (stop) {
@@ -255,8 +260,8 @@ void ArmTaskNode::execute_grasp_flow() {
     // 5. Activate air pump to grasp object
 
     RCLCPP_INFO(this->get_logger(), "执行抓取动作");
-    execute_cartesian_space_trajectory(object_pose, 1.0);
-    wait_for_trajectory_completion(1.0);
+    execute_cartesian_space_trajectory(object_pose, grasp_time_);
+    wait_for_trajectory_completion(grasp_time_);
 
     RCLCPP_INFO(this->get_logger(), "向前推进一段距离以确保吸取稳固");
     object_pose.pose.position.x+=0.06;

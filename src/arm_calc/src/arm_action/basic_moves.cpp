@@ -17,24 +17,27 @@ rclcpp::Clock& VisualServoThrottleClock() {
     static rclcpp::Clock clock(RCL_STEADY_TIME);
     return clock;
 }
-JointVector QuaternionToRotationVector(const Eigen::Quaterniond& start, const Eigen::Quaterniond& goal) {
-    Eigen::Quaterniond delta = arm_calc::NormalizeQuaternion(start).conjugate() * arm_calc::NormalizeQuaternion(goal);
+Eigen::Vector3d QuaternionToRotationVectorWorld(const Eigen::Quaterniond& start, const Eigen::Quaterniond& goal) {
+    Eigen::Quaterniond delta = arm_calc::NormalizeQuaternion(goal) * arm_calc::NormalizeQuaternion(start).conjugate();
     if (delta.w() < 0.0) {
         delta.coeffs() *= -1.0;
     }
+
     Eigen::AngleAxisd angle_axis(delta);
-    JointVector vector = JointVector::Zero();
-    vector.head<3>()   = angle_axis.axis() * angle_axis.angle();
-    return vector;
+    if (std::abs(angle_axis.angle()) < 1e-9 || angle_axis.axis().squaredNorm() < 1e-12) {
+        return Eigen::Vector3d::Zero();
+    }
+    return angle_axis.axis() * angle_axis.angle();
 }
 
-Eigen::Quaterniond RotationVectorToQuaternion(const Eigen::Quaterniond& reference, const Eigen::Vector3d& rotation_vector) {
+Eigen::Quaterniond RotationVectorWorldToQuaternion(const Eigen::Quaterniond& reference, const Eigen::Vector3d& rotation_vector) {
     const double angle = rotation_vector.norm();
     if (angle < 1e-9) {
         return arm_calc::NormalizeQuaternion(reference);
     }
+
     const Eigen::Vector3d axis = rotation_vector / angle;
-    return arm_calc::NormalizeQuaternion(reference * Eigen::Quaterniond(Eigen::AngleAxisd(angle, axis)));
+    return arm_calc::NormalizeQuaternion(Eigen::Quaterniond(Eigen::AngleAxisd(angle, axis)) * reference);
 }
 
 Eigen::Vector3d ClampVectorNorm(const Eigen::Vector3d& vector, double limit) {
@@ -109,13 +112,22 @@ void JCartesianSpaceMove::set_start_state(const JointState& state) {
     if (arm_calc_) {
         start_cartesian_state_ = arm_calc_->end_state(state.position, state.velocity);
     }
+    start_orientation_ = arm_calc::NormalizeQuaternion(start_cartesian_state_.pose.orientation);
+    orientation_rotation_vector_world_.setZero();
 
     JointVector pos_start = JointVector::Zero();
     pos_start.head<3>()   = start_cartesian_state_.pose.position;
-    position_trajectory_.set_start_state(pos_start);
+    JointVector pos_start_velocity = JointVector::Zero();
+    pos_start_velocity.head<3>()   = start_cartesian_state_.linear_velocity;
+    position_trajectory_.set_start_state(pos_start, pos_start_velocity);
 
-    JointVector rot_start = JointVector::Zero();
-    orientation_trajectory_.set_start_state(rot_start);
+    JointVector sigma_start = JointVector::Zero();
+    JointVector sigma_start_velocity = JointVector::Zero();
+    const double rotation_norm_sq = orientation_rotation_vector_world_.squaredNorm();
+    if (rotation_norm_sq > 1e-12) {
+        sigma_start_velocity[0] = start_cartesian_state_.angular_velocity.dot(orientation_rotation_vector_world_) / rotation_norm_sq;
+    }
+    orientation_trajectory_.set_start_state(sigma_start, sigma_start_velocity);
 }
 
 void JCartesianSpaceMove::set_goal_state(const CartesianPose& pose, double duration) {
@@ -126,8 +138,18 @@ void JCartesianSpaceMove::set_goal_state(const CartesianPose& pose, double durat
     pos_goal.head<3>()   = pose.position;
     position_trajectory_.set_goal_state(pos_goal, duration_sec_);
 
-    JointVector rot_goal = QuaternionToRotationVector(start_cartesian_state_.pose.orientation, goal_pose_.orientation);
-    orientation_trajectory_.set_goal_state(rot_goal, duration_sec_);
+    orientation_rotation_vector_world_ =
+        QuaternionToRotationVectorWorld(start_orientation_, arm_calc::NormalizeQuaternion(goal_pose_.orientation));
+    JointVector sigma_start = JointVector::Zero();
+    JointVector sigma_goal = JointVector::Zero();
+    sigma_goal[0] = 1.0;
+    JointVector sigma_start_velocity = JointVector::Zero();
+    const double rotation_norm_sq = orientation_rotation_vector_world_.squaredNorm();
+    if (rotation_norm_sq > 1e-12) {
+        sigma_start_velocity[0] = start_cartesian_state_.angular_velocity.dot(orientation_rotation_vector_world_) / rotation_norm_sq;
+    }
+    orientation_trajectory_.set_start_state(sigma_start, sigma_start_velocity);
+    orientation_trajectory_.set_goal_state(sigma_goal, duration_sec_);
 }
 
 void JCartesianSpaceMove::start(double start_time_sec) {
@@ -151,17 +173,21 @@ bool JCartesianSpaceMove::started() const { return started_; }
 CartesianTrajectoryPoint JCartesianSpaceMove::build_cartesian_target(double current_time_sec) const {
     const double elapsed                  = std::clamp(current_time_sec - start_time_sec_, 0.0, duration_sec_);
     const JointTrajectoryPoint pos_sample = position_trajectory_.sample(elapsed);
-    const JointTrajectoryPoint rot_sample = orientation_trajectory_.sample(elapsed);
+    const JointTrajectoryPoint sigma_sample = orientation_trajectory_.sample(elapsed);
 
     CartesianTrajectoryPoint target;
     target.pose.position       = pos_sample.position.head<3>();
     target.linear_velocity     = pos_sample.velocity.head<3>();
     target.linear_acceleration = pos_sample.acceleration.head<3>();
 
-    const Eigen::Vector3d rotation_vector = rot_sample.position.head<3>();
-    target.pose.orientation               = RotationVectorToQuaternion(start_cartesian_state_.pose.orientation, rotation_vector);
-    target.angular_velocity               = rot_sample.velocity.head<3>();
-    target.angular_acceleration           = rot_sample.acceleration.head<3>();
+    const double sigma = sigma_sample.position[0];
+    const double sigma_dot = sigma_sample.velocity[0];
+    const double sigma_ddot = sigma_sample.acceleration[0];
+    const Eigen::Vector3d rotation_vector = orientation_rotation_vector_world_ * sigma;
+
+    target.pose.orientation = RotationVectorWorldToQuaternion(start_orientation_, rotation_vector);
+    target.angular_velocity = orientation_rotation_vector_world_ * sigma_dot;
+    target.angular_acceleration = orientation_rotation_vector_world_ * sigma_ddot;
     return target;
 }
 
