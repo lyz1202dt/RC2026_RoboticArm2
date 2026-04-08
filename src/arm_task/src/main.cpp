@@ -1,14 +1,12 @@
-#include "arm_task/task.hpp"
+#include "robot.hpp"
 #include <rclcpp/rclcpp.hpp>
 #include <memory>
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    
-    auto node = std::make_shared<arm_task::ArmTaskNode>();
-    
+    auto node=std::make_shared<rclcpp::Node>("arm_task_node");
+    arm_task::Robot arm_task;
     rclcpp::spin(node);
-    
     rclcpp::shutdown();
     return 0;
 }

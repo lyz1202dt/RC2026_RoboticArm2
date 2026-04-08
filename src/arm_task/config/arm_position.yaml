@@ -1,18 +1,2 @@
-# Arm position configuration file
-# Defines predefined joint positions for the robotic arm
-
-# Ready position - used as preparation position for grasp/place operations
-ready_position: [0.0, 0.361, -2.39, 0.471, 0.0, 0.0]
-
-# Predefined arm positions
-# Each position has an index (used as 1x in arm_task parameter, e.g., 10 for position 0)
-# and a list of 6 joint angles in radians
-arm_positions:
-  - index: 0
-    joints: [0.0, -0.9, -0.5, 0.0, 0.0, 0.0]
-  
-  # Add more positions as needed, for example:
-  # - index: 1
-  #   joints: [0.5, -0.3, 0.8, 0.0, 1.2, 0.0]
-  # - index: 2
-  #   joints: [1.0, -0.5, 1.0, 0.5, 0.8, 0.0]
+arm_position:
+  ready: [0.0, 0.361, -2.39, 0.471, 0.0, 0.0]
