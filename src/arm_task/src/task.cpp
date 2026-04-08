@@ -1,4 +1,4 @@
-#include "arm_task/task.hpp"
+#include "task.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <chrono>
 #include <cmath>
@@ -35,7 +35,6 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     this->declare_parameter<double>("approach_distance", 0.1);
     this->declare_parameter<double>("visual_servo_kp", 2.0);
     this->declare_parameter<double>("visual_servo_max_linear_acc", 0.5);
-    this->declare_parameter<int>("air_pump_pin", 0);
     this->declare_parameter<std::string>("base_frame", "base_link");
     this->declare_parameter<std::string>("camera_frame", "camera_link");
     this->declare_parameter<std::string>("object_frame", "target_object");
@@ -48,7 +47,6 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     this->get_parameter("approach_distance", approach_distance_);
     // this->get_parameter("visual_servo_kp", visual_servo_kp_);
     this->get_parameter("visual_servo_max_linear_acc", visual_servo_max_linear_acc_);
-    this->get_parameter("air_pump_pin", air_pump_pin_);
     this->get_parameter("base_frame", base_frame_);
     this->get_parameter("camera_frame", camera_frame_);
     this->get_parameter("object_frame", object_frame_);
@@ -76,7 +74,7 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     // Start task execution thread
     task_thread_ = std::thread(&ArmTaskNode::task_execution_thread, this);
 
-    RCLCPP_INFO(this->get_logger(), "ArmTaskNode initialized successfully");
+    RCLCPP_INFO(this->get_logger(), "ArmTaskNode初始化完成");
 }
 
 ArmTaskNode::~ArmTaskNode() {
@@ -213,8 +211,9 @@ void ArmTaskNode::execute_task_state_machine() {
 void ArmTaskNode::execute_grasp_flow() {
     // 1. Move to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
-    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
+    if (!execute_joint_space_trajectory(ready_position_, trajectory_duration_)) {
+        return;
+    }
 
     // 2. Wait for object pose from camera
     RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
@@ -260,8 +259,9 @@ void ArmTaskNode::execute_grasp_flow() {
     // 5. Activate air pump to grasp object
 
     RCLCPP_INFO(this->get_logger(), "执行抓取动作");
-    execute_cartesian_space_trajectory(object_pose, grasp_time_);
-    wait_for_trajectory_completion(grasp_time_);
+    if (!execute_cartesian_space_trajectory(object_pose, grasp_time_)) {
+        return;
+    }
 
     RCLCPP_INFO(this->get_logger(), "向前推进一段距离以确保吸取稳固");
     object_pose.pose.position.x+=0.06;
@@ -270,13 +270,15 @@ void ArmTaskNode::execute_grasp_flow() {
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
-    execute_cartesian_space_trajectory(object_pose, 1.0);
-    wait_for_trajectory_completion(1.0);
+    if (!execute_cartesian_space_trajectory(object_pose, 1.0)) {
+        return;
+    }
 
     // 6. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
-    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
+    if (!execute_joint_space_trajectory(ready_position_, trajectory_duration_)) {
+        return;
+    }
 
     RCLCPP_INFO(this->get_logger(), "抓取流程完成");
 }
@@ -284,8 +286,9 @@ void ArmTaskNode::execute_grasp_flow() {
 void ArmTaskNode::execute_place_flow() {
     // 1. Move to ready position
     RCLCPP_INFO(this->get_logger(), "Moving to ready position");
-    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
+    if (!execute_joint_space_trajectory(ready_position_, trajectory_duration_)) {
+        return;
+    }
 
     // 2. Check for place target pose
     geometry_msgs::msg::PoseStamped place_pose;
@@ -304,8 +307,9 @@ void ArmTaskNode::execute_place_flow() {
 
     // 3. Execute Cartesian trajectory to place position
     RCLCPP_INFO(this->get_logger(), "Moving to place position");
-    execute_cartesian_space_trajectory(place_pose, trajectory_duration_);
-    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
+    if (!execute_cartesian_space_trajectory(place_pose, trajectory_duration_)) {
+        return;
+    }
 
     // 4. Deactivate air pump to release object
     RCLCPP_INFO(this->get_logger(), "Deactivating air pump");
@@ -314,8 +318,9 @@ void ArmTaskNode::execute_place_flow() {
 
     // 5. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "Moving back to ready position");
-    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
+    if (!execute_joint_space_trajectory(ready_position_, trajectory_duration_)) {
+        return;
+    }
 
     RCLCPP_INFO(this->get_logger(), "Place flow completed");
 }
@@ -328,8 +333,9 @@ void ArmTaskNode::execute_move_to_position(int position_index) {
 
     const auto& joint_angles = arm_positions_[position_index];
     RCLCPP_INFO(this->get_logger(), "Moving to position %d", position_index);
-    execute_joint_space_trajectory(joint_angles, trajectory_duration_);
-    wait_for_trajectory_completion(trajectory_duration_ + 2.0);
+    if (!execute_joint_space_trajectory(joint_angles, trajectory_duration_)) {
+        return;
+    }
 
     RCLCPP_INFO(this->get_logger(), "Move to position %d completed", position_index);
 }
@@ -343,7 +349,7 @@ void ArmTaskNode::stop_arm_motion() {
     }
 }
 
-void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration) {
+bool ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration) {
     RCLCPP_INFO(this->get_logger(), "Executing joint space trajectory");
 
     // Publish joint target
@@ -354,18 +360,62 @@ void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& join
     std::this_thread::sleep_for(100ms);
 
     // Set parameters on arm_calc
-    if (arm_calc_param_client_->wait_for_service(5s)) {
-        arm_calc_param_client_->set_parameters({rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 1)});
-
-        std::this_thread::sleep_for(100ms);
-
-        arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
-    } else {
+    if (!arm_calc_param_client_->wait_for_service(5s)) {
         RCLCPP_ERROR(this->get_logger(), "Parameter service for %s not available", arm_calc_node_name_.c_str());
+        return false;
     }
+
+    arm_calc_param_client_->set_parameters({rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 1)});
+
+    std::this_thread::sleep_for(100ms);
+
+    arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
+
+    const auto timeout_sec = duration + 2.0;
+    const auto start_time  = std::chrono::steady_clock::now();
+    bool observed_running  = false;
+
+    while (!shutdown_requested_) {
+        const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+        if (elapsed > timeout_sec) {
+            RCLCPP_WARN(
+                this->get_logger(), "Timed out waiting for %s joint trajectory completion after %.2f s",
+                arm_calc_node_name_.c_str(), timeout_sec);
+            return false;
+        }
+
+        auto future = arm_calc_param_client_->get_parameters({"execute_trajectory"});
+        const auto future_status = future.wait_for(200ms);
+        if (future_status != std::future_status::ready) {
+            std::this_thread::sleep_for(50ms);
+            continue;
+        }
+
+        bool execute_trajectory = false;
+        try {
+            const auto result = future.get();
+            if (!result.empty() && result.front().get_type() == rclcpp::ParameterType::PARAMETER_BOOL) {
+                execute_trajectory = result.front().as_bool();
+            }
+        } catch (const std::exception& e) {
+            RCLCPP_WARN(this->get_logger(), "Failed to query %s execute_trajectory: %s", arm_calc_node_name_.c_str(), e.what());
+            std::this_thread::sleep_for(50ms);
+            continue;
+        }
+
+        if (execute_trajectory) {
+            observed_running = true;
+        } else if (observed_running) {
+            return true;
+        }
+
+        std::this_thread::sleep_for(50ms);
+    }
+
+    return false;
 }
 
-void ArmTaskNode::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration) {
+bool ArmTaskNode::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration) {
 
     RCLCPP_INFO(this->get_logger(), "Executing Cartesian space trajectory");
 
@@ -375,15 +425,59 @@ void ArmTaskNode::execute_cartesian_space_trajectory(const geometry_msgs::msg::P
     std::this_thread::sleep_for(100ms);
 
     // Set parameters on arm_calc
-    if (arm_calc_param_client_->wait_for_service(5s)) {
-        arm_calc_param_client_->set_parameters({rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 2)});
-
-        std::this_thread::sleep_for(100ms);
-
-        arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
-    } else {
+    if (!arm_calc_param_client_->wait_for_service(5s)) {
         RCLCPP_ERROR(this->get_logger(), "Parameter service for %s not available", arm_calc_node_name_.c_str());
+        return false;
     }
+
+    arm_calc_param_client_->set_parameters({rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 2)});
+
+    std::this_thread::sleep_for(100ms);
+
+    arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
+
+    const auto timeout_sec = duration + 2.0;
+    const auto start_time  = std::chrono::steady_clock::now();
+    bool observed_running  = false;
+
+    while (!shutdown_requested_) {
+        const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+        if (elapsed > timeout_sec) {
+            RCLCPP_WARN(
+                this->get_logger(), "Timed out waiting for %s Cartesian trajectory completion after %.2f s",
+                arm_calc_node_name_.c_str(), timeout_sec);
+            return false;
+        }
+
+        auto future = arm_calc_param_client_->get_parameters({"execute_trajectory"});
+        const auto future_status = future.wait_for(200ms);
+        if (future_status != std::future_status::ready) {
+            std::this_thread::sleep_for(50ms);
+            continue;
+        }
+
+        bool execute_trajectory = false;
+        try {
+            const auto result = future.get();
+            if (!result.empty() && result.front().get_type() == rclcpp::ParameterType::PARAMETER_BOOL) {
+                execute_trajectory = result.front().as_bool();
+            }
+        } catch (const std::exception& e) {
+            RCLCPP_WARN(this->get_logger(), "Failed to query %s execute_trajectory: %s", arm_calc_node_name_.c_str(), e.what());
+            std::this_thread::sleep_for(50ms);
+            continue;
+        }
+
+        if (execute_trajectory) {
+            observed_running = true;
+        } else if (observed_running) {
+            return true;
+        }
+
+        std::this_thread::sleep_for(50ms);
+    }
+
+    return false;
 }
 
 void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose) {
@@ -421,56 +515,6 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
     } else {
         RCLCPP_ERROR(this->get_logger(), "Parameter service for %s not available", arm_calc_node_name_.c_str());
     }
-}
-
-bool ArmTaskNode::wait_for_trajectory_completion(double timeout_sec) {
-    if (!arm_calc_param_client_->wait_for_service(1s)) {
-        RCLCPP_WARN(this->get_logger(), "Parameter service for %s not available while waiting trajectory completion", arm_calc_node_name_.c_str());
-        std::this_thread::sleep_for(std::chrono::duration<double>(timeout_sec));
-        return false;
-    }
-
-    const auto start_time = std::chrono::steady_clock::now();
-    bool observed_running = false;
-
-    while (!shutdown_requested_) {
-        const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
-        if (elapsed > timeout_sec) {
-            RCLCPP_WARN(
-                this->get_logger(), "Timed out waiting for %s trajectory completion after %.2f s", arm_calc_node_name_.c_str(),
-                timeout_sec);
-            return false;
-        }
-
-        auto future = arm_calc_param_client_->get_parameters({"execute_trajectory"});
-        const auto future_status = future.wait_for(200ms);
-        if (future_status != std::future_status::ready) {
-            std::this_thread::sleep_for(50ms);
-            continue;
-        }
-
-        bool execute_trajectory = false;
-        try {
-            const auto result = future.get();
-            if (!result.empty() && result.front().get_type() == rclcpp::ParameterType::PARAMETER_BOOL) {
-                execute_trajectory = result.front().as_bool();
-            }
-        } catch (const std::exception& e) {
-            RCLCPP_WARN(this->get_logger(), "Failed to query %s execute_trajectory: %s", arm_calc_node_name_.c_str(), e.what());
-            std::this_thread::sleep_for(50ms);
-            continue;
-        }
-
-        if (execute_trajectory) {
-            observed_running = true;
-        } else if (observed_running) {
-            return true;
-        }
-
-        std::this_thread::sleep_for(50ms);
-    }
-
-    return false;
 }
 
 bool ArmTaskNode::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {
@@ -645,22 +689,14 @@ bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped&
     }
 }
 
-void ArmTaskNode::set_parameter_on_remote_node(const std::string& node_name, const rclcpp::Parameter& param) {
+void ArmTaskNode::set_parameter_on_remote_node(const std::string& node_name, const rclcpp::Parameter& param,const double timeout_sec) {
     auto param_client = std::make_shared<rclcpp::AsyncParametersClient>(this, node_name);
 
-    if (param_client->wait_for_service(1s)) {
+    if (param_client->wait_for_service(std::chrono::duration<double>(timeout_sec))) {
         param_client->set_parameters({param});
     } else {
         RCLCPP_WARN(this->get_logger(), "Parameter service for %s not available", node_name.c_str());
     }
-}
-
-geometry_msgs::msg::PoseStamped ArmTaskNode::create_approach_pose(const geometry_msgs::msg::PoseStamped& target_pose, double distance) {
-
-    geometry_msgs::msg::PoseStamped approach_pose = target_pose;
-    approach_pose.pose.position.x += distance;
-
-    return approach_pose;
 }
 
 } // namespace arm_task

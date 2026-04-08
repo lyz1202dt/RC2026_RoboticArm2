@@ -38,24 +38,20 @@ private:
     //停止机械臂的任何动作
     void stop_arm_motion();
     //执行关节空间轨迹
-    void execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration);
+    bool execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration);
     //执行笛卡尔空间轨迹
-    void execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
+    bool execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
     //执行视觉伺服控制
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
     //等待视觉伺服收敛
     bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
-    //等待轨迹执行完成
-    bool wait_for_trajectory_completion(double timeout_sec);
     
 
     //辅助方法
     bool get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out);
     void set_parameter_on_remote_node(const std::string& node_name, 
-                                       const rclcpp::Parameter& param);
+                                       const rclcpp::Parameter& param,const double timeout_sec=1.0);
     void load_arm_positions_from_yaml();
-    geometry_msgs::msg::PoseStamped create_approach_pose(
-        const geometry_msgs::msg::PoseStamped& target_pose, double distance);
     
     // Callbacks
     void on_place_target_pose(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
@@ -110,7 +106,6 @@ private:
     double grasp_time_{5.0};  // seconds
     double visual_servo_kp_{0.1};
     double visual_servo_max_linear_acc_{0.1};
-    int air_pump_pin_{0};  // Parameter service index for air pump control
     
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
