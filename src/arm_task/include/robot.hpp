@@ -88,6 +88,7 @@ public:
     bool take_pending_task(PendingTaskRequest& request);
     bool get_active_task_context(ActiveTaskContext& context) const;
     void finish_current_task(const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, bool success, const std::string& reason);
+    void publish_feedback(const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, const int32_t current_state, const std::string& description);
 
     //任务调度器:
     void porcess_task();

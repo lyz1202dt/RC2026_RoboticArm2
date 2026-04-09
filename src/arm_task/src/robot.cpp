@@ -3,11 +3,11 @@
 #include "task/catch_kfs.hpp"
 #include "task/idel.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <robot_interfaces/action/arm_task.hpp>
 #include <chrono>
 #include <cmath>
 #include <memory>
 #include <rclcpp/logging.hpp>
+#include <robot_interfaces/action/arm_task.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <thread>
 #include <yaml-cpp/yaml.h>
@@ -88,8 +88,7 @@ Robot::~Robot() {
     RCLCPP_INFO(node_->get_logger(), "Shutting down ArmTaskNode...");
 }
 
-rclcpp_action::GoalResponse Robot::on_handle_goal(
-    const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const ArmTaskGoal> goal) {
+rclcpp_action::GoalResponse Robot::on_handle_goal(const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const ArmTaskGoal> goal) {
     (void)uuid;
 
     std::lock_guard<std::mutex> lock(action_state_mutex_);
@@ -98,12 +97,11 @@ rclcpp_action::GoalResponse Robot::on_handle_goal(
         return rclcpp_action::GoalResponse::REJECT;
     }
 
-    expected_task_id_ = goal->task_id;
+    expected_task_id_   = goal->task_id;
     expected_task_data_ = goal->data;
-    goal_pending_ = true;
+    goal_pending_       = true;
 
-    RCLCPP_INFO(
-        node_->get_logger(), "接收到新动作请求: task_id=%d, data_size=%zu", expected_task_id_, expected_task_data_.size());
+    RCLCPP_INFO(node_->get_logger(), "接收到新动作请求: task_id=%d, data_size=%zu", expected_task_id_, expected_task_data_.size());
 
     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 }
@@ -118,7 +116,7 @@ void Robot::on_handle_accepted(const std::shared_ptr<ArmTaskGoalHandle> goal_han
     {
         std::lock_guard<std::mutex> lock(action_state_mutex_);
         pending_goal_handle_ = goal_handle;
-        should_notify_idle = !task_executing_ && goal_pending_;
+        should_notify_idle   = !task_executing_ && goal_pending_;
     }
 
     if (should_notify_idle) {
@@ -127,9 +125,7 @@ void Robot::on_handle_accepted(const std::shared_ptr<ArmTaskGoalHandle> goal_han
     }
 }
 
-bool Robot::wait_for_idle_signal(const std::chrono::milliseconds timeout) {
-    return idle_task_signal_.try_acquire_for(timeout);
-}
+bool Robot::wait_for_idle_signal(const std::chrono::milliseconds timeout) { return idle_task_signal_.try_acquire_for(timeout); }
 
 bool Robot::take_pending_task(PendingTaskRequest& request) {
     std::lock_guard<std::mutex> lock(action_state_mutex_);
@@ -137,16 +133,16 @@ bool Robot::take_pending_task(PendingTaskRequest& request) {
         return false;
     }
 
-    request.task_id = expected_task_id_;
-    request.data = expected_task_data_;
+    request.task_id     = expected_task_id_;
+    request.data        = expected_task_data_;
     request.goal_handle = pending_goal_handle_;
 
-    active_task_context_.task_id = request.task_id;
-    active_task_context_.data = request.data;
+    active_task_context_.task_id     = request.task_id;
+    active_task_context_.data        = request.data;
     active_task_context_.goal_handle = request.goal_handle;
-    has_active_task_context_ = true;
+    has_active_task_context_         = true;
 
-    goal_pending_ = false;
+    goal_pending_   = false;
     task_executing_ = true;
     return true;
 }
@@ -161,16 +157,15 @@ bool Robot::get_active_task_context(ActiveTaskContext& context) const {
     return true;
 }
 
-void Robot::finish_current_task(
-    const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, const bool success, const std::string& reason) {
-    auto result = std::make_shared<ArmTaskResult>();
+void Robot::finish_current_task(const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, const bool success, const std::string& reason) {
+    auto result      = std::make_shared<ArmTaskResult>();
     result->err_code = success ? 0 : -1;
-    result->reason = reason;
+    result->reason   = reason;
 
     {
         std::lock_guard<std::mutex> lock(action_state_mutex_);
-        task_executing_ = false;
-        has_active_task_context_ = false;
+        task_executing_              = false;
+        has_active_task_context_     = false;
         active_task_context_.task_id = 0;
         active_task_context_.data.clear();
         active_task_context_.goal_handle.reset();
@@ -195,6 +190,14 @@ void Robot::finish_current_task(
     } else {
         goal_handle->abort(result);
     }
+}
+
+void Robot::publish_feedback(
+    const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, const int32_t current_state, const std::string& description) {
+    auto feedback            = std::make_shared<Robot::ArmTask::Feedback>();
+    feedback->stage= current_state;
+    feedback->describe  = description;
+    goal_handle->publish_feedback(feedback);
 }
 
 void Robot::load_arm_positions_from_yaml() {
@@ -517,9 +520,7 @@ void Robot::load_named_joint_positions_from_yaml(const std::string& yaml_path) {
         arm_positions_node = config["arm_positions"];
     } else if (config["arm_position"]) {
         arm_positions_node = config["arm_position"];
-        RCLCPP_WARN(
-            node_->get_logger(), "配置文件 %s 使用了旧键名 [arm_position]，建议改为 [arm_positions]",
-            yaml_path.c_str());
+        RCLCPP_WARN(node_->get_logger(), "配置文件 %s 使用了旧键名 [arm_position]，建议改为 [arm_positions]", yaml_path.c_str());
     } else {
         RCLCPP_WARN(node_->get_logger(), "配置文件 %s 中未找到 [arm_positions] 或 [arm_position]", yaml_path.c_str());
         return;
