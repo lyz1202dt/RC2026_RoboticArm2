@@ -17,7 +17,9 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Joint.msg"
   "msg/Arm.msg"
-  "msg/Armmode.msg"
+
+  "action/ArmTask.action"
+    DEPENDENCIES builtin_interfaces action_msgs std_msgs
 )
 
 if(BUILD_TESTING)

@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
@@ -41,9 +41,21 @@ def generate_launch_description():
         ],
         output="screen",
     )
+
+    catch_kfs_test = TimerAction(
+        period=3.0,
+        actions=[
+            Node(
+                package="arm_task",
+                executable="catch_kfs_test",
+                output="screen",
+            )
+        ],
+    )
     
     return LaunchDescription([
         show_rviz_arg,
         arm_task_sim_launch,
         static_tf_target,
+        catch_kfs_test,
     ])

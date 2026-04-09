@@ -3,6 +3,7 @@
 #include "task/catch_kfs.hpp"
 #include "task/idel.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <robot_interfaces/action/arm_task.hpp>
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -13,9 +14,9 @@
 
 using namespace std::chrono_literals;
 
-Robot::Robot(rclcpp::Node::SharedPtr node){
+Robot::Robot(rclcpp::Node::SharedPtr node) {
 
-    node_=node;
+    node_ = node;
     // Initialize TF2
     tf_buffer_   = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
@@ -53,16 +54,21 @@ Robot::Robot(rclcpp::Node::SharedPtr node){
     visual_target_pub_      = node_->create_publisher<geometry_msgs::msg::PoseStamped>("visual_target_pose", 10);
     joint_space_target_pub_ = node_->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
 
+    task_handle_server = rclcpp_action::create_server<robot_interfaces::action::ArmTask>(
+        node_, "robotic_task", std::bind(&Robot::on_handle_goal, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&Robot::on_cancel_goal, this, std::placeholders::_1), std::bind(&Robot::on_handle_accepted, this, std::placeholders::_1));
+
     // Setup parameter callback
     param_callback_ = node_->add_on_set_parameters_callback(std::bind(&Robot::on_parameters_changed, this, std::placeholders::_1));
 
     // Create parameter client for arm_calc node
-    arm_calc_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this, arm_calc_node_name_);
+    arm_calc_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, arm_calc_node_name_);
     RCLCPP_INFO(node_->get_logger(), "Using arm_calc parameter client target: %s", arm_calc_node_name_.c_str());
 
 
-    
-    register_task(std::make_shared<IdelTask>(this,"idel"));
+
+    register_task(std::make_shared<IdelTask>(this, "idel"));
+    register_task(std::make_shared<CatchKFS>(this, "catch_kfs"));
     init_task_manager("idel");
 
     task_thread_ = std::make_shared<std::thread>([this]() { porcess_task(); });
@@ -71,8 +77,124 @@ Robot::Robot(rclcpp::Node::SharedPtr node){
 }
 
 Robot::~Robot() {
-    RCLCPP_INFO(node_->get_logger(), "Shutting down ArmTaskNode...");
+    shutdown_requested_.store(true);
+    task_manager_cv_.notify_all();
+    idle_task_signal_.release();
 
+    if (task_thread_ && task_thread_->joinable()) {
+        task_thread_->join();
+    }
+
+    RCLCPP_INFO(node_->get_logger(), "Shutting down ArmTaskNode...");
+}
+
+rclcpp_action::GoalResponse Robot::on_handle_goal(
+    const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const ArmTaskGoal> goal) {
+    (void)uuid;
+
+    std::lock_guard<std::mutex> lock(action_state_mutex_);
+    if (task_executing_ || goal_pending_) {
+        RCLCPP_WARN(node_->get_logger(), "当前已有任务正在执行或等待调度，拒绝新的目标");
+        return rclcpp_action::GoalResponse::REJECT;
+    }
+
+    expected_task_id_ = goal->task_id;
+    expected_task_data_ = goal->data;
+    goal_pending_ = true;
+
+    RCLCPP_INFO(
+        node_->get_logger(), "接收到新动作请求: task_id=%d, data_size=%zu", expected_task_id_, expected_task_data_.size());
+
+    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+}
+
+rclcpp_action::CancelResponse Robot::on_cancel_goal(const std::shared_ptr<ArmTaskGoalHandle> goal_handle) {
+    (void)goal_handle;
+    return rclcpp_action::CancelResponse::ACCEPT;
+}
+
+void Robot::on_handle_accepted(const std::shared_ptr<ArmTaskGoalHandle> goal_handle) {
+    bool should_notify_idle = false;
+    {
+        std::lock_guard<std::mutex> lock(action_state_mutex_);
+        pending_goal_handle_ = goal_handle;
+        should_notify_idle = !task_executing_ && goal_pending_;
+    }
+
+    if (should_notify_idle) {
+        RCLCPP_INFO(node_->get_logger(), "动作目标已接受，通知 idel 任务开始分发");
+        idle_task_signal_.release();
+    }
+}
+
+bool Robot::wait_for_idle_signal(const std::chrono::milliseconds timeout) {
+    return idle_task_signal_.try_acquire_for(timeout);
+}
+
+bool Robot::take_pending_task(PendingTaskRequest& request) {
+    std::lock_guard<std::mutex> lock(action_state_mutex_);
+    if (!goal_pending_ || !pending_goal_handle_) {
+        return false;
+    }
+
+    request.task_id = expected_task_id_;
+    request.data = expected_task_data_;
+    request.goal_handle = pending_goal_handle_;
+
+    active_task_context_.task_id = request.task_id;
+    active_task_context_.data = request.data;
+    active_task_context_.goal_handle = request.goal_handle;
+    has_active_task_context_ = true;
+
+    goal_pending_ = false;
+    task_executing_ = true;
+    return true;
+}
+
+bool Robot::get_active_task_context(ActiveTaskContext& context) const {
+    std::lock_guard<std::mutex> lock(action_state_mutex_);
+    if (!has_active_task_context_) {
+        return false;
+    }
+
+    context = active_task_context_;
+    return true;
+}
+
+void Robot::finish_current_task(
+    const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, const bool success, const std::string& reason) {
+    auto result = std::make_shared<ArmTaskResult>();
+    result->err_code = success ? 0 : -1;
+    result->reason = reason;
+
+    {
+        std::lock_guard<std::mutex> lock(action_state_mutex_);
+        task_executing_ = false;
+        has_active_task_context_ = false;
+        active_task_context_.task_id = 0;
+        active_task_context_.data.clear();
+        active_task_context_.goal_handle.reset();
+
+        if (pending_goal_handle_ == goal_handle) {
+            pending_goal_handle_.reset();
+        }
+    }
+
+    if (!goal_handle) {
+        RCLCPP_WARN(node_->get_logger(), "任务结束时 goal_handle 为空");
+        return;
+    }
+
+    if (goal_handle->is_canceling()) {
+        goal_handle->canceled(result);
+        return;
+    }
+
+    if (success) {
+        goal_handle->succeed(result);
+    } else {
+        goal_handle->abort(result);
+    }
 }
 
 void Robot::load_arm_positions_from_yaml() {
@@ -86,65 +208,71 @@ void Robot::load_arm_positions_from_yaml() {
 }
 
 void Robot::porcess_task() {
-    std::shared_ptr<BaseTask> current_task;
-    std::string current_task_name;
-    std::string previous_task_name;
+    while (rclcpp::ok() && !shutdown_requested_.load()) {
+        std::shared_ptr<BaseTask> current_task;
+        std::string current_task_name;
+        std::string previous_task_name;
 
-    {
-        std::unique_lock<std::mutex> lock(task_manager_mutex_);
-        task_manager_cv_.wait_for(lock, std::chrono::milliseconds(100), [this]() {
-            return !rclcpp::ok() || (task_manager_initialized_ && !current_task_name_.empty());
-        });
+        {
+            std::unique_lock<std::mutex> lock(task_manager_mutex_);
+            task_manager_cv_.wait_for(lock, std::chrono::milliseconds(100), [this]() {
+                return shutdown_requested_.load() || !rclcpp::ok() || (task_manager_initialized_ && !current_task_name_.empty());
+            });
 
-        if (!rclcpp::ok()) {
-            return;
+            if (!rclcpp::ok() || shutdown_requested_.load()) {
+                return;
+            }
+
+            if (current_task_name_.empty()) {
+                continue;
+            }
+
+            auto task_it = task_table_.find(current_task_name_);
+            if (task_it == task_table_.end()) {
+                RCLCPP_ERROR(node_->get_logger(), "当前任务 [%s] 未注册，任务调度暂停", current_task_name_.c_str());
+                current_task_name_.clear();
+                continue;
+            }
+
+            current_task       = task_it->second;
+            current_task_name  = current_task_name_;
+            previous_task_name = last_task_name_;
         }
 
-        auto task_it = task_table_.find(current_task_name_);
-        if (task_it == task_table_.end()) {
-            RCLCPP_ERROR(node_->get_logger(), "当前任务 [%s] 未注册，任务调度暂停", current_task_name_.c_str());
-            current_task_name_.clear();
-            return;
+        std::string next_task_name;
+        try {
+            next_task_name = current_task->process(previous_task_name);
+        } catch (const std::exception& e) {
+            RCLCPP_ERROR(node_->get_logger(), "执行任务 [%s] 时发生异常: %s", current_task_name.c_str(), e.what());
+            next_task_name.clear();
+        } catch (...) {
+            RCLCPP_ERROR(node_->get_logger(), "执行任务 [%s] 时发生未知异常", current_task_name.c_str());
+            next_task_name.clear();
         }
 
-        current_task       = task_it->second;
-        current_task_name  = current_task_name_;
-        previous_task_name = last_task_name_;
-    }
+        {
+            std::lock_guard<std::mutex> lock(task_manager_mutex_);
+            last_task_name_ = current_task_name;
 
-    std::string next_task_name;
-    try {
-        next_task_name = current_task->process(previous_task_name);
-    } catch (const std::exception& e) {
-        RCLCPP_ERROR(node_->get_logger(), "执行任务 [%s] 时发生异常: %s", current_task_name.c_str(), e.what());
-        next_task_name.clear();
-    } catch (...) {
-        RCLCPP_ERROR(node_->get_logger(), "执行任务 [%s] 时发生未知异常", current_task_name.c_str());
-        next_task_name.clear();
-    }
+            if (next_task_name.empty()) {
+                RCLCPP_INFO(node_->get_logger(), "任务 [%s] 执行完成，当前没有后续任务", current_task_name.c_str());
+                current_task_name_.clear();
+                continue;
+            }
 
-    {
-        std::lock_guard<std::mutex> lock(task_manager_mutex_);
-        last_task_name_ = current_task_name;
+            if (task_table_.find(next_task_name) == task_table_.end()) {
+                RCLCPP_ERROR(
+                    node_->get_logger(), "任务 [%s] 请求切换到未注册任务 [%s]，调度保持等待", current_task_name.c_str(),
+                    next_task_name.c_str());
+                current_task_name_.clear();
+                continue;
+            }
 
-        if (next_task_name.empty()) {
-            RCLCPP_INFO(node_->get_logger(), "任务 [%s] 执行完成，当前没有后续任务", current_task_name.c_str());
-            current_task_name_.clear();
-            return;
+            if (next_task_name != current_task_name) {
+                RCLCPP_INFO(node_->get_logger(), "任务切换: [%s] -> [%s]", current_task_name.c_str(), next_task_name.c_str());
+            }
+            current_task_name_ = std::move(next_task_name);
         }
-
-        if (task_table_.find(next_task_name) == task_table_.end()) {
-            RCLCPP_ERROR(
-                node_->get_logger(), "任务 [%s] 请求切换到未注册任务 [%s]，调度保持等待", current_task_name.c_str(),
-                next_task_name.c_str());
-            current_task_name_.clear();
-            return;
-        }
-
-        if (next_task_name != current_task_name) {
-            RCLCPP_INFO(node_->get_logger(), "任务切换: [%s] -> [%s]", current_task_name.c_str(), next_task_name.c_str());
-        }
-        current_task_name_ = std::move(next_task_name);
     }
 }
 
@@ -208,6 +336,7 @@ void Robot::init_task_manager(const std::string first_task_name) {
 
 
 rcl_interfaces::msg::SetParametersResult Robot::on_parameters_changed(const std::vector<rclcpp::Parameter>& params) {
+    (void)params;
 
     rcl_interfaces::msg::SetParametersResult result;
     result.successful = true;
@@ -242,11 +371,9 @@ bool Robot::execute_joint_space_trajectory(const std::vector<double>& joint_angl
         return false;
     }
 
-    arm_calc_param_client_->set_parameters({rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 1)});
-
-    std::this_thread::sleep_for(100ms);
-
-    arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
+    arm_calc_param_client_->set_parameters(
+        {rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 1),
+         rclcpp::Parameter("execute_trajectory", true)});
 
     const auto timeout_sec = duration + 2.0;
     const auto start_time  = std::chrono::steady_clock::now();
@@ -256,12 +383,12 @@ bool Robot::execute_joint_space_trajectory(const std::vector<double>& joint_angl
         const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
         if (elapsed > timeout_sec) {
             RCLCPP_WARN(
-                node_->get_logger(), "Timed out waiting for %s joint trajectory completion after %.2f s",
-                arm_calc_node_name_.c_str(), timeout_sec);
+                node_->get_logger(), "Timed out waiting for %s joint trajectory completion after %.2f s", arm_calc_node_name_.c_str(),
+                timeout_sec);
             return false;
         }
 
-        auto future = arm_calc_param_client_->get_parameters({"execute_trajectory"});
+        auto future              = arm_calc_param_client_->get_parameters({"execute_trajectory"});
         const auto future_status = future.wait_for(200ms);
         if (future_status != std::future_status::ready) {
             std::this_thread::sleep_for(50ms);
@@ -321,12 +448,12 @@ bool Robot::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseSta
         const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
         if (elapsed > timeout_sec) {
             RCLCPP_WARN(
-                node_->get_logger(), "Timed out waiting for %s Cartesian trajectory completion after %.2f s",
-                arm_calc_node_name_.c_str(), timeout_sec);
+                node_->get_logger(), "Timed out waiting for %s Cartesian trajectory completion after %.2f s", arm_calc_node_name_.c_str(),
+                timeout_sec);
             return false;
         }
 
-        auto future = arm_calc_param_client_->get_parameters({"execute_trajectory"});
+        auto future              = arm_calc_param_client_->get_parameters({"execute_trajectory"});
         const auto future_status = future.wait_for(200ms);
         if (future_status != std::future_status::ready) {
             std::this_thread::sleep_for(50ms);
@@ -357,12 +484,9 @@ bool Robot::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseSta
     return false;
 }
 
-void Robot::execute_visual_servo(const geometry_msgs::msg::Twist& velocity)
-{
+void Robot::execute_visual_servo(const geometry_msgs::msg::Twist& velocity) { (void)velocity; }
 
-}
-
-bool Robot::set_air_pump(const bool &enable) {
+bool Robot::set_air_pump(const bool& enable) {
     if (arm_calc_param_client_->wait_for_service(std::chrono::duration<double>(0.5))) {
         arm_calc_param_client_->set_parameters({rclcpp::Parameter("enable_air_pump", enable)});
         return true;
@@ -388,30 +512,46 @@ void Robot::load_named_joint_positions_from_yaml(const std::string& yaml_path) {
     arm_positions_.clear();
     ready_position_.clear();
 
+    YAML::Node arm_positions_node;
     if (config["arm_positions"]) {
-        const YAML::Node arm_positions_node = config["arm_positions"];
+        arm_positions_node = config["arm_positions"];
+    } else if (config["arm_position"]) {
+        arm_positions_node = config["arm_position"];
+        RCLCPP_WARN(
+            node_->get_logger(), "配置文件 %s 使用了旧键名 [arm_position]，建议改为 [arm_positions]",
+            yaml_path.c_str());
+    } else {
+        RCLCPP_WARN(node_->get_logger(), "配置文件 %s 中未找到 [arm_positions] 或 [arm_position]", yaml_path.c_str());
+        return;
+    }
 
-        if (arm_positions_node.IsMap()) {
-            for (const auto& entry : arm_positions_node) {
-                const std::string name = entry.first.as<std::string>();
-                const std::vector<double> joints = entry.second.as<std::vector<double>>();
-                arm_positions_[name] = joints;
-                RCLCPP_INFO(node_->get_logger(), "Loaded named position [%s] with %zu joints", name.c_str(), joints.size());
-            }
-        } else if (arm_positions_node.IsSequence()) {
-            for (const auto& pos : arm_positions_node) {
-                if (!pos["name"] || !pos["joints"]) {
-                    RCLCPP_WARN(node_->get_logger(), "Skip invalid arm position entry in %s", yaml_path.c_str());
-                    continue;
-                }
-
-                const std::string name = pos["name"].as<std::string>();
-                const std::vector<double> joints = pos["joints"].as<std::vector<double>>();
-                arm_positions_[name] = joints;
-                RCLCPP_INFO(node_->get_logger(), "Loaded named position [%s] with %zu joints", name.c_str(), joints.size());
-            }
-        } else {
-            RCLCPP_WARN(node_->get_logger(), "Node [arm_positions] in %s is neither a map nor a sequence", yaml_path.c_str());
+    if (arm_positions_node.IsMap()) {
+        for (const auto& entry : arm_positions_node) {
+            const std::string name           = entry.first.as<std::string>();
+            const std::vector<double> joints = entry.second.as<std::vector<double>>();
+            arm_positions_[name]             = joints;
+            RCLCPP_INFO(node_->get_logger(), "Loaded named position [%s] with %zu joints", name.c_str(), joints.size());
         }
+    } else if (arm_positions_node.IsSequence()) {
+        for (const auto& pos : arm_positions_node) {
+            if (!pos["name"] || !pos["joints"]) {
+                RCLCPP_WARN(node_->get_logger(), "Skip invalid arm position entry in %s", yaml_path.c_str());
+                continue;
+            }
+
+            const std::string name           = pos["name"].as<std::string>();
+            const std::vector<double> joints = pos["joints"].as<std::vector<double>>();
+            arm_positions_[name]             = joints;
+            RCLCPP_INFO(node_->get_logger(), "Loaded named position [%s] with %zu joints", name.c_str(), joints.size());
+        }
+    } else {
+        RCLCPP_WARN(node_->get_logger(), "Node [arm_positions] in %s is neither a map nor a sequence", yaml_path.c_str());
+    }
+
+    const auto ready_it = arm_positions_.find("ready");
+    if (ready_it != arm_positions_.end()) {
+        ready_position_ = ready_it->second;
+    } else {
+        RCLCPP_WARN(node_->get_logger(), "已加载命名位姿，但未找到 [ready] 配置");
     }
 }

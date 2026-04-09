@@ -7,8 +7,11 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
+#include <robot_interfaces/action/arm_task.hpp>
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
@@ -20,6 +23,50 @@
 
 class Robot{
 public:
+    using ArmTask = robot_interfaces::action::ArmTask;
+    using ArmTaskGoal = ArmTask::Goal;
+    using ArmTaskResult = ArmTask::Result;
+    using ArmTaskGoalHandle = rclcpp_action::ServerGoalHandle<ArmTask>;
+
+    class SimpleSemaphore {
+    public:
+        explicit SimpleSemaphore(std::size_t initial_count = 0)
+            : count_(initial_count) {}
+
+        void release() {
+            std::lock_guard<std::mutex> lock(mutex_);
+            ++count_;
+            cv_.notify_one();
+        }
+
+        bool try_acquire_for(const std::chrono::milliseconds timeout) {
+            std::unique_lock<std::mutex> lock(mutex_);
+            if (!cv_.wait_for(lock, timeout, [this]() { return count_ > 0; })) {
+                return false;
+            }
+
+            --count_;
+            return true;
+        }
+
+    private:
+        std::mutex mutex_;
+        std::condition_variable cv_;
+        std::size_t count_{0};
+    };
+
+    struct PendingTaskRequest {
+        int32_t task_id{0};
+        std::vector<double> data;
+        std::shared_ptr<ArmTaskGoalHandle> goal_handle;
+    };
+
+    struct ActiveTaskContext {
+        int32_t task_id{0};
+        std::vector<double> data;
+        std::shared_ptr<ArmTaskGoalHandle> goal_handle;
+    };
+
     explicit Robot(rclcpp::Node::SharedPtr node);
     ~Robot();
 
@@ -31,6 +78,16 @@ public:
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
 
+
+    //上层接口
+    rclcpp_action::Server<ArmTask>::SharedPtr task_handle_server;
+    rclcpp_action::GoalResponse on_handle_goal(const rclcpp_action::GoalUUID& uuid, std::shared_ptr<const ArmTaskGoal> goal);
+    rclcpp_action::CancelResponse on_cancel_goal(const std::shared_ptr<ArmTaskGoalHandle> goal_handle);
+    void on_handle_accepted(const std::shared_ptr<ArmTaskGoalHandle> goal_handle);
+    bool wait_for_idle_signal(const std::chrono::milliseconds timeout);
+    bool take_pending_task(PendingTaskRequest& request);
+    bool get_active_task_context(ActiveTaskContext& context) const;
+    void finish_current_task(const std::shared_ptr<ArmTaskGoalHandle>& goal_handle, bool success, const std::string& reason);
 
     //任务调度器:
     void porcess_task();
@@ -56,6 +113,8 @@ public:
     void execute_visual_servo(const geometry_msgs::msg::Twist& velocity);
     //使能气泵
     bool set_air_pump(const bool &enable);
+    //设置轨迹模式
+    bool set_trajectory_mode();
     //从yaml中得到命名位置的关节角度
     bool get_named_joint_position(const std::string& name, std::vector<double>& joint_angles) const;
     void load_named_joint_positions_from_yaml(const std::string& yaml_path);
@@ -86,6 +145,16 @@ public:
     
     // Remote node clients for parameter setting
     rclcpp::AsyncParametersClient::SharedPtr arm_calc_param_client_;
+
+    mutable std::mutex action_state_mutex_;
+    bool task_executing_{false};
+    bool goal_pending_{false};
+    int32_t expected_task_id_{0};
+    std::vector<double> expected_task_data_;
+    std::shared_ptr<ArmTaskGoalHandle> pending_goal_handle_;
+    bool has_active_task_context_{false};
+    ActiveTaskContext active_task_context_;
+    SimpleSemaphore idle_task_signal_;
 
 private:
     void load_arm_positions_from_yaml();

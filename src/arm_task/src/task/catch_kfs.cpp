@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
-#include <moveit_msgs/msg/move_it_error_codes.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -22,24 +21,48 @@ CatchKFS::~CatchKFS() {}
 
 
 std::string CatchKFS::process(const std::string last_task_name) {
+    (void)last_task_name;
+
+    Robot::ActiveTaskContext context;
+    if (!robot->get_active_task_context(context)) {
+        RCLCPP_WARN(robot->node_->get_logger(), "catch_kfs 未获取到活动任务上下文，返回 idel");
+        return "idel";
+    }
+
+    const auto goal_handle = context.goal_handle;
+    std::vector<double> ready_joint_angles;
+    if (!robot->get_named_joint_position("ready", ready_joint_angles)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [ready]");
+        robot->finish_current_task(goal_handle, false, "未找到命名位姿 ready");
+        return "idel";
+    }
+
     RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
-    if (!robot->execute_joint_space_trajectory(robot->arm_positions_.at("ready"), 1.0)) {
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.0)) {
+        robot->finish_current_task(goal_handle, false, "抓取前移动到准备位失败");
         return "idel";
     }
 
     // 2. Wait for object pose from camera
     RCLCPP_INFO(robot->node_->get_logger(), "等待相机提供物体位姿");
     geometry_msgs::msg::PoseStamped object_pose;
-    int retry_count = 0;
-    // while (!get_object_pose_in_base_frame(object_pose) && retry_count < 50) {
-    //     std::this_thread::sleep_for(100ms);
-    //     retry_count++;
-    // }
-
-    if (retry_count >= 50) {
-        RCLCPP_ERROR(robot->node_->get_logger(), "从相机获取目标位姿失败");
+    if (context.data.size() != (3 + 4)) {
+        RCLCPP_ERROR(
+            robot->node_->get_logger(), "接收到的目标位姿数据维度不正确，预期为3+4，实际为%zu", context.data.size());
+        robot->finish_current_task(goal_handle, false, "接收到的目标位姿数据维度不正确");
         return "idel";
     }
+    //填写位姿数据
+    object_pose.header.frame_id = "base_link";
+    object_pose.header.stamp = robot->node_->now();
+    object_pose.pose.position.x = context.data[0];
+    object_pose.pose.position.y = context.data[1];
+    object_pose.pose.position.z = context.data[2];
+    object_pose.pose.orientation.x = context.data[3];
+    object_pose.pose.orientation.y = context.data[4];
+    object_pose.pose.orientation.z = context.data[5];
+    object_pose.pose.orientation.w = context.data[6];
+    
 
     RCLCPP_INFO(
         robot->node_->get_logger(), "物体在坐标: [%.3f, %.3f, %.3f]", object_pose.pose.position.x, object_pose.pose.position.y,
@@ -53,23 +76,15 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
 
-    // // 3. Move to approach position (distance above target)
-    // RCLCPP_INFO(node_->get_logger(), "移动到接近位置");
-    // auto approach_pose = create_approach_pose(object_pose, -0.1);
-    // execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
-    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
-
-    robot->set_air_pump(true);
+    if (!robot->set_air_pump(true)) {
+        robot->finish_current_task(goal_handle, false, "气泵开启失败");
+        return "idel";
+    }
     std::this_thread::sleep_for(100ms);
-    // 4. Execute visual servo to grasp object
-    // RCLCPP_INFO(node_->get_logger(), "开始视觉伺服抓取");
-    // execute_visual_servo(object_pose);
-    // wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
-    // visual_servo_active_ = false;
-    // 5. Activate air pump to grasp object
 
     RCLCPP_INFO(robot->node_->get_logger(), "执行抓取动作");
     if (!robot->execute_cartesian_space_trajectory(object_pose, 0.6)) {
+        robot->finish_current_task(goal_handle, false, "执行抓取轨迹失败");
         return "idel";
     }
 
@@ -81,16 +96,19 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
     if (!robot->execute_cartesian_space_trajectory(object_pose, 1.0)) {
+        robot->finish_current_task(goal_handle, false, "补推进失败");
         return "idel";
     }
 
     // 6. Move back to ready position
     RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
-    if (!robot->execute_joint_space_trajectory(robot->arm_positions_.at("ready"), 1.5)) {
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.5)) {
+        robot->finish_current_task(goal_handle, false, "抓取完成后返回准备位失败");
         return "idel";
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "抓取流程完成");
+    robot->finish_current_task(goal_handle, true, "抓取流程执行完成");
 
     return "idel";
 }

@@ -5,7 +5,7 @@
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node=std::make_shared<rclcpp::Node>("arm_task_node");
-    arm_task::Robot arm_task;
+    Robot arm_task(node);
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

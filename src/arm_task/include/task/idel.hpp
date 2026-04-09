@@ -9,6 +9,5 @@ public:
     std::string process(const std::string last_task_name) override;
 
 private:
-    void declare_parameters_if_needed();
-    bool parameters_declared_{false};
+
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "robot.hpp"
 #include <string>
 
 class Robot;
