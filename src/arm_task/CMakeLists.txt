@@ -29,6 +29,8 @@ add_executable(arm_task
   src/robot.cpp
   src/task/idel.cpp
   src/task/catch_kfs.cpp
+  src/task/move_kfs.cpp
+  src/task/place_kfs.cpp
 )
 
 add_executable(catch_kfs_test

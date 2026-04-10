@@ -23,6 +23,11 @@ std::string IdelTask::process(const std::string last_task_name)
 {
     (void)last_task_name;
 
+    // TODO: 移动到ready位置
+    std::vector<double> ready_joint_angles;
+    robot->get_named_joint_position("ready", ready_joint_angles);
+    robot->execute_joint_space_trajectory(ready_joint_angles, 1.0);
+
     if (!robot->wait_for_idle_signal(std::chrono::milliseconds(1000))) {
         RCLCPP_INFO(robot->node_->get_logger(), "idel 等待新任务信号超时，继续等待");
         return "idel";
