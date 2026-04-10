@@ -39,13 +39,11 @@ std::string IdelTask::process(const std::string last_task_name)
             RCLCPP_INFO(robot->node_->get_logger(), "idel 收到抓取任务，切换到 catch_kfs");
             return "catch_kfs";
         case kTaskMoveTarget:
-            RCLCPP_WARN(robot->node_->get_logger(), "移动任务分支尚未实现");
-            robot->finish_current_task(request.goal_handle, false, "移动任务分支尚未实现");
-            return "idel";
+            RCLCPP_WARN(robot->node_->get_logger(), "idel 收到移动任务，切换到 move_kfs");
+            return "move_kfs";
         case kTaskPlaceTarget:
-            RCLCPP_WARN(robot->node_->get_logger(), "放置任务分支尚未实现");
-            robot->finish_current_task(request.goal_handle, false, "放置任务分支尚未实现");
-            return "idel";
+            RCLCPP_WARN(robot->node_->get_logger(), "idel 收到放置任务，切换到 place_kfs");
+            return "place_kfs";
         default:
             RCLCPP_WARN(robot->node_->get_logger(), "未知 task_id=%d，无法分发任务", request.task_id);
             robot->finish_current_task(request.goal_handle, false, "未知 task_id，无法分发任务");

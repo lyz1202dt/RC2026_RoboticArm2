@@ -90,6 +90,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
     RCLCPP_INFO(robot->node_->get_logger(), "向前推进一段距离以确保吸取稳固");
     object_pose.pose.position.x+=0.06;
+    object_pose.pose.position.z+=0.125;
     quat.setRPY(0, (M_PI / 2)-0.25, 0);
     object_pose.pose.orientation.w = quat.getW();
     object_pose.pose.orientation.x = quat.getX();
@@ -100,9 +101,59 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return "idel";
     }
 
+
+
+
+    // 1. 移动到 kfs4_interim_1_pos
+    std::vector<double> interim_pos;
+    if (!robot->get_named_joint_position("kfs4_interim_1_pos", interim_pos)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [kfs4_interim_1_pos]");
+        robot->finish_current_task(goal_handle, false, "未找到命名位姿 kfs4_interim_1_pos");
+        return "idel";
+    }
+
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到中间位置 kfs4_interim_1_pos");
+    if (!robot->execute_joint_space_trajectory(interim_pos, 1.0)) {
+        robot->finish_current_task(goal_handle, false, "移动到中间位置失败");
+        return "idel";
+    }
+
+    // 2. 等待 1s
+    std::this_thread::sleep_for(1s);
+
+    // 3. 移动到 "kfs" + std::to_string(robot->current_kfs_num_) + "_detach_pos"
+    std::string detach_pos_name = "kfs" + std::to_string(robot->current_kfs_num_) + "_detach_pos";
+    std::vector<double> detach_pos;
+    if (!robot->get_named_joint_position(detach_pos_name, detach_pos)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", detach_pos_name.c_str());
+        robot->finish_current_task(goal_handle, false, "未找到命名位姿 " + detach_pos_name);
+        return "idel";
+    }
+
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到释放位置 [%s]", detach_pos_name.c_str());
+    if (!robot->execute_joint_space_trajectory(detach_pos, 1.0)) {
+        robot->finish_current_task(goal_handle, false, "移动到释放位置失败");
+        return "idel";
+    }
+
+    // 4. 等待 1s
+    std::this_thread::sleep_for(1s);
+
+    // 5. 关闭气泵
+    RCLCPP_INFO(robot->node_->get_logger(), "关闭气泵");
+    if (!robot->set_air_pump(false)) {
+        robot->finish_current_task(goal_handle, false, "气泵关闭失败");
+        return "idel";
+    }
+
+    robot->current_kfs_num_ += 1;
+
+
+
+
     // 6. Move back to ready position
     RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.5)) {
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 0.9)) {
         robot->finish_current_task(goal_handle, false, "抓取完成后返回准备位失败");
         return "idel";
     }

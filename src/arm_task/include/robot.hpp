@@ -1,6 +1,7 @@
 #pragma once
 
 #include "task/base_task.hpp"
+#include <cstdint>
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
@@ -150,11 +151,14 @@ public:
     bool task_executing_{false};
     bool goal_pending_{false};
     int32_t expected_task_id_{0};
+    int32_t current_kfs_num_{0};
     std::vector<double> expected_task_data_;
     std::shared_ptr<ArmTaskGoalHandle> pending_goal_handle_;
     bool has_active_task_context_{false};
     ActiveTaskContext active_task_context_;
     SimpleSemaphore idle_task_signal_;
+
+    geometry_msgs::msg::Pose target_shelf_;
 
 private:
     void load_arm_positions_from_yaml();
