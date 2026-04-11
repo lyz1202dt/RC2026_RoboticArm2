@@ -15,6 +15,7 @@
 #include <thread>
 #include <vector>
 #include <robot_interfaces/msg/vis.hpp>
+#include <robot_interfaces/msg/armmode.hpp>
 
 namespace arm_task {
 
@@ -39,6 +40,7 @@ private:
     void execute_place_flow();
     void execute_move_to_position(int position_index);
     void execute_place_flow_rad();
+    void execute_place_place_rad();
 
 
     // Arm control operations (private methods)
@@ -68,7 +70,7 @@ private:
     // Publishers
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
-
+    rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr air_pub_;
     // Subscribers
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr place_target_sub_;
 
@@ -111,7 +113,10 @@ private:
     std::map<int, std::vector<double>> arm_positions_;
     std::vector<double> ready_position_; // Preparation position
     std::vector<double> home_position_{0.0, 0.0, 0.0, 0.0};
-    std::vector<double> grasp_position{0.0, 3.14159, 1.5708, 1.5708};
+    std::vector<double> grasp_position{0.0, 3.14159, 2.45, 2.48};
+    std::vector<double> grasp_position_two{0.0, 3.14159, 2.4, 2.55};
+    std::vector<double> place_position{0.0,3.14159,3.1,3.1};
+    
 
     // Parameter callback handle
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;

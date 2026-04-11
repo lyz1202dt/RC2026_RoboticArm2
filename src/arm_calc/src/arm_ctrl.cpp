@@ -83,7 +83,7 @@ void ArmCtrlNode::declare_parameters() {
     this->declare_parameter<int>("motion_mode", 0);
 
     // 声明轨迹规划总时间参数：轨迹执行的持续时间（秒）
-    this->declare_parameter<double>("trajectory_duration", 3.0);
+    this->declare_parameter<double>("trajectory_duration", 4.0);
 
     // 声明控制周期参数：控制循环的执行间隔（秒）
     this->declare_parameter<double>("control_period", 0.02);

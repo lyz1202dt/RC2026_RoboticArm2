@@ -41,6 +41,7 @@ typedef struct
 typedef struct
 {
     int pack_type;       //!<@brief 包类型
+    int air_pump;
     servo servo1;        //!<@brief 伺服电机信息
     Expect_Robstride rob01;  //!<@brief RobStride 期望值
     Expect_GM6020 rob02;     //!<@brief GM6020 期望值
