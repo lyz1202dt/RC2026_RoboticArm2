@@ -10,6 +10,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <atomic>
 #include <chrono>
@@ -29,17 +30,40 @@ public:
     using ArmTaskResult = ArmTask::Result;
     using ArmTaskGoalHandle = rclcpp_action::ServerGoalHandle<ArmTask>;
 
+
+    /**
+     * @brief 简单信号量实现类
+     * 
+     * 基于互斥锁和条件变量实现的计数信号量，用于线程间的同步控制。
+     * 支持释放资源和带超时的获取资源操作。
+     */
     class SimpleSemaphore {
     public:
+        /**
+         * @brief 构造函数
+         * @param initial_count 信号量的初始计数值，默认为0
+         */
         explicit SimpleSemaphore(std::size_t initial_count = 0)
             : count_(initial_count) {}
 
+        /**
+         * @brief 释放一个资源（信号量计数加1）
+         * 
+         * 增加信号量计数并唤醒一个等待的线程
+         */
         void release() {
             std::lock_guard<std::mutex> lock(mutex_);
             ++count_;
             cv_.notify_one();
         }
 
+        /**
+         * @brief 尝试在指定超时时间内获取一个资源（信号量计数减1）
+         * 
+         * @param timeout 最大等待时间
+         * @return true 成功获取资源
+         * @return false 超时未获取到资源
+         */
         bool try_acquire_for(const std::chrono::milliseconds timeout) {
             std::unique_lock<std::mutex> lock(mutex_);
             if (!cv_.wait_for(lock, timeout, [this]() { return count_ > 0; })) {
@@ -51,22 +75,34 @@ public:
         }
 
     private:
-        std::mutex mutex_;
-        std::condition_variable cv_;
-        std::size_t count_{0};
+        std::mutex mutex_;                        ///< 保护信号量计数的互斥锁
+        std::condition_variable cv_;              ///< 用于线程等待和通知的条件变量
+        std::size_t count_{0};                    ///< 当前可用的资源数量（信号量计数值）
     };
 
+    
+    /**
+     * @brief 待处理的任务请求结构体
+     * 
+     * 用于存储等待执行的任务请求信息，包含任务ID、任务数据和目标句柄
+     */
     struct PendingTaskRequest {
-        int32_t task_id{0};
-        std::vector<double> data;
-        std::shared_ptr<ArmTaskGoalHandle> goal_handle;
+        int32_t task_id{0};                                    ///< 任务唯一标识ID
+        std::vector<double> data;                              ///< 任务相关的数据参数（如坐标、角度等）
+        std::shared_ptr<ArmTaskGoalHandle> goal_handle;       ///< Action目标句柄，用于反馈任务状态和结果
     };
 
+    /**
+     * @brief 当前激活的任务上下文结构体
+     * 
+     * 用于存储正在执行的任务的上下文信息，包含任务ID、任务数据和目标句柄
+     */
     struct ActiveTaskContext {
-        int32_t task_id{0};
-        std::vector<double> data;
-        std::shared_ptr<ArmTaskGoalHandle> goal_handle;
+        int32_t task_id{0};                                    ///< 当前执行任务的唯一标识ID
+        std::vector<double> data;                              ///< 当前任务相关的数据参数（如坐标、角度等）
+        std::shared_ptr<ArmTaskGoalHandle> goal_handle;       ///< Action目标句柄，用于反馈任务执行状态和结果
     };
+
 
     explicit Robot(rclcpp::Node::SharedPtr node);
     ~Robot();
@@ -78,6 +114,7 @@ public:
     // Publishers
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 
 
     //上层接口
@@ -159,6 +196,12 @@ public:
     SimpleSemaphore idle_task_signal_;
 
     geometry_msgs::msg::Pose target_shelf_;
+
+    bool kfs_attached_{false};  // 标记末端是否附着物块
+
+    void add_kfs_at_the_end();
+    void remove_kfs_at_the_end();
+
 
 private:
     void load_arm_positions_from_yaml();

@@ -19,6 +19,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(robot_interfaces REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 # Include directories
 include_directories(include)
@@ -37,6 +38,10 @@ add_executable(catch_kfs_test
   src/catch_kfs_test.cpp
 )
 
+add_executable(place_kfs_test
+  src/place_kfs_test.cpp
+)
+
 ament_target_dependencies(arm_task
   rclcpp
   rclcpp_action
@@ -47,9 +52,18 @@ ament_target_dependencies(arm_task
   tf2_geometry_msgs
   ament_index_cpp
   robot_interfaces
+  visualization_msgs
 )
 
 ament_target_dependencies(catch_kfs_test
+  rclcpp
+  rclcpp_action
+  geometry_msgs
+  tf2_ros
+  robot_interfaces
+)
+
+ament_target_dependencies(place_kfs_test
   rclcpp
   rclcpp_action
   geometry_msgs
@@ -64,6 +78,7 @@ target_link_libraries(arm_task
 # Install executable
 install(TARGETS arm_task
   catch_kfs_test
+  place_kfs_test
   DESTINATION lib/${PROJECT_NAME}
 )
 

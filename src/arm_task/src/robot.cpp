@@ -2,6 +2,8 @@
 #include "task/base_task.hpp"
 #include "task/catch_kfs.hpp"
 #include "task/idel.hpp"
+#include "task/move_kfs.hpp"
+#include "task/place_kfs.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
 #include <chrono>
@@ -11,6 +13,7 @@
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <thread>
 #include <yaml-cpp/yaml.h>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 using namespace std::chrono_literals;
 
@@ -53,6 +56,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     // Create publishers
     visual_target_pub_      = node_->create_publisher<geometry_msgs::msg::PoseStamped>("visual_target_pose", 10);
     joint_space_target_pub_ = node_->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
+    marker_pub_             = node_->create_publisher<visualization_msgs::msg::MarkerArray>("visualization_marker_array", 10);
 
     task_handle_server = rclcpp_action::create_server<robot_interfaces::action::ArmTask>(
         node_, "robotic_task", std::bind(&Robot::on_handle_goal, this, std::placeholders::_1, std::placeholders::_2),
@@ -69,6 +73,8 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
 
     register_task(std::make_shared<IdelTask>(this, "idel"));
     register_task(std::make_shared<CatchKFS>(this, "catch_kfs"));
+    register_task(std::make_shared<PlaceKFS>(this, "place_kfs"));
+    register_task(std::make_shared<MoveKFS>(this, "move_kfs"));
     init_task_manager("idel");
 
     task_thread_ = std::make_shared<std::thread>([this]() { porcess_task(); });
@@ -554,4 +560,63 @@ void Robot::load_named_joint_positions_from_yaml(const std::string& yaml_path) {
     } else {
         RCLCPP_WARN(node_->get_logger(), "已加载命名位姿，但未找到 [ready] 配置");
     }
+}
+
+void Robot::add_kfs_at_the_end() {
+    // 在末端添加一个边长0.35m的正方体，模拟机械臂抓取到物块的状态
+    visualization_msgs::msg::MarkerArray marker_array;
+    visualization_msgs::msg::Marker marker;
+
+    marker.header.frame_id = tip_frame_;  // 使用末端坐标系
+    marker.header.stamp = node_->now();
+    marker.ns = "kfs_attached";
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::CUBE;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    // 设置正方体尺寸为0.35m
+    marker.scale.x = 0.35;
+    marker.scale.y = 0.35;
+    marker.scale.z = 0.35;
+
+    // 设置位姿（相对于末端坐标系）
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = 0.175;  // 物块中心在末端下方0.175m处（物块高度的一半）
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+
+    // 设置颜色（橙色，模拟泡沫块）
+    marker.color.r = 1.0F;
+    marker.color.g = 0.6F;
+    marker.color.b = 0.0F;
+    marker.color.a = 1.0F;
+
+    marker.lifetime = rclcpp::Duration(0, 0);  // 永久显示
+
+    marker_array.markers.push_back(marker);
+    marker_pub_->publish(marker_array);
+    kfs_attached_ = true;
+
+    RCLCPP_INFO(node_->get_logger(), "已在末端添加物块可视化标记");
+}
+
+void Robot::remove_kfs_at_the_end() {
+    // 移除末端的物块可视化标记
+    visualization_msgs::msg::MarkerArray marker_array;
+    visualization_msgs::msg::Marker marker;
+
+    marker.header.frame_id = tip_frame_;
+    marker.header.stamp = node_->now();
+    marker.ns = "kfs_attached";
+    marker.id = 0;
+    marker.action = visualization_msgs::msg::Marker::DELETE;
+
+    marker_array.markers.push_back(marker);
+    marker_pub_->publish(marker_array);
+    kfs_attached_ = false;
+
+    RCLCPP_INFO(node_->get_logger(), "已移除末端物块可视化标记");
 }

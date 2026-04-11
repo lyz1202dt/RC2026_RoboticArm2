@@ -51,7 +51,24 @@
 
 #include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
+#include <map>
+#include <string>
+
 namespace mujoco_visualization {
+
+    /**
+     * @brief 额外几何体数据结构
+     */
+    struct ExtraGeomData {
+        std::string name;
+        int type;           // mjGEOM_BOX, mjGEOM_SPHERE, etc.
+        float size[3];      // 几何体尺寸
+        float pos[3];       // 相对位置
+        float quat[4];      // 四元数姿态
+        float rgba[4];      // 颜色
+        int parent_body_id; // 父body ID
+    };
+
     /**
      * @brief The MujocoVisualization class provides a wrapper for visualizing MuJoCo simulations using GLFW and OpenGL.
      *
@@ -101,6 +118,44 @@ namespace mujoco_visualization {
             static MujocoVisualization instance;
             return instance;
         }
+
+        /**
+         * @brief 添加额外的几何体到场景中
+         * @param name 几何体名称
+         * @param type 几何体类型 (mjGEOM_BOX, mjGEOM_SPHERE, etc.)
+         * @param size 几何体尺寸 (x, y, z 半尺寸)
+         * @param pos 位置 (相对于父坐标系)
+         * @param quat 四元数姿态 (w, x, y, z)
+         * @param rgba 颜色 (r, g, b, a)
+         * @param parent_body_name 父body的名称，空字符串表示世界坐标系
+         */
+        void addExtraGeom(const std::string& name, int type, const float size[3],
+                         const float pos[3], const float quat[4], const float rgba[4],
+                         const std::string& parent_body_name = "");
+
+        /**
+         * @brief 移除额外的几何体
+         * @param name 几何体名称
+         */
+        void removeExtraGeom(const std::string& name);
+
+        /**
+         * @brief 清除所有额外的几何体
+         */
+        void clearExtraGeoms();
+
+        /**
+         * @brief 检查是否已初始化
+         * @return true 如果已初始化
+         */
+        bool isInitialized() const { return m != nullptr && d != nullptr; }
+
+        /**
+         * @brief 获取body ID
+         * @param name body名称
+         * @return body ID，如果不存在返回-1
+         */
+        int getBodyId(const std::string& name) const;
 
     private:
         /**
@@ -256,6 +311,9 @@ namespace mujoco_visualization {
          * @param mods Bit field describing which modifier keys were held down
          */
         static void keyboard_cb(GLFWwindow *window, int key, int scancode, int act, int mods);
+
+        // 额外几何体存储
+        std::map<std::string, ExtraGeomData> extra_geoms_;
 
     };
 

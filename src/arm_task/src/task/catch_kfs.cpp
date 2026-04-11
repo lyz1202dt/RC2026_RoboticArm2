@@ -57,7 +57,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.header.stamp = robot->node_->now();
     object_pose.pose.position.x = context.data[0];
     object_pose.pose.position.y = context.data[1];
-    object_pose.pose.position.z = context.data[2];
+    object_pose.pose.position.z = context.data[2] + 0.125;  // 假设需要在Z轴方向上增加0.125
     object_pose.pose.orientation.x = context.data[3];
     object_pose.pose.orientation.y = context.data[4];
     object_pose.pose.orientation.z = context.data[5];
@@ -90,36 +90,31 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
     RCLCPP_INFO(robot->node_->get_logger(), "向前推进一段距离以确保吸取稳固");
     object_pose.pose.position.x+=0.06;
-    object_pose.pose.position.z+=0.125;
-    quat.setRPY(0, (M_PI / 2)-0.25, 0);
+    // object_pose.pose.position.z+=0.125;
+    quat.setRPY(0, (M_PI / 2), 0);
     object_pose.pose.orientation.w = quat.getW();
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
-    if (!robot->execute_cartesian_space_trajectory(object_pose, 1.0)) {
+    if (!robot->execute_cartesian_space_trajectory(object_pose, 0.8)) {
         robot->finish_current_task(goal_handle, false, "补推进失败");
         return "idel";
     }
 
+    // 物块抓取成功，添加可视化标记
+    robot->add_kfs_at_the_end();
 
+    robot->current_kfs_num_ += 1;
 
-
-    // 1. 移动到 kfs4_interim_1_pos
-    std::vector<double> interim_pos;
-    if (!robot->get_named_joint_position("kfs4_interim_1_pos", interim_pos)) {
-        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [kfs4_interim_1_pos]");
-        robot->finish_current_task(goal_handle, false, "未找到命名位姿 kfs4_interim_1_pos");
+    // 直线后退0.3m
+    object_pose.pose.position.x-=0.3;
+    if (!robot->execute_cartesian_space_trajectory(object_pose, 0.6)) {
+        robot->finish_current_task(goal_handle, false, "后退失败");
         return "idel";
     }
 
-    RCLCPP_INFO(robot->node_->get_logger(), "移动到中间位置 kfs4_interim_1_pos");
-    if (!robot->execute_joint_space_trajectory(interim_pos, 1.0)) {
-        robot->finish_current_task(goal_handle, false, "移动到中间位置失败");
-        return "idel";
-    }
 
-    // 2. 等待 1s
-    std::this_thread::sleep_for(1s);
+
 
     // 3. 移动到 "kfs" + std::to_string(robot->current_kfs_num_) + "_detach_pos"
     std::string detach_pos_name = "kfs" + std::to_string(robot->current_kfs_num_) + "_detach_pos";
@@ -131,7 +126,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到释放位置 [%s]", detach_pos_name.c_str());
-    if (!robot->execute_joint_space_trajectory(detach_pos, 1.0)) {
+    if (!robot->execute_joint_space_trajectory(detach_pos, 1.2)) {
         robot->finish_current_task(goal_handle, false, "移动到释放位置失败");
         return "idel";
     }
@@ -146,7 +141,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return "idel";
     }
 
-    robot->current_kfs_num_ += 1;
+
 
 
 
