@@ -99,47 +99,6 @@ namespace mujoco_visualization {
 
         // update scene and render
         mjv_updateScene(m, d, &opt, NULL, &cam, mjCAT_ALL, &scn);
-
-        // 添加额外的几何体到场景
-        for (const auto& [name, geom] : extra_geoms_) {
-            // 确保场景有足够的空间
-            if (scn.ngeom >= scn.maxgeom) {
-                break;
-            }
-
-            mjvGeom* g = scn.geoms + scn.ngeom;
-
-            // 初始化几何体
-            mjv_initGeom(g, geom.type, geom.size, geom.pos, geom.quat, geom.rgba);
-
-            // 设置类别为用户定义的几何体
-            g->category = mjCAT_DECOR;
-
-            // 计算世界坐标系中的位置
-            if (geom.parent_body_id >= 0) {
-                // 获取父body的世界坐标变换
-                mjtNum body_pos[3];
-                mjtNum body_quat[4];
-                mju_copy3(body_pos, d->xpos + 3 * geom.parent_body_id);
-                mju_copy4(body_quat, d->xquat + 4 * geom.parent_body_id);
-
-                // 将局部坐标转换为世界坐标
-                mjtNum world_pos[3];
-                mju_rotVecQuat(world_pos, geom.pos, body_quat);
-                mju_addTo3(world_pos, body_pos);
-
-                // 计算世界姿态
-                mjtNum world_quat[4];
-                mju_mulQuat(world_quat, body_quat, geom.quat);
-
-                // 更新几何体的世界坐标
-                mju_copy3(g->pos, world_pos);
-                mju_copy4(g->quat, world_quat);
-            }
-
-            scn.ngeom++;
-        }
-
         mjr_render(viewport, &scn, &con);
 
         // swap OpenGL buffers (blocking call due to v-sync)

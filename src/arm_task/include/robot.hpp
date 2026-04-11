@@ -197,10 +197,8 @@ public:
 
     geometry_msgs::msg::Pose target_shelf_;
 
-    bool kfs_attached_{false};  // 标记末端是否附着物块
+    
 
-    void add_kfs_at_the_end();
-    void remove_kfs_at_the_end();
 
 
 private:

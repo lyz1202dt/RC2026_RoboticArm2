@@ -105,7 +105,7 @@ std::string PlaceKFS::process(const std::string last_task_name) {
     approach_pose.pose.position.x -= 0.40;
     // 强制规定姿态
     tf2::Quaternion quat;
-    quat.setRPY(0, (M_PI/2), 0);
+    quat.setRPY(0, (M_PI/2.5), 0);
     quat.normalize();
     approach_pose.pose.orientation.w = quat.getW();
     approach_pose.pose.orientation.x = quat.getX();
@@ -114,7 +114,7 @@ std::string PlaceKFS::process(const std::string last_task_name) {
 
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到货架前方位置");
-    if (!robot->execute_cartesian_space_trajectory(approach_pose, 5)) {
+    if (!robot->execute_cartesian_space_trajectory(approach_pose, 0.8)) {
         robot->finish_current_task(goal_handle, false, "移动到货架前方失败");
         return "idel";
     }
