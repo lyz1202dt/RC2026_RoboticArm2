@@ -37,6 +37,11 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<std::string>("object_frame", "target_object");
     node_->declare_parameter<std::string>("tip_frame", "link6");
     node_->declare_parameter<std::string>("arm_calc_node_name", "arm_calc_node");
+    node_->declare_parameter<double>("max_linear_velocity", 0.1);
+    node_->declare_parameter<double>("max_angular_velocity", 0.5);
+    node_->declare_parameter<double>("max_joint_velocity", 3.0);
+    node_->declare_parameter<double>("min_trajectory_duration", 0.1);
+    node_->declare_parameter<double>("max_trajectory_duration", 10.0);
 
     // Get parameters
     node_->get_parameter("trajectory_duration", trajectory_duration_);
@@ -49,6 +54,11 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->get_parameter("object_frame", object_frame_);
     node_->get_parameter("tip_frame", tip_frame_);
     node_->get_parameter("arm_calc_node_name", arm_calc_node_name_);
+    node_->get_parameter("max_linear_velocity", max_linear_velocity_);
+    node_->get_parameter("max_angular_velocity", max_angular_velocity_);
+    node_->get_parameter("max_joint_velocity", max_joint_velocity_);
+    node_->get_parameter("min_trajectory_duration", min_trajectory_duration_);
+    node_->get_parameter("max_trajectory_duration", max_trajectory_duration_);
 
     // Load arm positions from YAML
     load_arm_positions_from_yaml();
@@ -560,6 +570,144 @@ void Robot::load_named_joint_positions_from_yaml(const std::string& yaml_path) {
     } else {
         RCLCPP_WARN(node_->get_logger(), "已加载命名位姿，但未找到 [ready] 配置");
     }
+}
+
+bool Robot::get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose) {
+    try {
+        geometry_msgs::msg::TransformStamped transform;
+        transform = tf_buffer_->lookupTransform(
+            base_frame_, tip_frame_, tf2::TimePointZero, std::chrono::milliseconds(500));
+        
+        current_pose.header = transform.header;
+        current_pose.pose.position.x = transform.transform.translation.x;
+        current_pose.pose.position.y = transform.transform.translation.y;
+        current_pose.pose.position.z = transform.transform.translation.z;
+        current_pose.pose.orientation = transform.transform.rotation;
+        
+        return true;
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿失败: %s", ex.what());
+        return false;
+    }
+}
+
+double Robot::calculate_duration(const geometry_msgs::msg::PoseStamped& target_pose) {
+    // 获取当前末端位姿
+    geometry_msgs::msg::PoseStamped current_pose;
+    if (!get_current_end_pose(current_pose)) {
+        RCLCPP_WARN(node_->get_logger(), "无法获取当前位姿，使用默认时间 %.2f s", trajectory_duration_);
+        return trajectory_duration_;
+    }
+
+    // 计算位置距离（欧氏距离）
+    double dx = target_pose.pose.position.x - current_pose.pose.position.x;
+    double dy = target_pose.pose.position.y - current_pose.pose.position.y;
+    double dz = target_pose.pose.position.z - current_pose.pose.position.z;
+    double linear_distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+    // 计算姿态距离（四元数角度差）
+    tf2::Quaternion q_current, q_target;
+    tf2::fromMsg(current_pose.pose.orientation, q_current);
+    tf2::fromMsg(target_pose.pose.orientation, q_target);
+    
+    // 计算四元数角度差
+    double angle_diff = q_current.angleShortestPath(q_target);
+
+    // 根据距离和速度计算时间
+    double linear_time = linear_distance / max_linear_velocity_;
+    double angular_time = angle_diff / max_angular_velocity_;
+    
+    // 取较大值作为总时间，并限制在合理范围内
+    double duration = std::max(linear_time, angular_time);
+    duration = std::clamp(duration, min_trajectory_duration_, max_trajectory_duration_);
+
+    RCLCPP_INFO(
+        node_->get_logger(),
+        "计算轨迹时间: 线性距离=%.3f m, 角度差=%.3f rad, 时间=%.2f s",
+        linear_distance, angle_diff, duration);
+
+    return duration;
+}
+
+double Robot::calculate_duration(const std::vector<double>& target_joints) {
+    if (target_joints.empty()) {
+        RCLCPP_WARN(node_->get_logger(), "目标关节角度为空，使用默认时间 %.2f s", trajectory_duration_);
+        return trajectory_duration_;
+    }
+
+    // 获取当前末端位姿
+    geometry_msgs::msg::PoseStamped current_pose;
+    if (!get_current_end_pose(current_pose)) {
+        RCLCPP_WARN(node_->get_logger(), "无法获取当前位姿，使用默认时间 %.2f s", trajectory_duration_);
+        return trajectory_duration_;
+    }
+
+    // 通过正运动学计算目标关节对应的笛卡尔位姿
+    // 注意：这里需要调用 arm_calc 服务的正运动学功能
+    // 由于当前架构限制，我们使用简化的方法：计算关节角度差
+    
+    // 获取当前关节角度（从TF或其他方式）
+    // 这里暂时使用简化的距离计算方法
+    // 实际应用中应该调用正运动学服务
+    
+    // 方法1：基于关节角度差估算（简化方法）
+    // 假设从参数或其他途径获取当前关节角度
+    // 这里我们先使用笛卡尔距离的近似方法
+    
+    // 由于没有直接获取当前关节角度的方法，我们退回到使用默认轨迹时间
+    // 但可以基于目标关节角度的变化幅度做简单估算
+    
+    // 计算关节角度变化，找出最大变化量
+    const double joint_change_threshold = 0.1;  // 0.1 rad ≈ 5.7度
+    double max_joint_change = 0.0;
+    int significant_change_count = 0;
+    
+    for (const auto& angle : target_joints) {
+        double change = std::abs(angle);
+        if (change > joint_change_threshold) {
+            significant_change_count++;
+            if (change > max_joint_change) {
+                max_joint_change = change;
+            }
+        }
+    }
+    
+    // 如果没有显著变化的关节，使用最小轨迹时间
+    if (significant_change_count == 0) {
+        RCLCPP_INFO(node_->get_logger(), "所有关节变化都很小，使用最小轨迹时间 %.2f s", min_trajectory_duration_);
+        return min_trajectory_duration_;
+    }
+    
+    // 根据最大关节变化估算时间（运动时间取决于最慢的关节）
+    double estimated_time = max_joint_change / max_joint_velocity_;
+    RCLCPP_INFO(node_->get_logger(), "max_joint_velocity = %lf", max_joint_velocity_);
+    estimated_time = std::clamp(estimated_time, min_trajectory_duration_, max_trajectory_duration_);
+    
+    RCLCPP_INFO(
+        node_->get_logger(),
+        "计算轨迹时间（关节空间）: 显著变化关节数=%d, 最大关节变化=%.3f rad, 时间=%.2f s",
+        significant_change_count, max_joint_change, estimated_time);
+    
+    return estimated_time;
+}
+
+double Robot::calculate_duration(const std::string& named_position) {
+    // 从命名位置中查找关节角度
+    std::vector<double> target_joints;
+    if (!get_named_joint_position(named_position, target_joints)) {
+        RCLCPP_WARN(
+            node_->get_logger(),
+            "未找到命名位置 [%s]，使用默认时间 %.2f s",
+            named_position.c_str(), trajectory_duration_);
+        return trajectory_duration_;
+    }
+
+    RCLCPP_INFO(
+        node_->get_logger(),
+        "计算到命名位置 [%s] 的轨迹时间",
+        named_position.c_str());
+
+    return calculate_duration(target_joints);
 }
 
 

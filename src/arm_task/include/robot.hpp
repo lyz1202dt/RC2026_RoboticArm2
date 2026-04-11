@@ -167,7 +167,7 @@ public:
     std::string tip_frame_{"link6"};
     std::string arm_calc_node_name_{"arm_calc_node"};
     double approach_distance_{0.1};  // meters above target
-    double trajectory_duration_{4.0};  // seconds
+    double trajectory_duration_{1.0};  // seconds
     double grasp_time_{5.0};  // seconds
     double visual_servo_max_linear_acc_{0.1};
     
@@ -197,10 +197,23 @@ public:
 
     geometry_msgs::msg::Pose target_shelf_;
 
-    double calculate_duration
 
 
+
+    // 计算轨迹持续时间（支持多种目标类型）
+    double calculate_duration(const geometry_msgs::msg::PoseStamped& target_pose);  // 笛卡尔坐标
+    double calculate_duration(const std::vector<double>& target_joints);            // 关节坐标
+    double calculate_duration(const std::string& named_position);                   // 固定位置名
+
+    // 参数：速度相关
+    double max_linear_velocity_{0.1};      // 最大线速度 m/s
+    double max_angular_velocity_{0.5};     // 最大角速度 rad/s
+    double max_joint_velocity_{3.0};       // 最大关节速度 rad/s
+    double min_trajectory_duration_{0.1};  // 最小轨迹时间 s
+    double max_trajectory_duration_{10.0}; // 最大轨迹时间 s
 
 private:
+    // 获取当前末端执行器的笛卡尔位姿
+    bool get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose);
     void load_arm_positions_from_yaml();
 };

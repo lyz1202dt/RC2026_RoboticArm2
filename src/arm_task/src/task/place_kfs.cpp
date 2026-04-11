@@ -112,6 +112,9 @@ std::string PlaceKFS::process(const std::string last_task_name) {
     approach_pose.pose.orientation.y = quat.getY();
     approach_pose.pose.orientation.z = quat.getZ();
 
+    double duration = robot->calculate_duration("place_interim_pos_0");
+    
+    RCLCPP_INFO(robot->node_->get_logger(), "计算出来移动到place_interim_pos_0的时间: %lf", duration);
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到货架前方位置");
     if (!robot->execute_cartesian_space_trajectory(approach_pose, 0.8)) {
