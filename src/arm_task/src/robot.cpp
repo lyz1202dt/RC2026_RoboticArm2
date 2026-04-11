@@ -564,3 +564,10 @@ void Robot::load_named_joint_positions_from_yaml(const std::string& yaml_path) {
 
 
 
+
+
+
+
+
+
+

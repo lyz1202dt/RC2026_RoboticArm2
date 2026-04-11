@@ -34,7 +34,7 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "0.8", "0.3", "0.7",  # x, y, z translation
+            "0.8", "-0.3", "0.7",  # x, y, z translation
             "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
             "base_link",
             "target_shelf"

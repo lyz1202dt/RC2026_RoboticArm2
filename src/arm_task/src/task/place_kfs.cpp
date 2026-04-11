@@ -154,8 +154,6 @@ std::string PlaceKFS::process(const std::string last_task_name) {
         return "idel";
     }
 
-    // 物块放置成功，移除可视化标记
-    robot->remove_kfs_at_the_end();
 
     std::vector<double> ready_joint_angles;
     if (!robot->get_named_joint_position("ready", ready_joint_angles)) {

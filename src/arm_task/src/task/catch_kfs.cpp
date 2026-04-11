@@ -101,8 +101,6 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return "idel";
     }
 
-    // 物块抓取成功，添加可视化标记
-    robot->add_kfs_at_the_end();
 
     robot->current_kfs_num_ += 1;
 

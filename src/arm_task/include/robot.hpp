@@ -197,7 +197,7 @@ public:
 
     geometry_msgs::msg::Pose target_shelf_;
 
-    
+    double calculate_duration
 
 
 
