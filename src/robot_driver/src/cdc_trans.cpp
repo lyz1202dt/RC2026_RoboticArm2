@@ -32,7 +32,7 @@ bool CDCTrans::open(uint16_t vid, uint16_t pid ){
     RCLCPP_INFO(rclcpp::get_logger("cdc_device"),"尝试打开USB-CDC设备");
     if (!handle)
     {
-        RCLCPP_WARN(rclcpp::get_logger("cdc_device"),"USB-CDC打开失败");
+        RCLCPP_WARN(rclcpp::get_logger("cdc_device"),"USB-CDC打开失败！！！！！！！");
         return false;
     }
     
@@ -123,14 +123,15 @@ void CDCTrans::close() {
 // 发送数据
 int CDCTrans::send(const uint8_t* data, int size, unsigned int time_out) {
     int actual_size;
-    if(_disconnected)
+    if(_disconnected){
+        RCLCPP_ERROR(rclcpp::get_logger("package_comm"),"警告！！！！设备已断开！！！！！！！！！！！！");
         return -2; // 设备断开
-
+    }
     // 同步批量传输
     int rc = libusb_bulk_transfer(handle, EP_OUT, (uint8_t*)data, size, &actual_size, time_out);
     if (rc != 0)
     {
-        RCLCPP_WARN(rclcpp::get_logger("package_comm"),"发送失败:发送数据%d,实际传输%d,返回%d",size,actual_size,rc);
+        RCLCPP_WARN(rclcpp::get_logger("package_comm"),"发送失败！！！！！！！！发送数据%d,实际传输%d,返回%d",size,actual_size,rc);
         return -1;
     }
     else
