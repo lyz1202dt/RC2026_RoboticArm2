@@ -23,6 +23,11 @@ CatchKFS::~CatchKFS() {}
 std::string CatchKFS::process(const std::string last_task_name) {
     (void)last_task_name;
 
+    if (robot->current_kfs_num_ == 1) {
+        RCLCPP_WARN(robot->node_->get_logger(), "当前车上 KFS 数量为 1 ，不能再执行抓取任务。");
+        return "idel";
+    }
+    
     Robot::ActiveTaskContext context;
     if (!robot->get_active_task_context(context)) {
         RCLCPP_WARN(robot->node_->get_logger(), "catch_kfs 未获取到活动任务上下文，返回 idel");
@@ -57,7 +62,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.header.stamp = robot->node_->now();
     object_pose.pose.position.x = context.data[0];
     object_pose.pose.position.y = context.data[1];
-    object_pose.pose.position.z = context.data[2] + 0.125;  // 假设需要在Z轴方向上增加0.125
+    object_pose.pose.position.z = context.data[2];  // 假设需要在Z轴方向上增加0.125
     object_pose.pose.orientation.x = context.data[3];
     object_pose.pose.orientation.y = context.data[4];
     object_pose.pose.orientation.z = context.data[5];
@@ -113,6 +118,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
 
 
+    
 
     // 3. 移动到 "kfs" + std::to_string(robot->current_kfs_num_) + "_detach_pos"
     std::string detach_pos_name = "kfs" + std::to_string(robot->current_kfs_num_) + "_detach_pos";
@@ -132,12 +138,12 @@ std::string CatchKFS::process(const std::string last_task_name) {
     // 4. 等待 1s
     std::this_thread::sleep_for(1s);
 
-    // 5. 关闭气泵
-    RCLCPP_INFO(robot->node_->get_logger(), "关闭气泵");
-    if (!robot->set_air_pump(false)) {
-        robot->finish_current_task(goal_handle, false, "气泵关闭失败");
-        return "idel";
-    }
+    // // 5. 关闭气泵
+    // RCLCPP_INFO(robot->node_->get_logger(), "关闭气泵");
+    // if (!robot->set_air_pump(false)) {
+    //     robot->finish_current_task(goal_handle, false, "气泵关闭失败");
+    //     return "idel";
+    // }
 
 
 

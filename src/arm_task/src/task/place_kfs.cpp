@@ -16,6 +16,11 @@ PlaceKFS::~PlaceKFS() {}
 std::string PlaceKFS::process(const std::string last_task_name) {
     (void)last_task_name;
 
+    if (robot->current_kfs_num_ == 0) {
+        RCLCPP_WARN(robot->node_->get_logger(), "当前车上 KFS 数量为 0 ，不能再执行放置任务。");
+        return "idel";
+    }
+
     Robot::ActiveTaskContext context;
     if (!robot->get_active_task_context(context)) {
         RCLCPP_WARN(robot->node_->get_logger(), "place_kfs 未获取到活动任务上下文，返回 idel");
@@ -52,8 +57,6 @@ std::string PlaceKFS::process(const std::string last_task_name) {
             "未收到目标货架位姿数据，使用默认的 target_shelf_");
     }
 
-
-    robot->current_kfs_num_ = 3;
 
     // 1. 移动到 "kfs" + std::to_string(robot->current_kfs_num_) + "_touch_pos"
     std::string touch_pos_name = "kfs" + std::to_string(robot->current_kfs_num_) + "_touch_pos";
