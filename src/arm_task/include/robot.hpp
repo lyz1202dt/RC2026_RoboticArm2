@@ -217,3 +217,9 @@ private:
     bool get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose);
     void load_arm_positions_from_yaml();
 };
+
+
+
+
+
+

@@ -13,15 +13,19 @@ typedef struct{
 }Motor_t;
 
 typedef struct{
-    int pack_type; // 数据包类型
-    Motor_t joints[6]; // 机械臂关节
+    int pack_type;          // 数据包类型
+    Motor_t joints[6];      // 机械臂关节
     unsigned char air_pump; //使能气泵
 }ArmTarget_t;
 
 typedef struct{
-    int pack_type; // 数据包类型
-    Motor_t joints[6]; // 机械臂关节
+    int pack_type;          // 数据包类型
+    Motor_t joints[6];      // 机械臂关节
 }ArmState_t;
+
+
+
+
 
 // 将字节对齐设置恢复为默认值（通常是8字节）
 #pragma pack()
