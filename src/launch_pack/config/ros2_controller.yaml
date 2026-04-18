@@ -16,8 +16,7 @@ dog_controller:
       - effort
     state_interfaces:
       - position
-      - velocity
-      - effort
+
     joint1_kp: 200.0
     joint1_kd: 8.0
     joint2_kp: 200.0

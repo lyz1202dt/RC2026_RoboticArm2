@@ -16,6 +16,9 @@
 #include <vector>
 #include <robot_interfaces/msg/vis.hpp>
 #include <robot_interfaces/msg/armmode.hpp>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+
 
 namespace arm_task {
 
@@ -29,7 +32,7 @@ private:
     void vision_callback(const robot_interfaces::msg::Vis& msg);
 
 
-
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
     // Task execution thread
     void task_execution_thread();
@@ -112,10 +115,11 @@ private:
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
     std::vector<double> ready_position_; // Preparation position
-    std::vector<double> home_position_{0.0, 0.0, 0.0, 0.0};
+    std::vector<double> home_position_{0.0,0.0,0.0,0.0};
     std::vector<double> grasp_position{0.0, 3.14159, 2.45, 2.48};
     std::vector<double> grasp_position_two{0.0, 3.14159, 2.4, 2.55};
     std::vector<double> place_position{0.0,3.14159,3.1,3.1};
+    std::vector<double> place_position_2{0.0,3.14159,3.1,3.1};
     
 
     // Parameter callback handle
