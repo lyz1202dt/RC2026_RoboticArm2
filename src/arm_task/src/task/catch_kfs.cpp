@@ -43,20 +43,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     std::vector<double> ready_joint_angles;
-    
     std::string ready_position_name = "ready";
-    if (robot->grasp_kfs_num_ == 1 || robot->grasp_kfs_num_ == 2 || 
-        robot->grasp_kfs_num_ == 3 || robot->grasp_kfs_num_ == 4 ||
-        robot->grasp_kfs_num_ == 5 || robot->grasp_kfs_num_ == 7) {
-        ready_position_name = "ready_up200";
-    } else if (robot->grasp_kfs_num_ == 11 || robot->grasp_kfs_num_ == 12 || 
-               robot->grasp_kfs_num_ == 8 || robot->grasp_kfs_num_ == 9 || robot->grasp_kfs_num_ == 10) {
-        ready_position_name = "ready_down200";
-    } else if (robot->grasp_kfs_num_ == 13 || robot->grasp_kfs_num_ == 14 || 
-               robot->grasp_kfs_num_ == 15) {
-        ready_position_name = "ready_up400";
-    }
-
     if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
         RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
         if (goal_handle) {
@@ -117,6 +104,14 @@ std::string CatchKFS::process(const std::string last_task_name) {
         object_pose.pose.orientation.y = context.data[4];
         object_pose.pose.orientation.z = context.data[5];
         object_pose.pose.orientation.w = context.data[6];
+
+        if (context.data[7] == 0) {
+            object_pose.pose.position.z = 0.1;  // 固定高度，单位为米
+        } else if (context.data[7] == 1) {
+            object_pose.pose.position.z = -0.6;  // 固定高度，单位为米
+        } else if (context.data[7] == 2) {
+            object_pose.pose.position.z = 0.2;  // 固定高度，单位为米
+        }
     } else {
         try {
             if (!robot->tf_buffer_->canTransform("base_link", robot->object_frame_, tf2::TimePointZero, 2s)) {

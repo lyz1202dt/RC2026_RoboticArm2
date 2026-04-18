@@ -114,6 +114,15 @@ private:
             return;
         }
 
+        double grasp_height = 0.0;
+        if (target_tf.transform.translation.z < 0) {
+            grasp_height = 1.0;  // 低位抓取
+        } else if (target_tf.transform.translation.z < 0.3) {
+            grasp_height = 0.0;  // 中位抓取
+        } else {
+            grasp_height = 2.0;  // 高位抓取
+        }
+
         ArmTask::Goal goal_msg;
         goal_msg.task_id = kCatchTaskId;
         goal_msg.data = {
@@ -124,6 +133,7 @@ private:
             target_tf.transform.rotation.y,
             target_tf.transform.rotation.z,
             target_tf.transform.rotation.w,
+            grasp_height
         };
 
         RCLCPP_INFO(
@@ -136,7 +146,8 @@ private:
             goal_msg.data[3],
             goal_msg.data[4],
             goal_msg.data[5],
-            goal_msg.data[6]);
+            goal_msg.data[6],
+            goal_msg.data[7]);
 
         rclcpp_action::Client<ArmTask>::SendGoalOptions send_goal_options;
         send_goal_options.goal_response_callback =
