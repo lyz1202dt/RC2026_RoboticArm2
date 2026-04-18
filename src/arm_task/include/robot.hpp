@@ -151,6 +151,8 @@ public:
     void execute_visual_servo(const geometry_msgs::msg::Twist& velocity);
     //使能气泵
     bool set_air_pump(const bool &enable);
+    //设置抓取完成状态到 driver 节点
+    bool set_grasp_state(const bool &finished);
     //设置轨迹模式
     bool set_trajectory_mode();
     //从yaml中得到命名位置的关节角度
@@ -166,6 +168,7 @@ public:
     std::string object_frame_{"target_object"};
     std::string tip_frame_{"link6"};
     std::string arm_calc_node_name_{"arm_calc_node"};
+    std::string driver_node_name_{"driver_node"};
     double approach_distance_{0.1};  // meters above target
     double trajectory_duration_{1.0};  // seconds
     double grasp_time_{5.0};  // seconds
@@ -183,6 +186,7 @@ public:
     
     // Remote node clients for parameter setting
     rclcpp::AsyncParametersClient::SharedPtr arm_calc_param_client_;
+    rclcpp::AsyncParametersClient::SharedPtr driver_param_client_;
 
     mutable std::mutex action_state_mutex_;
     bool task_executing_{false};
@@ -211,6 +215,7 @@ public:
     double max_joint_velocity_{3.0};       // 最大关节速度 rad/s
     double min_trajectory_duration_{0.1};  // 最小轨迹时间 s
     double max_trajectory_duration_{10.0}; // 最大轨迹时间 s
+    int grasp_kfs_num_{0};             // 表示抓取第几个KFS，初始为0
 
 private:
     // 获取当前末端执行器的笛卡尔位姿

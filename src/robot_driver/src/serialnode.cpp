@@ -22,6 +22,11 @@ SerialNode::SerialNode()
 
     // 声明参数：气泵使能开关
     this->declare_parameter<bool>("enable_air_pump", false);
+    this->declare_parameter<int>("grasp_it", 0);
+    this->declare_parameter<int>("grasp_state", 0);
+    this->declare_parameter<std::string>("arm_task_node_name", "arm_task_node");
+    this->get_parameter("arm_task_node_name", arm_task_node_name);
+    arm_task_param_client = std::make_shared<rclcpp::AsyncParametersClient>(this, arm_task_node_name);
 
     // 注册参数变更回调，支持运行时动态修改气泵状态
     param_server_handle = this->add_on_set_parameters_callback(
@@ -33,6 +38,16 @@ SerialNode::SerialNode()
                     enable_air_pump = param.as_bool();
                     RCLCPP_INFO(this->get_logger(), 
                                "气泵状态变更: %d", enable_air_pump ? 1 : 0);
+                } else if (param.get_name() == "grasp_it") {
+                    grasp_it = (param.as_int() == 0) ? 0 : 1;
+                    RCLCPP_INFO(this->get_logger(), "抓取状态变更: %d", grasp_it);
+                } else if (param.get_name() == "grasp_state") {
+                    const int new_grasp_state = (param.as_int() == 0) ? 0 : 1;
+                    if (grasp_state == 0 && new_grasp_state == 1) {
+                        grasp_state_send_once_pending = true;
+                    }
+                    grasp_state = new_grasp_state;
+                    RCLCPP_INFO(this->get_logger(), "抓取完成状态变更: %d", grasp_state);
                 }
             }
             result.successful = true;
@@ -58,8 +73,10 @@ SerialNode::SerialNode()
         if (size == sizeof(ArmState_t)) {
             const ArmState_t* pack = reinterpret_cast<const ArmState_t*>(data);
             // 确认数据包类型正确（pack_type == 1）
-            if (pack->pack_type == 1)
+            if (pack->pack_type == 1) {
                 publishLegState(pack);
+                handleGraspIt(pack);
+            }
         }
     });
 
@@ -127,7 +144,31 @@ void SerialNode::legsSubscribCb(const robot_interfaces::msg::Arm& msg) {
 
     // 设置气泵状态
     arm_target.air_pump = enable_air_pump ? 1 : 0;
+    arm_target.grasp_state = grasp_state_send_once_pending ? 1U : 0U;
+    grasp_state_send_once_pending = false;
 
     // 通过 USB CDC 发送目标数据包到下位机
     cdc_trans->send_struct(arm_target);
 }
+
+void SerialNode::handleGraspIt(const ArmState_t* arm_state) {
+    const int new_grasp_it = (arm_state->grasp_it == 0U) ? 0 : 1;
+    if (new_grasp_it == grasp_it) {
+        return;
+    }
+
+    grasp_it = new_grasp_it;
+    this->set_parameter(rclcpp::Parameter("grasp_it", grasp_it));
+    RCLCPP_INFO(this->get_logger(), "收到抓取命令 grasp_it=%d", grasp_it);
+
+    if (!arm_task_param_client || !arm_task_param_client->wait_for_service(std::chrono::milliseconds(200))) {
+        RCLCPP_WARN(this->get_logger(), "arm_task 参数服务不可用，无法同步 grasp_it");
+        return;
+    }
+
+    arm_task_param_client->set_parameters({rclcpp::Parameter("grasp_it", grasp_it)});
+}
+
+
+
+// grasp_it 参数有上位机控制，当下位机上报的 grasp_it 发生变化时，通过参数服务器同步到 arm_task 节点，触发抓取任务的执行。

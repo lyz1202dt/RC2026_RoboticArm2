@@ -11,6 +11,7 @@
 #include <memory>
 #include <thread>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/parameter_client.hpp>
 #include <cdc_trans.hpp>
 #include <robot_interfaces/msg/arm.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
@@ -67,6 +68,9 @@ private:
     //   arm_state: 机械臂实际状态数据指针
     void publishLegState(const ArmState_t *arm_state);
 
+    // 处理下位机上报的 grasp_it 参数。
+    void handleGraspIt(const ArmState_t *arm_state);
+
     // USB CDC 传输对象，负责与下位机的 USB 通信。
     std::unique_ptr<CDCTrans> cdc_trans;
 
@@ -78,6 +82,9 @@ private:
 
     // 机械臂目标状态的订阅者。
     rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_subscriber;
+
+    // arm_task 节点参数客户端，用于同步 grasp_it。
+    rclcpp::AsyncParametersClient::SharedPtr arm_task_param_client;
 
     // ROS2 参数服务器回调句柄，用于处理动态参数变更。
     OnSetParametersCallbackHandle::SharedPtr param_server_handle;
@@ -105,6 +112,18 @@ private:
 
     // 气泵使能标志，由参数 "enable_air_pump" 控制。
     bool enable_air_pump{false};
+
+    // 当前抓取标志，0 表示不抓，1 表示抓。
+    int grasp_it{0};
+
+    // 抓取任务状态，0 表示未完成，1 表示完成。
+    int grasp_state{0};
+
+    // 抓取完成状态单次发送标志：true 时下一帧发送 grasp_state=1，随后自动清零。
+    bool grasp_state_send_once_pending{false};
+
+    // arm_task 节点名。
+    std::string arm_task_node_name{"arm_task_node"};
 };
 
 #endif

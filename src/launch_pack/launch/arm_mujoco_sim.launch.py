@@ -33,6 +33,11 @@ def generate_launch_description():
         description="Whether to start RViz2 together with MuJoCo simulation",
     )
 
+    vision=Node(package="vision",
+        executable="vision_node",
+        output="screen",
+    )
+
     robot_state_pub = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -78,6 +83,13 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration("show_rviz")),
     )
 
+    arm_task = Node(
+        package="arm_task",
+        executable="arm_task",
+        output="screen",
+    )
+
+
     load_controller = RegisterEventHandler(
         OnProcessStart(
             target_action=mujoco,
@@ -95,5 +107,7 @@ def generate_launch_description():
         mujoco,
         load_controller,
         arm_calc,
+        arm_task,
+        vision,
         rviz2,
     ])

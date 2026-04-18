@@ -37,11 +37,13 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<std::string>("object_frame", "target_object");
     node_->declare_parameter<std::string>("tip_frame", "link6");
     node_->declare_parameter<std::string>("arm_calc_node_name", "arm_calc_node");
+    node_->declare_parameter<std::string>("driver_node_name", "driver_node");
     node_->declare_parameter<double>("max_linear_velocity", 0.1);
     node_->declare_parameter<double>("max_angular_velocity", 0.5);
     node_->declare_parameter<double>("max_joint_velocity", 3.0);
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
+    node_->declare_parameter<int>("grasp_it", 0);
 
     // Get parameters
     node_->get_parameter("trajectory_duration", trajectory_duration_);
@@ -54,6 +56,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->get_parameter("object_frame", object_frame_);
     node_->get_parameter("tip_frame", tip_frame_);
     node_->get_parameter("arm_calc_node_name", arm_calc_node_name_);
+    node_->get_parameter("driver_node_name", driver_node_name_);
     node_->get_parameter("max_linear_velocity", max_linear_velocity_);
     node_->get_parameter("max_angular_velocity", max_angular_velocity_);
     node_->get_parameter("max_joint_velocity", max_joint_velocity_);
@@ -78,6 +81,10 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     // Create parameter client for arm_calc node
     arm_calc_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, arm_calc_node_name_);
     RCLCPP_INFO(node_->get_logger(), "Using arm_calc parameter client target: %s", arm_calc_node_name_.c_str());
+
+    // Create parameter client for driver node
+    driver_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, driver_node_name_);
+    RCLCPP_INFO(node_->get_logger(), "Using driver parameter client target: %s", driver_node_name_.c_str());
 
 
 
@@ -510,6 +517,15 @@ bool Robot::set_air_pump(const bool& enable) {
         RCLCPP_WARN(node_->get_logger(), "%s 的参数服务不可用", arm_calc_node_name_.c_str());
         return false;
     }
+}
+
+bool Robot::set_grasp_state(const bool& finished) {
+    if (!driver_param_client_ || !driver_param_client_->wait_for_service(std::chrono::duration<double>(0.5))) {
+        RCLCPP_WARN(node_->get_logger(), "%s 的参数服务不可用", driver_node_name_.c_str());
+        return false;
+    }
+    driver_param_client_->set_parameters({rclcpp::Parameter("grasp_state", finished ? 1 : 0)});
+    return true;
 }
 
 bool Robot::get_named_joint_position(const std::string& name, std::vector<double>& joint_angles) const {

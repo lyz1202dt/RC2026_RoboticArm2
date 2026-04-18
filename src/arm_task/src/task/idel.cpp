@@ -23,6 +23,15 @@ std::string IdelTask::process(const std::string last_task_name)
 {
     (void)last_task_name;
 
+    int grasp_it = 0;
+    if (robot->node_->get_parameter("grasp_it", grasp_it) && grasp_it == 1) {
+        RCLCPP_INFO(robot->node_->get_logger(), "idel 检测到 grasp_it=1，切换到 catch_kfs");
+        robot->node_->set_parameter(rclcpp::Parameter("grasp_it", 0));
+        robot->current_kfs_num_ = 0;
+        robot->set_air_pump(false);
+        return "catch_kfs";
+    }
+
     // // TODO: 移动到ready位置
     // std::vector<double> ready_joint_angles;
     // robot->get_named_joint_position("ready", ready_joint_angles);
