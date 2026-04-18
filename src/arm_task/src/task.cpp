@@ -251,10 +251,41 @@ void ArmTaskNode::execute_grasp_flow() {
         retry_count++;
     }
 
-    if (retry_count >= 50) {
-        RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
-        return;
+   if (retry_count >= 50) {
+
+    RCLCPP_ERROR(
+       this->get_logger(),
+       "第一次未检测到目标，抬高机械臂重新搜索");
+
+    execute_joint_space_trajectory(
+         ready_position_2,
+         trajectory_duration_);
+
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(
+        static_cast<int>(
+        trajectory_duration_*1000)+500));
+
+    // 再给第二次机会
+    retry_count = 0;
+
+    while(!get_object_pose_in_base_frame(object_pose)
+          && retry_count < 50)
+    {
+        std::this_thread::sleep_for(100ms);
+        retry_count++;
     }
+
+    if(retry_count >=50){
+         RCLCPP_ERROR(
+            this->get_logger(),
+            "抬高后仍未检测到目标");
+
+         return;
+    }
+}
+
+
 
     RCLCPP_INFO(
         this->get_logger(), "物体在坐标: [%.3f, %.3f, %.3f]", object_pose.pose.position.x, object_pose.pose.position.y,
