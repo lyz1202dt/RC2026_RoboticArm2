@@ -3,7 +3,7 @@
 
 # Ready position - used as preparation position for grasp/place operations
 ready_position: [0.0, 2.4, 1.3, 2.0]
-
+place_position: [0.0, 2.4, 0.0, 0.0]
 # Predefined arm positions
 # Each position has an index (used as 1x in arm_task parameter, e.g., 10 for position 0)
 # and a list of 6 joint angles in radians

@@ -40,6 +40,14 @@ def generate_launch_description():
         output="screen",
     )
 
+    joint_state_pub = Node(
+        package="joint_state_publisher",
+        executable="joint_state_publisher",
+        parameters=[{"robot_description": robot_desc}],
+        output="screen",
+    )
+
+
     mujoco = Node(
         package="mujoco_ros2_control",
         executable="mujoco_ros2_control",
@@ -95,4 +103,5 @@ def generate_launch_description():
         load_controller,
         arm_calc,
         rviz2,
+        joint_state_pub,
     ])

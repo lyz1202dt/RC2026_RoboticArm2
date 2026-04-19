@@ -101,7 +101,7 @@ void ArmCtrlNode::declare_parameters() {
     this->declare_parameter<std::string>("base_link", "base_link");
 
     // 声明末端连杆参数：运动学链的末端连杆名称
-    this->declare_parameter<std::string>("tip_link", "link6");
+    this->declare_parameter<std::string>("tip_link", "link5");
 
     // 声明关节目标参数：4个关节的目标角度（弧度）
     this->declare_parameter<std::vector<double>>("joint_target", std::vector<double>(kJointDoF, 0.0));
@@ -116,9 +116,9 @@ void ArmCtrlNode::declare_parameters() {
 // 创建关键可执行函数：设置ROS2订阅者、发布者和定时器，用于与外部通信和控制循环
 void ArmCtrlNode::create_interfaces() {
     // 订阅机械臂当前关节状态：从"myjoints_state"话题接收关节位置、速度、扭矩
-    // joint_state_sub_ = this->create_subscription<robot_interfaces::msg::Arm>(
-    //     kJointStateTopic, rclcpp::SensorDataQoS(),  // 使用传感器数据QoS，确保实时性
-    //     std::bind(&ArmCtrlNode::on_joint_state, this, std::placeholders::_1));  // 绑定回调函数
+    joint_state_sub_ = this->create_subscription<robot_interfaces::msg::Arm>(
+        kJointStateTopic, rclcpp::SensorDataQoS(),
+        std::bind(&ArmCtrlNode::on_joint_state, this, std::placeholders::_1));
 
     // 订阅视觉目标：从"visual_target_pose"话题接收末端执行器的目标姿态
     visual_target_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
@@ -196,7 +196,7 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
         throw std::runtime_error("failed to parse arm URDF into KDL tree"); // 解析失败抛异常
     }
     // 从树中提取运动学链，从base_link到tip_link
-    if (!tree.getChain("base_link", "link5", arm_chain_)) {
+    if (!tree.getChain(base_link_, tip_link_, arm_chain_)) {
         throw std::runtime_error("failed to build KDL chain from " + base_link_ + " to " + tip_link_);
     }
 
@@ -499,9 +499,9 @@ void ArmCtrlNode::publish_control_loop() {
     if (last_ee_log_time_sec_ < 0.0 || (now_sec - last_ee_log_time_sec_) >= 0.25) {
         const CartesianPose ee_pose  = arm_calc_->end_pose(current_joint_state_.position);
         const Eigen::Vector3d ee_rpy = ee_pose.orientation.toRotationMatrix().eulerAngles(0, 1, 2);
-        RCLCPP_INFO(
-            get_logger(), "EE pose pos=(%.4f, %.4f, %.4f) rpy=(%.4f, %.4f, %.4f)", ee_pose.position.x(), ee_pose.position.y(),
-            ee_pose.position.z(), ee_rpy.x(), ee_rpy.y(), ee_rpy.z());
+        // RCLCPP_INFO(
+        //     get_logger(), "EE pose pos=(%.4f, %.4f, %.4f) rpy=(%.4f, %.4f, %.4f)", ee_pose.position.x(), ee_pose.position.y(),
+        //     ee_pose.position.z(), ee_rpy.x(), ee_rpy.y(), ee_rpy.z());
         last_ee_log_time_sec_ = now_sec;
     }
 
@@ -551,7 +551,6 @@ void ArmCtrlNode::publish_control_loop() {
 
 
     publish_joint_target(target_point);                    // 先发布给下位机/驱动器
-    current_joint_state_ = from_arm_message(target_point); // 直接赋值（完美跟踪）
 
     // RViz 可视化部分（保持不变）
     JointTrajectoryPoint rviz_point = execute_trajectory_ ? target_point : build_preview_target();
@@ -657,19 +656,19 @@ void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point
  *
  * @param msg 接收到的关节状态消息（包含位置、速度、力矩等）
  */
-// void ArmCtrlNode::on_joint_state(const JointTrajectoryPoint& point) {
-//     const bool was_initialized = has_joint_state_;        // 记录之前是否已初始化
-//     current_joint_state_       = from_arm_message(point); // 转换消息为内部 JointTrajectoryPoint
-//     has_joint_state_           = true;
+void ArmCtrlNode::on_joint_state(const robot_interfaces::msg::Arm& msg) {
+    const bool was_initialized = has_joint_state_;
+    current_joint_state_       = from_arm_message(msg);
+    has_joint_state_           = true;
 
-//     if (!was_initialized) {                               // 首次收到关节状态
-//         capture_idle_hold_from_current_state();           // 捕获初始空闲保持点
-//     }
+    if (!was_initialized) {
+        capture_idle_hold_from_current_state();
+    }
 
-//     if (!planners_ready_) {                               // 规划器尚未准备好
-//         refresh_plan(this->get_clock()->now().seconds()); // 立即刷新规划
-//     }
-// }
+    if (!planners_ready_) {
+        refresh_plan(this->get_clock()->now().seconds());
+    }
+}
 
 /**
  * @brief 视觉目标（PoseStamped）回调
@@ -858,12 +857,10 @@ ArmCtrlNode::MotionMode ArmCtrlNode::parse_motion_mode(int mode_value) {
 //     return state;
 // }
 
-JointState ArmCtrlNode::from_arm_message(const JointTrajectoryPoint& point) {
+JointState ArmCtrlNode::from_arm_message(const robot_interfaces::msg::Arm& msg) {
     JointState state;
-    for (std::size_t i = 0; i < kJointDoF; ++i) {                                                      // 遍历6个关节
-        state.position[static_cast<int>(i)] = static_cast<float>(point.position[static_cast<int>(i)]); // 位置（弧度）
-        // state.velocity[static_cast<int>(i)] = msg.motor[i].omega;  // 速度（弧度/秒）
-        // state.torque[static_cast<int>(i)] = msg.motor[i].torque;  // 扭矩
+    for (std::size_t i = 0; i < kJointDoF; ++i) {
+        state.position[static_cast<int>(i)] = msg.motor[i].rad;
     }
     return state;
 }

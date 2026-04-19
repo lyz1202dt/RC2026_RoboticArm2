@@ -34,7 +34,9 @@ private:
 
     std::vector<std::string> joints_name_;
     std::vector<double> joint_kp_;
+    std::vector<double> joint_ki_;
     std::vector<double> joint_kd_;
+    std::vector<double> joint_integral_error_;
 
     robot_interfaces::msg::Arm joints_target_{};
     robot_interfaces::msg::Arm joints_state_{};
@@ -42,6 +44,7 @@ private:
     double joint_torque_filter_gate_{0.8};
     double joint_omega_filter_gate_{0.8};
     double command_effort_limit_{80.0};
+    double integral_error_limit_{0.5};
     rclcpp::Time last_target_log_time_{0, 0, RCL_ROS_TIME};
 };
 

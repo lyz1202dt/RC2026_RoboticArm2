@@ -116,6 +116,7 @@ private:
     std::vector<double> grasp_position{0.0, 3.14159, 2.45, 2.48};
     std::vector<double> grasp_position_two{0.0, 3.14159, 2.4, 2.55};
     std::vector<double> place_position{0.0,3.14159,3.1,3.1};
+    std::vector<double> place_position_2{0.0,3.14159,3.1,3.1};
     
 
     // Parameter callback handle

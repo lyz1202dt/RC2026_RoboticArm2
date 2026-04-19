@@ -1,13 +1,13 @@
 #include "arm_task/task.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <chrono>   
+#include <chrono>
 #include <cmath>
 #include <rclcpp/logging.hpp>
+#include <robot_interfaces/msg/armmode.hpp>
+#include <robot_interfaces/msg/vis.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <thread>
 #include <yaml-cpp/yaml.h>
-#include <robot_interfaces/msg/vis.hpp>
-#include <robot_interfaces/msg/armmode.hpp>
 
 using namespace std::chrono_literals;
 
@@ -62,11 +62,11 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     visual_target_pub_      = this->create_publisher<geometry_msgs::msg::PoseStamped>("visual_target_pose", 10);
     joint_space_target_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
 
-    vision_sub_ = this->create_subscription<robot_interfaces::msg::Vis>("pnp_move", 10,
-                                                                          std::bind(&ArmTaskNode::vision_callback, this, std::placeholders::_1));
+     vision_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
+         "pnp_move", 10, std::bind(&ArmTaskNode::vision_callback, this, std::placeholders::_1));
 
-    
-    air_pub_      = this->create_publisher<robot_interfaces::msg::Armmode>("air_pump_target", 10);
+
+    air_pub_ = this->create_publisher<robot_interfaces::msg::Armmode>("air_pump_target", 10);
 
     // Create subscribers
     place_target_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
@@ -120,7 +120,11 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
             RCLCPP_INFO(this->get_logger(), "Loaded ready position with %zu joints", ready_position_.size());
         }
 
-       
+        if (config["place_position"]) {
+            place_position_2 = config["place_position"].as<std::vector<double>>();
+            RCLCPP_INFO(this->get_logger(), "Loaded place position with %zu joints", place_position_2.size());
+        }
+
 
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Failed to load arm positions: %s", e.what());
@@ -199,7 +203,7 @@ void ArmTaskNode::execute_task_state_machine() {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
             execute_place_flow_rad();
-        }else if (current_mode == 4) {
+        } else if (current_mode == 4) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
             execute_place_place_rad();
@@ -255,16 +259,11 @@ void ArmTaskNode::execute_grasp_flow() {
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
 
-    // 3. Move to approach position (distance above target)
-    RCLCPP_INFO(this->get_logger(), "移动到接近位置");
-    auto approach_pose = create_approach_pose(object_pose, 0.06);
-    execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
-
-     // 5. Activate air pump to grasp object
-    RCLCPP_INFO(this->get_logger(), "启动气泵");
-    set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", true));
-    std::this_thread::sleep_for(500ms);
+    // // 3. Move to approach position (distance above target)
+    // RCLCPP_INFO(this->get_logger(), "移动到接近位置");
+    // auto approach_pose = create_approach_pose(object_pose, -0.1);
+    // execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
+    // std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
     // 4. Execute visual servo to grasp object
     RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
@@ -272,17 +271,15 @@ void ArmTaskNode::execute_grasp_flow() {
     wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
     visual_servo_active_ = false;
 
-    // 执行视觉伺服后，立即停止
-    RCLCPP_INFO(this->get_logger(), "视觉伺服已收敛，停止视觉伺服模式");
-    if (arm_calc_param_client_->wait_for_service(2s)) {
-        arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", false)});
-        std::this_thread::sleep_for(100ms); // 给 arm_calc 一点时间切到 Idle
-    } else {
-        RCLCPP_ERROR(this->get_logger(), "视觉伺服停止失败");
-    }                                         
+     RCLCPP_INFO(this->get_logger(), "启动气泵");
+    robot_interfaces::msg::Armmode msg;
+    msg.mode = 1;
+    air_pub_->publish(msg);
+    std::this_thread::sleep_for(500ms);
+
 
     // 6. Move back to ready position
-    RCLCPP_INFO(this->get_logger(), "移动到载块位置");
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(home_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
@@ -395,7 +392,7 @@ void ArmTaskNode::execute_cartesian_space_trajectory(const geometry_msgs::msg::P
 }
 
 void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose) {
-    RCLCPP_INFO(this->get_logger(), "执行视觉伺服规划");
+    RCLCPP_INFO(this->get_logger(), "Executing visual servo");
 
     // Store target pose for publishing thread
     {
@@ -430,6 +427,7 @@ void ArmTaskNode::execute_visual_servo(const geometry_msgs::msg::PoseStamped& ta
         RCLCPP_ERROR(this->get_logger(), "Parameter service for %s not available", arm_calc_node_name_.c_str());
     }
 }
+
 
 bool ArmTaskNode::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {
     std::unique_lock<std::mutex> lock(visual_servo_state_mutex_);
@@ -487,7 +485,7 @@ void ArmTaskNode::visual_servo_publish_thread() {
             // Try to get current object pose from TF
             try {
                 auto target_in_base =
-                tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
+                    tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
                 pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
                 pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
                 pose_to_publish.pose.position.z = target_in_base.transform.translation.z;
@@ -549,13 +547,23 @@ void ArmTaskNode::visual_servo_publish_thread() {
         }
 
         if (!has_pose) {
-            // Fall back to stored pose
-            std::lock_guard<std::mutex> lock(pose_mutex_);
-            if (has_object_pose_) {
-                pose_to_publish = target_object_pose_;
-                has_pose        = true;
-            }
+    std::lock_guard<std::mutex> lock(pose_mutex_);
+    if (has_visual_pose_) {                    // ← 改成 has_visual_pose_（原来是 has_object_pose_）
+        pose_to_publish = latest_visual_pose_; // ← 改成 latest_visual_pose_（原来是 target_object_pose_）
+        // 下面这句保持不变，让它也转到 base 系（和你 get_object_pose_in_base_frame 逻辑一致）
+        if (pose_to_publish.header.frame_id != base_frame_) {
+            try {
+                auto transform = tf_buffer_->lookupTransform(base_frame_, pose_to_publish.header.frame_id, tf2::TimePointZero, tf2::durationFromSec(0.1));
+                tf2::doTransform(pose_to_publish.pose, pose_to_publish.pose, transform);
+                pose_to_publish.header.frame_id = base_frame_;
+            } catch (...) { /* 失败就用 camera 系也行 */ }
         }
+        has_pose = true;
+    } else if (has_object_pose_) {
+        pose_to_publish = target_object_pose_; // 保留原来回退，兼容你原来的行为
+        has_pose = true;
+    }
+}
 
         tf2::Quaternion q;
         q.setRPY(0.0, 1.57, 0.0);
@@ -581,64 +589,28 @@ void ArmTaskNode::visual_servo_publish_thread() {
     RCLCPP_INFO(this->get_logger(), "视觉伺服线程结束执行");
 }
 
-// bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out) {
-//     try {
-//         // Look up transform from base_link to camera_link
-//         geometry_msgs::msg::TransformStamped transform =
-//             tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out) {
+    try {
+        // Look up transform from base_link to camera_link
+        geometry_msgs::msg::TransformStamped transform =
+            tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
 
-//         // The object is assumed to be at the camera frame origin
-//         // (in real scenario, you'd get object pose relative to camera)
-//         pose_out.header.frame_id  = base_frame_;
-//         pose_out.header.stamp     = this->now();
-//         pose_out.pose.position.x  = transform.transform.translation.x;
-//         pose_out.pose.position.y  = transform.transform.translation.y;
-//         pose_out.pose.position.z  = transform.transform.translation.z;
-//         pose_out.pose.orientation = transform.transform.rotation;
-//         return true;
+        // The object is assumed to be at the camera frame origin
+        // (in real scenario, you'd get object pose relative to camera)
+        pose_out.header.frame_id  = base_frame_;
+        pose_out.header.stamp     = this->now();
+        pose_out.pose.position.x  = transform.transform.translation.x;
+        pose_out.pose.position.y  = transform.transform.translation.y;
+        pose_out.pose.position.z  = transform.transform.translation.z;
+        pose_out.pose.orientation = transform.transform.rotation;
+        return true;
 
-//     } catch (const tf2::TransformException& ex) {
-//         RCLCPP_WARN(this->get_logger(), "从 %s 到 %s变换失败: %s", object_frame_.c_str(), base_frame_.c_str(), ex.what());
-//         return false;
-//     }
-// }
-
-
-bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out)
-{
-    std::lock_guard<std::mutex> lock(pose_mutex_);
-
-    if (!has_visual_pose_) {
+    } catch (const tf2::TransformException& ex) {
+        RCLCPP_WARN(this->get_logger(), "从 %s 到 %s变换失败: %s", object_frame_.c_str(), base_frame_.c_str(), ex.what());
         return false;
     }
-
-    pose_out = latest_visual_pose_;
-
-    // 如果视觉消息的 frame_id 不是 base_frame，则通过 TF 转换（利用你 launch 中的 static_tf_camera）
-    if (pose_out.header.frame_id != base_frame_) {
-        try {
-            auto transform = tf_buffer_->lookupTransform(
-                base_frame_, pose_out.header.frame_id,
-                tf2::TimePointZero, tf2::durationFromSec(0.1));
-
-            tf2::doTransform(pose_out.pose, pose_out.pose, transform);
-            pose_out.header.frame_id = base_frame_;
-        } catch (const tf2::TransformException& ex) {
-            RCLCPP_WARN(this->get_logger(), "相机坐标 -> base_link 转换失败: %s", ex.what());
-            return false;
-        }
-    }
-
-    // 强制设置抓取姿态（你原来代码的习惯，只用 xyz）
-    tf2::Quaternion quat;
-    quat.setRPY(0, M_PI / 2, 0);
-    pose_out.pose.orientation.w = quat.getW();
-    pose_out.pose.orientation.x = quat.getX();
-    pose_out.pose.orientation.y = quat.getY();
-    pose_out.pose.orientation.z = quat.getZ();
-
-    return true;
 }
+
 
 
 
@@ -653,24 +625,23 @@ void ArmTaskNode::set_parameter_on_remote_node(
     }
 }
 
-void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg)
-{
+void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg) {
     std::lock_guard<std::mutex> lock(pose_mutex_);
 
     // 假设 Vis 消息里有 x, y, z 字段（最常见的情况）
-    latest_visual_pose_.pose.position.x = msg.x;   // 请根据实际字段名修改
+    latest_visual_pose_.pose.position.x = msg.x; // 请根据实际字段名修改
     latest_visual_pose_.pose.position.y = msg.y;
     latest_visual_pose_.pose.position.z = msg.z;
 
     // 如果你的 Vis 消息里 frame_id 是 "camera_link"，可以这样设置
-    latest_visual_pose_.header.frame_id = "camera_link";   // 或 msg.frame_id 如果有这个字段
+    latest_visual_pose_.header.frame_id = "camera_link"; // 或 msg.frame_id 如果有这个字段
 
     latest_visual_pose_.header.stamp = this->now();
-    has_visual_pose_ = true;
+    has_visual_pose_                 = true;
 
-    RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 500,
-        "收到视觉消息 (相机坐标系): x=%.4f, y=%.4f, z=%.4f", 
-        msg.x, msg.y, msg.z);   // 请根据实际字段名调整
+    RCLCPP_INFO_THROTTLE(
+        this->get_logger(), *this->get_clock(), 500, "收到视觉消息 (相机坐标系): x=%.4f, y=%.4f, z=%.4f", msg.x, msg.y,
+        msg.z);                                          // 请根据实际字段名调整
 }
 
 geometry_msgs::msg::PoseStamped ArmTaskNode::create_approach_pose(const geometry_msgs::msg::PoseStamped& target_pose, double distance) {
