@@ -242,6 +242,9 @@ void ArmTaskNode::execute_grasp_flow() {
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
 
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+
     // 2. Wait for object pose from camera
     RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
     geometry_msgs::msg::PoseStamped object_pose;
