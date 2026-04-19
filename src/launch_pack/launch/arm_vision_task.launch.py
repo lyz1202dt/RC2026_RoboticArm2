@@ -68,9 +68,9 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "0.7", "0.0", "-0.3",  # x, y, z translation
+            "0.29", "0.0", "0.0",  # x, y, z translation
             "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
-            "base_link",
+            "camera_link",
             "target_object"
         ],
         output="screen",
@@ -102,4 +102,6 @@ def generate_launch_description():
         arm_task,
         arm_driver,
         static_tf_camera,
+       
+        
     ])

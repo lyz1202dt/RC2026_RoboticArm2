@@ -636,7 +636,8 @@ void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg) {
 
         tf_msg.transform.translation.x = msg.z;
         tf_msg.transform.translation.y = msg.y;
-        tf_msg.transform.translation.z = msg.x;
+        tf_msg.transform.translation.z = -msg.x;
+
 
         tf_msg.transform.rotation.x = 0.0;
         tf_msg.transform.rotation.y = 0.0;
