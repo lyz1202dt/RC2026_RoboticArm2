@@ -249,6 +249,10 @@ void ArmTaskNode::execute_grasp_flow() {
     while (!get_object_pose_in_base_frame(object_pose) && retry_count < 50) {
         std::this_thread::sleep_for(100ms);
         retry_count++;
+        if (retry_count >= 50){
+            break;
+        }
+
     }
 
    if (retry_count >= 50) {
