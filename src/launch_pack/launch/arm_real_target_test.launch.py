@@ -67,7 +67,28 @@ def generate_launch_description():
         "camera_link"
     ],
     output="screen",
-)
+    )
+
+    static_tf_target = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "0.7", "0.0", "0.35",  # x, y, z translation
+            "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
+            "base_link",
+            "target_object"
+        ],
+        output="screen",
+    )
+
+
+    catch_kfs_test = Node(
+        package="arm_task",
+        executable="catch_kfs_test",
+        output="screen",
+    )
+
+
 
     return LaunchDescription([
         arm_driver,
@@ -76,5 +97,7 @@ def generate_launch_description():
         rviz2,
         static_tf_camera,
         static_tf_target,
-        arm_task
+        arm_task,
+        static_tf_target,
+        catch_kfs_test
     ])

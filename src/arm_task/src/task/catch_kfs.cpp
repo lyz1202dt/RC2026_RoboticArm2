@@ -99,23 +99,68 @@ std::string CatchKFS::process(const std::string last_task_name) {
         object_pose.header.stamp = robot->node_->now();
         object_pose.pose.position.x = context.data[0];
         object_pose.pose.position.y = context.data[1];
-        object_pose.pose.position.z = context.data[2];
+        // object_pose.pose.position.z = context.data[2];
+        object_pose.pose.position.z = robot->node_->get_parameter("grasp_height").as_double();
         object_pose.pose.orientation.x = context.data[3];
         object_pose.pose.orientation.y = context.data[4];
         object_pose.pose.orientation.z = context.data[5];
         object_pose.pose.orientation.w = context.data[6];
 
-        if (context.data[7] == 0) {
-            object_pose.pose.position.z = 0.1;  // 固定高度，单位为米
-        } else if (context.data[7] == 1) {
-            object_pose.pose.position.z = -0.6;  // 固定高度，单位为米
-        } else if (context.data[7] == 2) {
-            object_pose.pose.position.z = 0.2;  // 固定高度，单位为米
-        }
+        RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
+        RCLCPP_INFO(robot->node_->get_logger(), "grasp_height = %lf", object_pose.pose.position.z);
+        RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // if (context.data[7] == 0) {
+        //     object_pose.pose.position.z = 0.1;  // 固定高度，单位为米
+        // } else if (context.data[7] == 1) {
+        //     object_pose.pose.position.z = -0.6;  // 固定高度，单位为米
+        // } else if (context.data[7] == 2) {
+        //     object_pose.pose.position.z = 0.2;  // 固定高度，单位为米
+        // }
     } else {
         try {
             if (!robot->tf_buffer_->canTransform("base_link", robot->object_frame_, tf2::TimePointZero, 2s)) {
                 RCLCPP_ERROR(robot->node_->get_logger(), "等待 TF base_link -> %s 超时", robot->object_frame_.c_str());
+                return "idel";
+            }
+
+            double grasp_height = 0.0;
+            if (robot->node_->get_parameter("grasp_height").as_double() == 0) {
+                RCLCPP_ERROR(robot->node_->get_logger(), "抓取-200位置");
+                grasp_height = -0.08;
+                return "idel";
+            } else if (robot->node_->get_parameter("grasp_height").as_double() == 1) {
+                RCLCPP_ERROR(robot->node_->get_logger(), "抓取200位置");
+                grasp_height = 0.28;
+                return "idel";
+            } else if (robot->node_->get_parameter("grasp_height").as_double() == 2) {
+                RCLCPP_ERROR(robot->node_->get_logger(), "抓取400位置");
+                grasp_height = 0.49;
+                return "idel";
+            } else {
+                RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", robot->node_->get_parameter("grasp_height").as_double());
                 return "idel";
             }
 
@@ -125,8 +170,15 @@ std::string CatchKFS::process(const std::string last_task_name) {
             object_pose.header.stamp = robot->node_->now();
             object_pose.pose.position.x = target_tf.transform.translation.x;
             object_pose.pose.position.y = target_tf.transform.translation.y;
-            object_pose.pose.position.z = target_tf.transform.translation.z;
+            object_pose.pose.position.z = grasp_height;
             object_pose.pose.orientation = target_tf.transform.rotation;
+
+            RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
+            RCLCPP_INFO(robot->node_->get_logger(), "position.x = %lf", object_pose.pose.position.x);
+            RCLCPP_INFO(robot->node_->get_logger(), "position.y = %lf", object_pose.pose.position.y);
+            RCLCPP_INFO(robot->node_->get_logger(), "position.z = %lf", object_pose.pose.position.z);
+            RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
+
         } catch (const std::exception& e) {
             RCLCPP_ERROR(robot->node_->get_logger(), "读取 TF 抓取目标失败: %s", e.what());
             return "idel";
@@ -155,7 +207,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     std::this_thread::sleep_for(100ms);
 
     RCLCPP_INFO(robot->node_->get_logger(), "执行抓取动作");
-    if (!robot->execute_cartesian_space_trajectory(object_pose, 0.6)) {
+    if (!robot->execute_cartesian_space_trajectory(object_pose, 2.0)) {
         if (goal_handle) {
             robot->finish_current_task(goal_handle, false, "执行抓取轨迹失败");
         }

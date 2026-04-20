@@ -44,6 +44,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
+    node_->declare_parameter<double>("grasp_height", 0.0);
 
     // Get parameters
     node_->get_parameter("trajectory_duration", trajectory_duration_);

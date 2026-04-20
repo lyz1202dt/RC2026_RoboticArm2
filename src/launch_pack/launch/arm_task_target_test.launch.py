@@ -42,20 +42,20 @@ def generate_launch_description():
         output="screen",
     )
 
-    catch_kfs_test = TimerAction(
-        period=3.0,
-        actions=[
-            Node(
-                package="arm_task",
-                executable="catch_kfs_test",
-                output="screen",
-            )
-        ],
-    )
+    # catch_kfs_test = TimerAction(
+    #     period=3.0,
+    #     actions=[
+    #         Node(
+    #             package="arm_task",
+    #             executable="catch_kfs_test",
+    #             output="screen",
+    #         )
+    #     ],
+    # )
     
     return LaunchDescription([
         show_rviz_arg,
         arm_task_sim_launch,
         static_tf_target,
-        catch_kfs_test,
+        # catch_kfs_test,
     ])

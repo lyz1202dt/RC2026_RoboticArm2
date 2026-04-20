@@ -1,0 +1,131 @@
+[INFO] [launch]: All log files can be found below /home/kyy/.ros/log/2026-04-20-21-15-10-932760-kyy-ThinkBook-16-G6-IMH-91928
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [91951]
+[INFO] [mujoco_ros2_control-2]: process started with pid [91953]
+[INFO] [arm_calc-3]: process started with pid [91955]
+[INFO] [arm_task-4]: process started with pid [91957]
+[INFO] [vision_node-5]: process started with pid [91959]
+[INFO] [rviz2-6]: process started with pid [91961]
+[INFO] [static_transform_publisher-7]: process started with pid [91963]
+[INFO] [arm_task-8]: process started with pid [91965]
+[INFO] [static_transform_publisher-9]: process started with pid [91967]
+[INFO] [launch.user]: MuJoCo started, spawning dog_controller
+[INFO] [spawner-10]: process started with pid [91969]
+[static_transform_publisher-7] [WARN] [1776690911.043176936] []: Old-style arguments are deprecated; see --help for new-style arguments
+[static_transform_publisher-9] [WARN] [1776690911.047054472] []: Old-style arguments are deprecated; see --help for new-style arguments
+[static_transform_publisher-7] [INFO] [1776690911.052561939] [static_transform_publisher_cKTqIieCNnOWTprd]: Spinning until stopped - publishing transform
+[static_transform_publisher-7] translation: ('0.100000', '0.090000', '-0.030000')
+[static_transform_publisher-7] rotation: ('0.707107', '0.000000', '0.707107', '0.000000')
+[static_transform_publisher-7] from 'link4' to 'camera_link'
+[robot_state_publisher-1] [INFO] [1776690911.064594999] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1776690911.064737266] [robot_state_publisher]: got segment link1
+[robot_state_publisher-1] [INFO] [1776690911.064749760] [robot_state_publisher]: got segment link2
+[robot_state_publisher-1] [INFO] [1776690911.064757641] [robot_state_publisher]: got segment link3
+[robot_state_publisher-1] [INFO] [1776690911.064765013] [robot_state_publisher]: got segment link4
+[robot_state_publisher-1] [INFO] [1776690911.064771913] [robot_state_publisher]: got segment link5
+[robot_state_publisher-1] [INFO] [1776690911.064778706] [robot_state_publisher]: got segment link6
+[robot_state_publisher-1] [INFO] [1776690911.064785335] [robot_state_publisher]: got segment world
+[static_transform_publisher-9] [INFO] [1776690911.071878762] [static_transform_publisher_ElOvkH5KfSngjLY5]: Spinning until stopped - publishing transform
+[static_transform_publisher-9] translation: ('0.700000', '0.000000', '0.350000')
+[static_transform_publisher-9] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-9] from 'base_link' to 'target_object'
+[arm_task-4] [INFO] [1776690911.072186096] [arm_task_node]: Loaded named position [kfs1_detach_pos] with 6 joints
+[arm_task-4] [INFO] [1776690911.072415358] [arm_task_node]: Loaded named position [kfs1_touch_pos] with 6 joints
+[arm_task-4] [INFO] [1776690911.072458481] [arm_task_node]: Loaded named position [kfs4_interim_1_pos] with 6 joints
+[arm_task-4] [INFO] [1776690911.072480621] [arm_task_node]: Loaded named position [place_interim_pos_0] with 6 joints
+[arm_task-4] [INFO] [1776690911.072503117] [arm_task_node]: Loaded named position [place_interim_pos_left] with 6 joints
+[arm_task-4] [INFO] [1776690911.072525758] [arm_task_node]: Loaded named position [place_interim_pos_right] with 6 joints
+[arm_task-4] [INFO] [1776690911.072545986] [arm_task_node]: Loaded named position [place_interim_pos_3] with 6 joints
+[arm_task-4] [INFO] [1776690911.072565649] [arm_task_node]: Loaded named position [start_pos_1] with 6 joints
+[arm_task-4] [INFO] [1776690911.072585165] [arm_task_node]: Loaded named position [start_pos_2] with 6 joints
+[arm_task-4] [INFO] [1776690911.072604594] [arm_task_node]: Loaded named position [start_pos_3] with 6 joints
+[arm_task-4] [INFO] [1776690911.072624592] [arm_task_node]: Loaded named position [ready] with 6 joints
+[arm_task-4] [INFO] [1776690911.072643819] [arm_task_node]: Loaded named position [ready_up200] with 6 joints
+[arm_task-4] [INFO] [1776690911.072663290] [arm_task_node]: Loaded named position [ready_up400] with 6 joints
+[arm_task-4] [INFO] [1776690911.072682554] [arm_task_node]: Loaded named position [ready_down200] with 6 joints
+[arm_task-4] [INFO] [1776690911.072702111] [arm_task_node]: Loaded named position [ready_interm] with 6 joints
+[arm_task-8] [INFO] [1776690911.078288272] [arm_task_node]: Loaded named position [kfs1_detach_pos] with 6 joints
+[arm_task-8] [INFO] [1776690911.078545963] [arm_task_node]: Loaded named position [kfs1_touch_pos] with 6 joints
+[arm_task-8] [INFO] [1776690911.078582312] [arm_task_node]: Loaded named position [kfs4_interim_1_pos] with 6 joints
+[arm_task-8] [INFO] [1776690911.078605379] [arm_task_node]: Loaded named position [place_interim_pos_0] with 6 joints
+[arm_task-8] [INFO] [1776690911.078626833] [arm_task_node]: Loaded named position [place_interim_pos_left] with 6 joints
+[arm_task-8] [INFO] [1776690911.078646924] [arm_task_node]: Loaded named position [place_interim_pos_right] with 6 joints
+[arm_task-8] [INFO] [1776690911.078668480] [arm_task_node]: Loaded named position [place_interim_pos_3] with 6 joints
+[arm_task-8] [INFO] [1776690911.078691213] [arm_task_node]: Loaded named position [start_pos_1] with 6 joints
+[arm_task-8] [INFO] [1776690911.078713513] [arm_task_node]: Loaded named position [start_pos_2] with 6 joints
+[arm_task-8] [INFO] [1776690911.078735445] [arm_task_node]: Loaded named position [start_pos_3] with 6 joints
+[arm_task-8] [INFO] [1776690911.078756296] [arm_task_node]: Loaded named position [ready] with 6 joints
+[arm_task-8] [INFO] [1776690911.078778575] [arm_task_node]: Loaded named position [ready_up200] with 6 joints
+[arm_task-8] [INFO] [1776690911.078800204] [arm_task_node]: Loaded named position [ready_up400] with 6 joints
+[arm_task-8] [INFO] [1776690911.078826638] [arm_task_node]: Loaded named position [ready_down200] with 6 joints
+[arm_task-8] [INFO] [1776690911.078849201] [arm_task_node]: Loaded named position [ready_interm] with 6 joints
+[arm_task-4] [INFO] [1776690911.085720338] [arm_task_node]: Using arm_calc parameter client target: arm_calc_node
+[arm_task-8] [INFO] [1776690911.087795597] [arm_task_node]: Using arm_calc parameter client target: arm_calc_node
+[arm_task-4] [INFO] [1776690911.089468014] [arm_task_node]: Using driver parameter client target: driver_node
+[arm_task-4] [INFO] [1776690911.089529523] [arm_task_node]: 注册任务成功: [idel]
+[arm_task-4] [INFO] [1776690911.089541914] [arm_task_node]: 注册任务成功: [catch_kfs]
+[arm_task-4] [INFO] [1776690911.089546672] [arm_task_node]: 注册任务成功: [place_kfs]
+[arm_task-4] [INFO] [1776690911.089551486] [arm_task_node]: 注册任务成功: [move_kfs]
+[arm_task-4] [INFO] [1776690911.089556015] [arm_task_node]: 任务调度器初始化完成，初始任务为 [idel]
+[arm_task-4] [INFO] [1776690911.089643092] [arm_task_node]: ArmTaskNode初始化完成
+[arm_task-8] [INFO] [1776690911.090205714] [arm_task_node]: Using driver parameter client target: driver_node
+[arm_task-8] [INFO] [1776690911.090247350] [arm_task_node]: 注册任务成功: [idel]
+[arm_task-8] [INFO] [1776690911.090262925] [arm_task_node]: 注册任务成功: [catch_kfs]
+[arm_task-8] [INFO] [1776690911.090274818] [arm_task_node]: 注册任务成功: [place_kfs]
+[arm_task-8] [INFO] [1776690911.090286127] [arm_task_node]: 注册任务成功: [move_kfs]
+[arm_task-8] [INFO] [1776690911.090295309] [arm_task_node]: 任务调度器初始化完成，初始任务为 [idel]
+[arm_task-8] [INFO] [1776690911.090388394] [arm_task_node]: ArmTaskNode初始化完成
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (890) open VIDEOIO(V4L2:/dev/video4): can't open camera by index
+[vision_node-5] 后端 200 打开摄像头索引 4 失败
+[arm_calc-3] [INFO] [1776690911.227529802] [arm_calc_node]: Loaded robot_description from /robot_state_publisher
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (2075) handleMessage OpenCV | GStreamer warning: Embedded video playback halted; module v4l2src0 reported: Cannot identify device '/dev/video4'.
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (1053) open OpenCV | GStreamer warning: unable to start pipeline
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (616) isPipelinePlaying OpenCV | GStreamer warning: GStreamer: pipeline have not been created
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (890) open VIDEOIO(V4L2:/dev/video4): can't open camera by index
+[spawner-10] [INFO] [1776690911.311838318] [spawner_dog_controller]: waiting for service /controller_manager/list_controllers to become available...
+[mujoco_ros2_control-2] [INFO] [1776690911.312841415] [mujoco_ros2_control]: loaded mujoco model
+[mujoco_ros2_control-2] [INFO] [1776690911.313288658] [mujoco_ros2_control]: Created mujoco data
+[mujoco_ros2_control-2] [INFO] [1776690911.313318850] [mujoco_ros2_control]: init controller manager
+[mujoco_ros2_control-2] [INFO] [1776690911.315909216] [arm_hw]: Initializing Hardware Interface
+[mujoco_ros2_control-2] [INFO] [1776690911.315924446] [arm_hw]:   joint1
+[mujoco_ros2_control-2] [INFO] [1776690911.316040600] [arm_hw]:   joint2
+[mujoco_ros2_control-2] [INFO] [1776690911.316059954] [arm_hw]:   joint3
+[mujoco_ros2_control-2] [INFO] [1776690911.316076547] [arm_hw]:   joint4
+[mujoco_ros2_control-2] [INFO] [1776690911.316091120] [arm_hw]:   joint5
+[mujoco_ros2_control-2] [INFO] [1776690911.316109155] [arm_hw]:   joint6
+[mujoco_ros2_control-2] [INFO] [1776690911.316132424] [motor1]: added effort actuator for joint: joint1
+[mujoco_ros2_control-2] [INFO] [1776690911.316136981] [motor2]: added effort actuator for joint: joint2
+[mujoco_ros2_control-2] [INFO] [1776690911.316139483] [motor3]: added effort actuator for joint: joint3
+[mujoco_ros2_control-2] [INFO] [1776690911.316141876] [motor4]: added effort actuator for joint: joint4
+[mujoco_ros2_control-2] [INFO] [1776690911.316144507] [motor5]: added effort actuator for joint: joint5
+[mujoco_ros2_control-2] [INFO] [1776690911.316147230] [motor6]: added effort actuator for joint: joint6
+[mujoco_ros2_control-2] [INFO] [1776690911.316153824] [resource_manager]: Initialize hardware 'arm_hw' 
+[mujoco_ros2_control-2] [INFO] [1776690911.316190595] [resource_manager]: Successful initialization of hardware 'arm_hw'
+[mujoco_ros2_control-2] [INFO] [1776690911.316207694] [resource_manager]: 'configure' hardware 'arm_hw' 
+[mujoco_ros2_control-2] [INFO] [1776690911.316212803] [resource_manager]: Successful 'configure' of hardware 'arm_hw'
+[mujoco_ros2_control-2] [INFO] [1776690911.316217529] [resource_manager]: 'activate' hardware 'arm_hw' 
+[mujoco_ros2_control-2] [INFO] [1776690911.316220657] [resource_manager]: Successful 'activate' of hardware 'arm_hw'
+[vision_node-5] 后端 0 打开摄像头索引 4 失败
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (2075) handleMessage OpenCV | GStreamer warning: Embedded video playback halted; module v4l2src1 reported: Cannot identify device '/dev/video4'.
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (1053) open OpenCV | GStreamer warning: unable to start pipeline
+[vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (616) isPipelinePlaying OpenCV | GStreamer warning: GStreamer: pipeline have not been created
+[vision_node-5] 后端 1800 打开摄像头索引 4 失败
+[vision_node-5] 无法打开摄像头，请检查设备索引和占用情况
+[rviz2-6] [INFO] [1776690911.371619958] [rviz2]: Stereo is NOT SUPPORTED
+[rviz2-6] [INFO] [1776690911.371698439] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[rviz2-6] [INFO] [1776690911.387194373] [rviz2]: Stereo is NOT SUPPORTED
+[ERROR] [vision_node-5]: process has died [pid 91959, exit code 255, cmd '/home/kyy/MyProject/RC2026_RoboticArm2/install/vision/lib/vision/vision_node --ros-args'].
+[mujoco_ros2_control-2] [INFO] [1776690911.565414749] [controller_manager]: Loading controller 'dog_controller'
+[spawner-10] [INFO] [1776690911.582242461] [spawner_dog_controller]: [94mLoaded [1mdog_controller[0m
+[mujoco_ros2_control-2] [INFO] [1776690911.583698622] [controller_manager]: Configuring controller 'dog_controller'
+[mujoco_ros2_control-2] [INFO] [1776690911.796029963] [pose_sensor_registration]: [ee_site] frame: ee_site
+[arm_task-4] [INFO] [1776690912.089751173] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_task-8] [INFO] [1776690912.090601872] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[mujoco_ros2_control-2] [INFO] [1776690912.092217359] [mujoco_ros2_control]: Sim environment setup complete
+[arm_calc-3] [INFO] [1776690912.092890125] [arm_calc_node]: 进入IDEL模式
+[spawner-10] [INFO] [1776690912.093602665] [spawner_dog_controller]: [92mConfigured and activated [1mdog_controller[0m
+[arm_calc-3] [INFO] [1776690912.104824894] [arm_calc_node]: EE pose pos=(0.0041, -0.0374, 1.2605) rpy=(0.0014, -0.0230, -3.1414)
+[INFO] [spawner-10]: process has finished cleanly [pid 91969]
+[arm_task-4] [INFO] [1776690913.089977108] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_task-8] [INFO] [1776690913.090931090] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1776690913.124773438] [arm_calc_node]: EE pose pos=(0.0056, -0.0374, 1.2604) rpy=(0.0015, -0.0016, 3.1416)

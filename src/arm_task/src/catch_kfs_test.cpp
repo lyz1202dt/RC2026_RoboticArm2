@@ -75,6 +75,7 @@ public:
           tf_listener_(tf_buffer_) {
         action_client_ = rclcpp_action::create_client<ArmTask>(this, "robotic_task");
         startup_timer_ = this->create_wall_timer(500ms, std::bind(&CatchKfsTestNode::run_once, this));
+        this->declare_parameter("grasp_it", 0.0);
     }
 
 private:
@@ -114,10 +115,11 @@ private:
             return;
         }
 
+        double grasp_it = this->get_parameter("grasp_it").as_double();
         double grasp_height = 0.0;
-        if (target_tf.transform.translation.z < 0) {
+        if (grasp_it == -1.0) {
             grasp_height = 1.0;  // 低位抓取
-        } else if (target_tf.transform.translation.z < 0.3) {
+        } else if (grasp_it == 0.0) {
             grasp_height = 0.0;  // 中位抓取
         } else {
             grasp_height = 2.0;  // 高位抓取
