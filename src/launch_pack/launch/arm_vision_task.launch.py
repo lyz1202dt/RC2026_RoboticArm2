@@ -85,8 +85,8 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "-0.02", "0.04", "0.0",  # x, y, z translation
-            "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - 90° rotation about Y
+            "-0.01865", "0.042", "0.0",  # x, y, z translation
+            "0.0", "0.7071", "0.0", "0.7071",  # quaternion (x, y, z, w) - 90° rotation about Y
             "link5",
             "camera_link"
         ],

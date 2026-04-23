@@ -236,7 +236,7 @@ std::string ArmCtrlNode::fetch_robot_description() const {
             }
         } catch (const std::exception& e) {
             // 获取失败，记录警告
-            RCLCPP_WARN(this->get_logger(), "Failed to fetch robot_description from parameter service: %s", e.what());
+            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to fetch robot_description from parameter service: %s\033[0m", e.what());
         }
     }
 
@@ -454,8 +454,8 @@ JointTrajectoryPoint ArmCtrlNode::build_preview_target() const {
         const JointVector preview_position = arm_calc_->joint_pos(cartesian_target_, &result, seed);
 
         if (result < 0) {                                           // IK 求解失败（奇异位形或超出关节限位）
-            RCLCPP_WARN(this->get_logger(), "Failed to solve IK for Cartesian preview target, keeping current display");
-            RCLCPP_INFO(this->get_logger(), "has_joint_state_ = %s", has_joint_state_ ? "true" : "false");
+            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to solve IK for Cartesian preview target, keeping current display\033[0m");
+            RCLCPP_INFO(this->get_logger(), "\033[1;31mhas_joint_state_ = %s\033[0m", has_joint_state_ ? "true" : "false");
             return idle_hold_point_;                                // 回退到空闲保持点，避免显示错误
         }
         return BuildStaticJointTarget(arm_calc_, preview_position); // 构建静态关节目标点
@@ -466,7 +466,7 @@ JointTrajectoryPoint ArmCtrlNode::build_preview_target() const {
         const JointVector seed             = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
         const JointVector preview_position = arm_calc_->joint_pos(visual_target_, &result, seed);
         if (result < 0) {
-            RCLCPP_WARN(this->get_logger(), "Failed to solve IK for visual target preview, keeping current display");
+            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to solve IK for visual target preview, keeping current display\033[0m");
             return idle_hold_point_;
         }
         return BuildStaticJointTarget(arm_calc_, preview_position);

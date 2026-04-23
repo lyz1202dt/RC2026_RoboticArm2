@@ -107,12 +107,12 @@ void ArmNode::armSubscribCb(const robot_interfaces::msg::Arm& msg) {
     target_log_print_cnt++;
     if (target_log_update_cnt/4 == target_log_print_cnt) {
         target_log_print_cnt = 0;
-        RCLCPP_INFO(this->get_logger(), "订阅到电机目标值 %f %f %f %f,气泵状态 %d",
-            arm_target.rob02.target_pos,
-            arm_target.rob01.except_pos,
-            arm_target.servo1.low,
-            arm_target.servo1.up,
-        arm_target.air_pump);
+        // RCLCPP_INFO(this->get_logger(), "订阅到电机目标值 %f %f %f %f,气泵状态 %d",
+        //     arm_target.rob02.target_pos,
+        //     arm_target.rob01.except_pos,
+        //     arm_target.servo1.low,
+        //     arm_target.servo1.up,
+        // arm_target.air_pump);
     }
 
     first_update = false;

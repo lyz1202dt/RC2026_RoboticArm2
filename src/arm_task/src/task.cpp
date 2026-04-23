@@ -26,8 +26,8 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     RCLCPP_INFO(this->get_logger(), "Initializing ArmTaskNode...");
 
     // Initialize TF2
-    tf_buffer_   = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+    tf_buffer_      = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+    tf_listener_    = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     // Declare parameters
@@ -77,6 +77,18 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     param_callback_ = this->add_on_set_parameters_callback(std::bind(&ArmTaskNode::on_parameters_changed, this, std::placeholders::_1));
 
     // Create parameter client for arm_calc node
+    // 创建一个“远程参数客户端对象”，用于与另一个 ROS2 节点进行参数交互（读取/设置参数） 对arm_calc进行交互控制
+    // 具体来说：
+    // 1. 调用 std::make_shared 在堆上创建一个 rclcpp::AsyncParametersClient 实例，并返回 shared_ptr
+    // 2. 该 client 绑定当前节点（this），意味着它会使用当前节点的通信接口去发起参数请求
+    // 3. arm_calc_node_name_ 指定目标节点名称，client 后续所有操作都会发送到这个节点
+    // 4. AsyncParametersClient 底层通过 ROS2 的参数服务（/get_parameters, /set_parameters 等）实现跨节点通信
+    // 5. “Async” 表示参数请求是异步发送的（不会阻塞当前线程），通常返回 future，可选择等待或忽略结果
+    // 6. 创建完成后，可以用 arm_calc_param_client_：
+    //    - set_parameters(...) 向目标节点发送参数修改请求
+    //    - get_parameters(...) 从目标节点获取参数
+    //    - wait_for_service(...) 检查目标节点参数服务是否可用
+    // 7. 在本工程中，它被用作“控制通道”：通过修改 arm_calc 节点的参数来触发运动规划/执行等行为
     arm_calc_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this, arm_calc_node_name_);
     RCLCPP_INFO(this->get_logger(), "Using arm_calc parameter client target: %s", arm_calc_node_name_.c_str());
 
@@ -126,7 +138,7 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
             RCLCPP_INFO(this->get_logger(), "Loaded place position with %zu joints", place_position_2.size());
         }
 
-         if (config["home_position"]) {
+        if (config["home_position"]) {
             home_position_ = config["home_position"].as<std::vector<double>>();
             RCLCPP_INFO(this->get_logger(), "Loaded place position with %zu joints", home_position_.size());
         }
@@ -137,6 +149,7 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
     }
 }
 
+//用于接受视觉放置坐标的函数
 void ArmTaskNode::on_place_target_pose(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
     std::lock_guard<std::mutex> lock(pose_mutex_);
     place_target_pose_ = *msg;
@@ -169,21 +182,21 @@ rcl_interfaces::msg::SetParametersResult ArmTaskNode::on_parameters_changed(cons
 }
 
 void ArmTaskNode::task_execution_thread() {
-    RCLCPP_INFO(this->get_logger(), "Task execution thread started");
+    RCLCPP_INFO(this->get_logger(), "线程启动成功");
 
     while (!shutdown_requested_) {
         execute_task_state_machine();
         std::this_thread::sleep_for(100ms);
     }
 
-    RCLCPP_INFO(this->get_logger(), "Task execution thread stopped");
+    RCLCPP_INFO(this->get_logger(), "线程结束");
 }
 
 void ArmTaskNode::execute_task_state_machine() {
     int32_t current_mode = arm_task_mode_.load();
 
     if (current_mode == 0) {
-        // CPP_INFO(this->get_logger(), "空闲任务");
+       
         return;
     }
 
@@ -209,7 +222,7 @@ void ArmTaskNode::execute_task_state_machine() {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
             execute_place_flow_rad();
-        } else if (current_mode == 4) {         
+        } else if (current_mode == 4) {
             RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
             execute_place_place_rad();
         } else if (current_mode == 5) {
@@ -273,7 +286,7 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // 3. Move to approach position (distance above target)
     RCLCPP_INFO(this->get_logger(), "移动到接近位置");
-    auto approach_pose = create_approach_pose(object_pose, -0.1);
+    auto approach_pose = create_approach_pose(object_pose, 0.0);
     execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
@@ -285,7 +298,7 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // stop_arm_motion();  // 必须先停止上一次视觉伺服，否则 mode 切换会失效
 
-     RCLCPP_INFO(this->get_logger(), "kaISHI启动气泵");
+    RCLCPP_INFO(this->get_logger(), "kaISHI启动气泵");
     robot_interfaces::msg::Armmode msg;
     msg.mode = 1;
     air_pub_->publish(msg);
@@ -362,6 +375,7 @@ void ArmTaskNode::stop_arm_motion() {
     }
 }
 
+//关节轨迹规划控制
 void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration) {
     RCLCPP_INFO(this->get_logger(), "执行关节轨迹规划");
 
@@ -631,28 +645,38 @@ void ArmTaskNode::set_parameter_on_remote_node(
 void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg) {
     std::lock_guard<std::mutex> lock(pose_mutex_);
 
-   geometry_msgs::msg::TransformStamped tf_msg;
+    geometry_msgs::msg::TransformStamped tf_msg;
 
-        tf_msg.header.stamp = this->now();
-        tf_msg.header.frame_id = camera_frame_;
-        tf_msg.child_frame_id  = object_frame_;
+    tf_msg.header.stamp    = this->now();
+    tf_msg.header.frame_id = camera_frame_;
+    tf_msg.child_frame_id  = object_frame_;
 
-        tf_msg.transform.translation.x = msg.z;
-        tf_msg.transform.translation.y = msg.y;
-        tf_msg.transform.translation.z = -msg.x;
+    // tf_msg.transform.translation.x = 0.40;
+    // tf_msg.transform.translation.y = msg.y;
+    // tf_msg.transform.translation.z = -msg.x;
+
+    // tf_msg.transform.rotation.x = 0.0;
+    // tf_msg.transform.rotation.y = 0.0;
+    // tf_msg.transform.rotation.z = 0.0;
+    // tf_msg.transform.rotation.w = 1.0;
 
 
-        tf_msg.transform.rotation.x = 0.0;
-        tf_msg.transform.rotation.y = 0.0;
-        tf_msg.transform.rotation.z = 0.0;
-        tf_msg.transform.rotation.w = 1.0;
+    tf_msg.transform.translation.x = msg.x;
+    tf_msg.transform.translation.y = msg.y;
+    tf_msg.transform.translation.z = 0.41;
 
-        tf_broadcaster_->sendTransform(tf_msg);
-    has_visual_pose_                 = true;
+    tf_msg.transform.rotation.x = 0.0;
+    tf_msg.transform.rotation.y = 0.0;
+    tf_msg.transform.rotation.z = 0.0;
+    tf_msg.transform.rotation.w = 1.0;
+
+
+    tf_broadcaster_->sendTransform(tf_msg);
+    has_visual_pose_ = true;
 
     RCLCPP_INFO_THROTTLE(
         this->get_logger(), *this->get_clock(), 500, "收到视觉消息 (相机坐标系): x=%.4f, y=%.4f, z=%.4f", msg.x, msg.y,
-        msg.z);                                          // 请根据实际字段名调整
+        msg.z); // 请根据实际字段名调整
 }
 
 geometry_msgs::msg::PoseStamped ArmTaskNode::create_approach_pose(const geometry_msgs::msg::PoseStamped& target_pose, double distance) {
