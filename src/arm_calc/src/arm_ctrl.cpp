@@ -554,7 +554,8 @@ void ArmCtrlNode::publish_control_loop() {
     current_joint_state_ = from_arm_message(target_point); // 直接赋值（完美跟踪）
 
     // RViz 可视化部分（保持不变）
-    JointTrajectoryPoint rviz_point = execute_trajectory_ ? target_point : build_preview_target();
+    // JointTrajectoryPoint rviz_point = execute_trajectory_ ? target_point : build_preview_target();
+    JointTrajectoryPoint rviz_point = target_point;
     const rclcpp::Time stamp        = this->get_clock()->now();
     rviz_joint_pub_->publish(to_joint_state_msg(rviz_point, stamp));
     publish_visualization(rviz_point);

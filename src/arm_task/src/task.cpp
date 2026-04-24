@@ -619,6 +619,7 @@ bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped&
         pose_out.pose.position.x  = transform.transform.translation.x;
         pose_out.pose.position.y  = transform.transform.translation.y;
         pose_out.pose.position.z  = transform.transform.translation.z;
+        pose_out.pose.position.z  = -0.256;
         pose_out.pose.orientation = transform.transform.rotation;
         return true;
 
@@ -663,7 +664,7 @@ void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg) {
 
     tf_msg.transform.translation.x = msg.x;
     tf_msg.transform.translation.y = msg.y;
-    tf_msg.transform.translation.z = 0.41;
+    tf_msg.transform.translation.z = msg.z;
 
     tf_msg.transform.rotation.x = 0.0;
     tf_msg.transform.rotation.y = 0.0;
