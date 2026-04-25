@@ -56,6 +56,7 @@ private:
     CartesianState start_cartesian_state_{};
     CartesianPose goal_pose_{};
     Eigen::Quaterniond start_orientation_{Eigen::Quaterniond::Identity()};
+    Eigen::Quaterniond goal_orientation_{Eigen::Quaterniond::Identity()};
     Eigen::Vector3d orientation_rotation_vector_world_{Eigen::Vector3d::Zero()};
     double start_time_sec_{0.0};
     double duration_sec_{0.0};

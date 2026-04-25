@@ -30,16 +30,6 @@ Eigen::Vector3d QuaternionToRotationVectorWorld(const Eigen::Quaterniond& start,
     return angle_axis.axis() * angle_axis.angle();
 }
 
-Eigen::Quaterniond RotationVectorWorldToQuaternion(const Eigen::Quaterniond& reference, const Eigen::Vector3d& rotation_vector) {
-    const double angle = rotation_vector.norm();
-    if (angle < 1e-9) {
-        return arm_calc::NormalizeQuaternion(reference);
-    }
-
-    const Eigen::Vector3d axis = rotation_vector / angle;
-    return arm_calc::NormalizeQuaternion(Eigen::Quaterniond(Eigen::AngleAxisd(angle, axis)) * reference);
-}
-
 Eigen::Vector3d ClampVectorNorm(const Eigen::Vector3d& vector, double limit) {
     if (limit <= 0.0) {
         return Eigen::Vector3d::Zero();
@@ -113,6 +103,7 @@ void JCartesianSpaceMove::set_start_state(const JointState& state) {
         start_cartesian_state_ = arm_calc_->end_state(state.position, state.velocity);
     }
     start_orientation_ = arm_calc::NormalizeQuaternion(start_cartesian_state_.pose.orientation);
+    goal_orientation_ = start_orientation_;
     orientation_rotation_vector_world_.setZero();
 
     JointVector pos_start = JointVector::Zero();
@@ -138,8 +129,8 @@ void JCartesianSpaceMove::set_goal_state(const CartesianPose& pose, double durat
     pos_goal.head<3>()   = pose.position;
     position_trajectory_.set_goal_state(pos_goal, duration_sec_);
 
-    orientation_rotation_vector_world_ =
-        QuaternionToRotationVectorWorld(start_orientation_, arm_calc::NormalizeQuaternion(goal_pose_.orientation));
+    goal_orientation_ = arm_calc::NormalizeQuaternion(goal_pose_.orientation);
+    orientation_rotation_vector_world_ = QuaternionToRotationVectorWorld(start_orientation_, goal_orientation_);
     JointVector sigma_start = JointVector::Zero();
     JointVector sigma_goal = JointVector::Zero();
     sigma_goal[0] = 1.0;
@@ -183,9 +174,7 @@ CartesianTrajectoryPoint JCartesianSpaceMove::build_cartesian_target(double curr
     const double sigma = sigma_sample.position[0];
     const double sigma_dot = sigma_sample.velocity[0];
     const double sigma_ddot = sigma_sample.acceleration[0];
-    const Eigen::Vector3d rotation_vector = orientation_rotation_vector_world_ * sigma;
-
-    target.pose.orientation = RotationVectorWorldToQuaternion(start_orientation_, rotation_vector);
+    target.pose.orientation = arm_calc::NormalizeQuaternion(start_orientation_.slerp(sigma, goal_orientation_));
     target.angular_velocity = orientation_rotation_vector_world_ * sigma_dot;
     target.angular_acceleration = orientation_rotation_vector_world_ * sigma_ddot;
     return target;

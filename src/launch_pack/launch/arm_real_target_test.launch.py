@@ -45,18 +45,6 @@ def generate_launch_description():
         arguments=["-d", rviz_path],
     )
 
-    static_tf_target = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        arguments=[
-            "0.7", "0.0", "0.35",  # x, y, z translation
-            "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
-            "base_link",
-            "target_object"
-        ],
-        output="screen",
-    )
-
     static_tf_camera = Node(
     package="tf2_ros",
     executable="static_transform_publisher",
@@ -73,7 +61,7 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "0.7", "0.0", "0.35",  # x, y, z translation
+            "0.60", "0.0", "0.558",  # x, y, z translation
             "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
             "base_link",
             "target_object"
@@ -98,6 +86,5 @@ def generate_launch_description():
         static_tf_camera,
         static_tf_target,
         arm_task,
-        static_tf_target,
         catch_kfs_test
     ])
