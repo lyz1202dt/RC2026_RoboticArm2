@@ -24,7 +24,7 @@
   <worldbody>
     <geom name="ground" type="plane" size="50 50 0.3" pos="0 0 0" material="groundplane" contype="0" conaffinity="0"/>
     <light name="main_light" pos="0 0 4" dir="0 0 -1" directional="true"/>
-    <body name="box" pos="0.85 0 -0.158">
+    <body name="box" pos="0.85 0 0.358">
         <geom type="box"
               size="0.175 0.175 0.175"
               rgba="1 0 0 1"
