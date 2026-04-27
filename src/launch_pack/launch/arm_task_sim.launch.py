@@ -41,15 +41,15 @@ def generate_launch_description():
 )
     
     # arm_task node
-    arm_task = Node(
-        package="arm_task",
-        executable="arm_task",
-        output="screen",
-    )
+    # arm_task = Node(
+    #     package="arm_task",
+    #     executable="arm_task",
+    #     output="screen",
+    # )
     
     return LaunchDescription([
         show_rviz_arg,
         arm_mujoco_sim_launch,
         static_tf_camera,
-        arm_task,
+        # arm_task,
     ])
