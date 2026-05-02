@@ -143,20 +143,12 @@ std::string CatchKFS::process(const std::string last_task_name) {
         object_pose.header.stamp = robot->node_->now();
         object_pose.pose.position.x = context.data[0];
         object_pose.pose.position.y = context.data[1];
-        // object_pose.pose.position.z = context.data[2];
         object_pose.pose.position.z = grasp_height;
         object_pose.pose.orientation.x = context.data[3];
         object_pose.pose.orientation.y = context.data[4];
         object_pose.pose.orientation.z = context.data[5]; 
         object_pose.pose.orientation.w = context.data[6];
 
-        // if (context.data[7] == 0) {
-        //     object_pose.pose.position.z = 0.1;  // 固定高度，单位为米
-        // } else if (context.data[7] == 1) {
-        //     object_pose.pose.position.z = -0.6;  // 固定高度，单位为米
-        // } else if (context.data[7] == 2) {
-        //     object_pose.pose.position.z = 0.2;  // 固定高度，单位为米
-        // }
     } else {
         try {
             if (!robot->tf_buffer_->canTransform("base_link", robot->object_frame_, tf2::TimePointZero, 2s)) {
@@ -249,7 +241,6 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
-    object_pose.pose.position.z-=grasp_down_run_;
     object_pose.pose.position.x+=0.12+grasp_right_run_qian_;
 
     // object_pose.pose.position.x -= 0.1;
@@ -260,34 +251,6 @@ std::string CatchKFS::process(const std::string last_task_name) {
         }
         return "idel";
     }
-
-    // RCLCPP_INFO(robot->node_->get_logger(), "向下移动");
-    // object_pose.pose.position.z-=grasp_down_run_;
-    // quat.setRPY(0, (M_PI / 2.2), 0);
-    // object_pose.pose.orientation.w = quat.getW();
-    // object_pose.pose.orientation.x = quat.getX();
-    // object_pose.pose.orientation.y = quat.getY();
-    // object_pose.pose.orientation.z = quat.getZ();
-    // if (!robot->execute_cartesian_space_trajectory(object_pose, 1.0)) { // 0.8
-    //     if (goal_handle) {
-    //         robot->finish_current_task(goal_handle, false, "向下移动失败");
-    //     }
-    //     return "idel";
-    // }
-
-    // RCLCPP_INFO(robot->node_->get_logger(), "向前推进一段距离以确保吸取稳固");
-    // object_pose.pose.position.x+=0.12+grasp_right_run_qian_;
-    // quat.setRPY(0, (M_PI / 2.2), 0);
-    // object_pose.pose.orientation.w = quat.getW();
-    // object_pose.pose.orientation.x = quat.getX();
-    // object_pose.pose.orientation.y = quat.getY();
-    // object_pose.pose.orientation.z = quat.getZ();
-    // if (!robot->execute_cartesian_space_trajectory(object_pose, 0.5)) { // 0.5
-    //     if (goal_handle) {
-    //         robot->finish_current_task(goal_handle, false, "补推进失败");
-    //     }
-    //     return "idel";
-    // }
 
 
     robot->current_kfs_num_ += 1;
