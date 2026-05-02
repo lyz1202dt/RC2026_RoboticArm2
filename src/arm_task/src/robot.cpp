@@ -44,7 +44,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
-    node_->declare_parameter<double>("grasp_height", 2.0);
+    node_->declare_parameter<double>("grasp_height", 1.0);
     node_->declare_parameter<double>("grasp_right_run", 0.1);
     node_->declare_parameter<double>("grasp_down_run", 0.15);
     node_->declare_parameter<double>("grasp_right_run_qian", 0.01);
@@ -391,7 +391,6 @@ bool Robot::execute_joint_space_trajectory(const std::vector<double>& joint_angl
     joint_space_target_pub_->publish(msg);
 
     // std::this_thread::sleep_for(100ms);
-    std::this_thread::sleep_for(100ms);
 
     // Set parameters on arm_calc
     if (!arm_calc_param_client_->wait_for_service(5s)) {
@@ -399,20 +398,9 @@ bool Robot::execute_joint_space_trajectory(const std::vector<double>& joint_angl
         return false;
     }
 
-    auto set_future = arm_calc_param_client_->set_parameters(
+    arm_calc_param_client_->set_parameters(
         {rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 1),
          rclcpp::Parameter("execute_trajectory", true)});
-
-    if (set_future.wait_for(1s) == std::future_status::ready) {
-        auto results = set_future.get();
-        for (const auto& res : results) {
-            if (!res.successful) {
-                RCLCPP_ERROR(node_->get_logger(), "Failed to set param: %s", res.reason.c_str());
-            }
-        }
-    } else {
-        RCLCPP_WARN(node_->get_logger(), "Timeout waiting for set_parameters response.");
-    }
 
     const auto timeout_sec = duration + 2.0;
     const auto start_time  = std::chrono::steady_clock::now();
@@ -466,7 +454,6 @@ bool Robot::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseSta
     visual_target_pub_->publish(target_pose);
 
     // std::this_thread::sleep_for(100ms);
-    std::this_thread::sleep_for(100ms);
 
     // Set parameters on arm_calc
     if (!arm_calc_param_client_->wait_for_service(5s)) {
@@ -474,19 +461,11 @@ bool Robot::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseSta
         return false;
     }
 
-    auto set_future = arm_calc_param_client_->set_parameters(
-        {rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 2), rclcpp::Parameter("execute_trajectory", true)});
+    arm_calc_param_client_->set_parameters({rclcpp::Parameter("trajectory_duration", duration), rclcpp::Parameter("motion_mode", 2)});
 
-    if (set_future.wait_for(1s) == std::future_status::ready) {
-        auto results = set_future.get();
-        for (const auto& res : results) {
-            if (!res.successful) {
-                RCLCPP_ERROR(node_->get_logger(), "Failed to set param: %s", res.reason.c_str());
-            }
-        }
-    } else {
-        RCLCPP_WARN(node_->get_logger(), "Timeout waiting for set_parameters response.");
-    }
+    // std::this_thread::sleep_for(100ms);
+
+    arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
 
     const auto timeout_sec = duration + 2.0;
     const auto start_time  = std::chrono::steady_clock::now();

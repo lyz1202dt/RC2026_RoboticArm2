@@ -2,8 +2,6 @@ controller_manager:
   ros__parameters:
     update_rate: 500
 
-    joint_state_broadcaster:
-      type: joint_state_broadcaster/JointStateBroadcaster
 
     dog_controller:
       type: dog_controller/DogController
