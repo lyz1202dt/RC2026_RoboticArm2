@@ -62,6 +62,13 @@ def generate_launch_description():
         output="screen",
     )
 
+    joint_state_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+        output="screen",
+    )
+
     joint_controller = Node(
         package="controller_manager",
         executable="spawner",
@@ -95,6 +102,7 @@ def generate_launch_description():
             target_action=mujoco,
             on_start=[
                 LogInfo(msg="MuJoCo started, spawning dog_controller"),
+                joint_state_broadcaster,
                 joint_controller,
             ],
         )

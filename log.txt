@@ -1,485 +1,408 @@
-[INFO] [launch]: All log files can be found below /home/kyy/.ros/log/2026-04-22-21-26-43-856157-kyy-ThinkBook-16-G6-IMH-31037
+[INFO] [launch]: All log files can be found below /home/kyy/.ros/log/2026-05-02-08-21-57-774719-kyy-ThinkBook-16-G6-IMH-15892
 [INFO] [launch]: Default logging verbosity is set to INFO
-[INFO] [robot_state_publisher-1]: process started with pid [31057]
-[INFO] [mujoco_ros2_control-2]: process started with pid [31059]
-[INFO] [arm_calc-3]: process started with pid [31061]
-[INFO] [arm_task-4]: process started with pid [31063]
-[INFO] [vision_node-5]: process started with pid [31065]
-[INFO] [rviz2-6]: process started with pid [31067]
-[INFO] [static_transform_publisher-7]: process started with pid [31069]
-[INFO] [arm_task-8]: process started with pid [31071]
-[INFO] [static_transform_publisher-9]: process started with pid [31073]
+[INFO] [robot_state_publisher-1]: process started with pid [15915]
+[INFO] [mujoco_ros2_control-2]: process started with pid [15917]
+[INFO] [arm_calc-3]: process started with pid [15919]
+[INFO] [arm_task-4]: process started with pid [15921]
+[INFO] [vision_node-5]: process started with pid [15923]
+[INFO] [rviz2-6]: process started with pid [15925]
+[INFO] [static_transform_publisher-7]: process started with pid [15927]
+[INFO] [static_transform_publisher-8]: process started with pid [15929]
 [INFO] [launch.user]: MuJoCo started, spawning dog_controller
-[INFO] [spawner-10]: process started with pid [31075]
-[static_transform_publisher-9] [WARN] [1776864403.976226255] []: Old-style arguments are deprecated; see --help for new-style arguments
-[static_transform_publisher-7] [WARN] [1776864403.976984750] []: Old-style arguments are deprecated; see --help for new-style arguments
-[robot_state_publisher-1] [INFO] [1776864404.007832710] [robot_state_publisher]: got segment base_link
-[robot_state_publisher-1] [INFO] [1776864404.008429028] [robot_state_publisher]: got segment link1
-[robot_state_publisher-1] [INFO] [1776864404.008451626] [robot_state_publisher]: got segment link2
-[robot_state_publisher-1] [INFO] [1776864404.008459811] [robot_state_publisher]: got segment link3
-[robot_state_publisher-1] [INFO] [1776864404.008467520] [robot_state_publisher]: got segment link4
-[robot_state_publisher-1] [INFO] [1776864404.008474609] [robot_state_publisher]: got segment link5
-[robot_state_publisher-1] [INFO] [1776864404.008481732] [robot_state_publisher]: got segment link6
-[robot_state_publisher-1] [INFO] [1776864404.008488701] [robot_state_publisher]: got segment world
-[arm_task-4] [INFO] [1776864404.011142954] [arm_task_node]: Loaded named position [kfs1_detach_pos] with 6 joints
-[arm_task-4] [INFO] [1776864404.011253810] [arm_task_node]: Loaded named position [kfs1_touch_pos] with 6 joints
-[arm_task-4] [INFO] [1776864404.011272466] [arm_task_node]: Loaded named position [kfs4_interim_1_pos] with 6 joints
-[arm_task-4] [INFO] [1776864404.011285174] [arm_task_node]: Loaded named position [place_interim_pos_0] with 6 joints
-[arm_task-4] [INFO] [1776864404.011294497] [arm_task_node]: Loaded named position [place_interim_pos_left] with 6 joints
-[arm_task-4] [INFO] [1776864404.011302677] [arm_task_node]: Loaded named position [place_interim_pos_right] with 6 joints
-[arm_task-4] [INFO] [1776864404.011310910] [arm_task_node]: Loaded named position [place_interim_pos_3] with 6 joints
-[arm_task-4] [INFO] [1776864404.011319775] [arm_task_node]: Loaded named position [start_pos_1] with 6 joints
-[arm_task-4] [INFO] [1776864404.011327864] [arm_task_node]: Loaded named position [start_pos_2] with 6 joints
-[arm_task-4] [INFO] [1776864404.011336301] [arm_task_node]: Loaded named position [start_pos_3] with 6 joints
-[arm_task-4] [INFO] [1776864404.011344646] [arm_task_node]: Loaded named position [ready] with 6 joints
-[arm_task-4] [INFO] [1776864404.011353799] [arm_task_node]: Loaded named position [ready_up200] with 6 joints
-[arm_task-4] [INFO] [1776864404.011363301] [arm_task_node]: Loaded named position [ready_up400] with 6 joints
-[arm_task-4] [INFO] [1776864404.011372204] [arm_task_node]: Loaded named position [ready_down200] with 6 joints
-[arm_task-4] [INFO] [1776864404.011380994] [arm_task_node]: Loaded named position [ready_interm] with 6 joints
-[static_transform_publisher-7] [INFO] [1776864404.011347717] [static_transform_publisher_2l3bS7WWbOQf9yWF]: Spinning until stopped - publishing transform
+[INFO] [spawner-9]: process started with pid [15931]
+[INFO] [spawner-10]: process started with pid [15933]
+[static_transform_publisher-8] [WARN] [1777681317.963397804] []: Old-style arguments are deprecated; see --help for new-style arguments
+[static_transform_publisher-7] [WARN] [1777681317.964007484] []: Old-style arguments are deprecated; see --help for new-style arguments
+[arm_task-4] [INFO] [1777681317.974273079] [arm_task_node]: Loaded named position [kfs1_detach_pos] with 6 joints
+[arm_task-4] [INFO] [1777681317.974389086] [arm_task_node]: Loaded named position [kfs1_touch_pos] with 6 joints
+[arm_task-4] [INFO] [1777681317.974409821] [arm_task_node]: Loaded named position [kfs4_interim_1_pos] with 6 joints
+[arm_task-4] [INFO] [1777681317.974429077] [arm_task_node]: Loaded named position [place_interim_pos_0] with 6 joints
+[arm_task-4] [INFO] [1777681317.974447618] [arm_task_node]: Loaded named position [place_interim_pos_left] with 6 joints
+[arm_task-4] [INFO] [1777681317.974467360] [arm_task_node]: Loaded named position [place_interim_pos_right] with 6 joints
+[arm_task-4] [INFO] [1777681317.974483397] [arm_task_node]: Loaded named position [place_interim_pos_3] with 6 joints
+[arm_task-4] [INFO] [1777681317.974512843] [arm_task_node]: Loaded named position [start_pos_1] with 6 joints
+[arm_task-4] [INFO] [1777681317.974530989] [arm_task_node]: Loaded named position [start_pos_2] with 6 joints
+[arm_task-4] [INFO] [1777681317.974544124] [arm_task_node]: Loaded named position [start_pos_3] with 6 joints
+[arm_task-4] [INFO] [1777681317.974557005] [arm_task_node]: Loaded named position [ready] with 6 joints
+[arm_task-4] [INFO] [1777681317.974572552] [arm_task_node]: Loaded named position [ready_up200] with 6 joints
+[arm_task-4] [INFO] [1777681317.974588510] [arm_task_node]: Loaded named position [ready_up400] with 6 joints
+[arm_task-4] [INFO] [1777681317.974604879] [arm_task_node]: Loaded named position [ready_down200] with 6 joints
+[arm_task-4] [INFO] [1777681317.974618476] [arm_task_node]: Loaded named position [ready_interm] with 6 joints
+[arm_task-4] [INFO] [1777681317.974630947] [arm_task_node]: Loaded named position [kfs_detach] with 6 joints
+[arm_task-4] [INFO] [1777681317.974647936] [arm_task_node]: Loaded named position [kfs_up400_detach] with 6 joints
+[static_transform_publisher-8] [INFO] [1777681317.985183961] [static_transform_publisher_e6OHO4hoOubEfzhF]: Spinning until stopped - publishing transform
+[static_transform_publisher-8] translation: ('0.600000', '0.000000', '0.558000')
+[static_transform_publisher-8] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-8] from 'base_link' to 'target_object'
+[static_transform_publisher-7] [INFO] [1777681317.989580193] [static_transform_publisher_ZhLoKD7lWJ8KUZFm]: Spinning until stopped - publishing transform
 [static_transform_publisher-7] translation: ('0.100000', '0.090000', '-0.030000')
 [static_transform_publisher-7] rotation: ('0.707107', '0.000000', '0.707107', '0.000000')
-[static_transform_publisher-7] from 'link4' to 'camera_link'
-[arm_calc-3] [INFO] [1776864404.015678727] [arm_calc_node]: Loaded robot_description from /robot_state_publisher
-[static_transform_publisher-9] [INFO] [1776864404.016041562] [static_transform_publisher_GX7CUZdneuRvOwgL]: Spinning until stopped - publishing transform
-[static_transform_publisher-9] translation: ('0.700000', '0.000000', '0.350000')
-[static_transform_publisher-9] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
-[static_transform_publisher-9] from 'base_link' to 'target_object'
-[arm_task-8] [INFO] [1776864404.020506239] [arm_task_node]: Loaded named position [kfs1_detach_pos] with 6 joints
-[arm_task-8] [INFO] [1776864404.020613585] [arm_task_node]: Loaded named position [kfs1_touch_pos] with 6 joints
-[arm_task-8] [INFO] [1776864404.020625521] [arm_task_node]: Loaded named position [kfs4_interim_1_pos] with 6 joints
-[arm_task-8] [INFO] [1776864404.020635309] [arm_task_node]: Loaded named position [place_interim_pos_0] with 6 joints
-[arm_task-8] [INFO] [1776864404.020644282] [arm_task_node]: Loaded named position [place_interim_pos_left] with 6 joints
-[arm_task-8] [INFO] [1776864404.020652708] [arm_task_node]: Loaded named position [place_interim_pos_right] with 6 joints
-[arm_task-8] [INFO] [1776864404.020661120] [arm_task_node]: Loaded named position [place_interim_pos_3] with 6 joints
-[arm_task-8] [INFO] [1776864404.020669632] [arm_task_node]: Loaded named position [start_pos_1] with 6 joints
-[arm_task-8] [INFO] [1776864404.020678629] [arm_task_node]: Loaded named position [start_pos_2] with 6 joints
-[arm_task-8] [INFO] [1776864404.020686991] [arm_task_node]: Loaded named position [start_pos_3] with 6 joints
-[arm_task-8] [INFO] [1776864404.020695376] [arm_task_node]: Loaded named position [ready] with 6 joints
-[arm_task-8] [INFO] [1776864404.020704409] [arm_task_node]: Loaded named position [ready_up200] with 6 joints
-[arm_task-8] [INFO] [1776864404.020713048] [arm_task_node]: Loaded named position [ready_up400] with 6 joints
-[arm_task-8] [INFO] [1776864404.020721388] [arm_task_node]: Loaded named position [ready_down200] with 6 joints
-[arm_task-8] [INFO] [1776864404.020729959] [arm_task_node]: Loaded named position [ready_interm] with 6 joints
-[arm_task-4] [INFO] [1776864404.023331177] [arm_task_node]: Using arm_calc parameter client target: arm_calc_node
-[arm_task-4] [INFO] [1776864404.025145899] [arm_task_node]: Using driver parameter client target: driver_node
-[arm_task-4] [INFO] [1776864404.025189830] [arm_task_node]: 注册任务成功: [idel]
-[arm_task-4] [INFO] [1776864404.025197615] [arm_task_node]: 注册任务成功: [catch_kfs]
-[arm_task-4] [INFO] [1776864404.025202349] [arm_task_node]: 注册任务成功: [place_kfs]
-[arm_task-4] [INFO] [1776864404.025206703] [arm_task_node]: 注册任务成功: [move_kfs]
-[arm_task-4] [INFO] [1776864404.025210439] [arm_task_node]: 任务调度器初始化完成，初始任务为 [idel]
-[arm_task-4] [INFO] [1776864404.025409437] [arm_task_node]: ArmTaskNode初始化完成
-[arm_task-8] [INFO] [1776864404.029650910] [arm_task_node]: Using arm_calc parameter client target: arm_calc_node
-[arm_task-8] [INFO] [1776864404.032100545] [arm_task_node]: Using driver parameter client target: driver_node
-[arm_task-8] [INFO] [1776864404.032167560] [arm_task_node]: 注册任务成功: [idel]
-[arm_task-8] [INFO] [1776864404.032185688] [arm_task_node]: 注册任务成功: [catch_kfs]
-[arm_task-8] [INFO] [1776864404.032197132] [arm_task_node]: 注册任务成功: [place_kfs]
-[arm_task-8] [INFO] [1776864404.032207294] [arm_task_node]: 注册任务成功: [move_kfs]
-[arm_task-8] [INFO] [1776864404.032217998] [arm_task_node]: 任务调度器初始化完成，初始任务为 [idel]
-[arm_task-8] [INFO] [1776864404.032319448] [arm_task_node]: ArmTaskNode初始化完成
+[static_transform_publisher-7] from 'Link4' to 'camera_link'
+[arm_task-4] [INFO] [1777681317.991241910] [arm_task_node]: Using arm_calc parameter client target: arm_calc_node
+[robot_state_publisher-1] [INFO] [1777681317.994833547] [robot_state_publisher]: got segment Link1
+[robot_state_publisher-1] [INFO] [1777681317.995034339] [robot_state_publisher]: got segment Link2
+[robot_state_publisher-1] [INFO] [1777681317.995051322] [robot_state_publisher]: got segment Link3
+[robot_state_publisher-1] [INFO] [1777681317.995064948] [robot_state_publisher]: got segment Link4
+[robot_state_publisher-1] [INFO] [1777681317.995076803] [robot_state_publisher]: got segment Link5
+[robot_state_publisher-1] [INFO] [1777681317.995087339] [robot_state_publisher]: got segment Link6
+[robot_state_publisher-1] [INFO] [1777681317.995097081] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1777681317.995106629] [robot_state_publisher]: got segment world
+[arm_task-4] [INFO] [1777681317.996587643] [arm_task_node]: Using driver parameter client target: driver_node
+[arm_task-4] [INFO] [1777681317.996643929] [arm_task_node]: 注册任务成功: [idel]
+[arm_task-4] [INFO] [1777681317.996657935] [arm_task_node]: 注册任务成功: [catch_kfs]
+[arm_task-4] [INFO] [1777681317.996667955] [arm_task_node]: 注册任务成功: [place_kfs]
+[arm_task-4] [INFO] [1777681317.996678250] [arm_task_node]: 注册任务成功: [move_kfs]
+[arm_task-4] [INFO] [1777681317.996692741] [arm_task_node]: 任务调度器初始化完成，初始任务为 [idel]
+[arm_task-4] [INFO] [1777681317.996794138] [arm_task_node]: ArmTaskNode初始化完成
+[arm_calc-3] [INFO] [1777681317.999089267] [arm_calc_node]: Loaded robot_description from /robot_state_publisher
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (890) open VIDEOIO(V4L2:/dev/video4): can't open camera by index
 [vision_node-5] 后端 200 打开摄像头索引 4 失败
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (2075) handleMessage OpenCV | GStreamer warning: Embedded video playback halted; module v4l2src0 reported: Cannot identify device '/dev/video4'.
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (1053) open OpenCV | GStreamer warning: unable to start pipeline
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (616) isPipelinePlaying OpenCV | GStreamer warning: GStreamer: pipeline have not been created
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_v4l.cpp (890) open VIDEOIO(V4L2:/dev/video4): can't open camera by index
-[spawner-10] [INFO] [1776864404.253191936] [spawner_dog_controller]: waiting for service /controller_manager/list_controllers to become available...
-[mujoco_ros2_control-2] [INFO] [1776864404.254984002] [mujoco_ros2_control]: loaded mujoco model
-[mujoco_ros2_control-2] [INFO] [1776864404.255265034] [mujoco_ros2_control]: Created mujoco data
-[mujoco_ros2_control-2] [INFO] [1776864404.255275133] [mujoco_ros2_control]: init controller manager
-[mujoco_ros2_control-2] [INFO] [1776864404.257480328] [arm_hw]: Initializing Hardware Interface
-[mujoco_ros2_control-2] [INFO] [1776864404.257490888] [arm_hw]:   joint1
-[mujoco_ros2_control-2] [INFO] [1776864404.257602706] [arm_hw]:   joint2
-[mujoco_ros2_control-2] [INFO] [1776864404.257619306] [arm_hw]:   joint3
-[mujoco_ros2_control-2] [INFO] [1776864404.257632830] [arm_hw]:   joint4
-[mujoco_ros2_control-2] [INFO] [1776864404.257645405] [arm_hw]:   joint5
-[mujoco_ros2_control-2] [INFO] [1776864404.257657794] [arm_hw]:   joint6
-[mujoco_ros2_control-2] [INFO] [1776864404.257676667] [motor1]: added effort actuator for joint: joint1
-[mujoco_ros2_control-2] [INFO] [1776864404.257679077] [motor2]: added effort actuator for joint: joint2
-[mujoco_ros2_control-2] [INFO] [1776864404.257680682] [motor3]: added effort actuator for joint: joint3
-[mujoco_ros2_control-2] [INFO] [1776864404.257682210] [motor4]: added effort actuator for joint: joint4
-[mujoco_ros2_control-2] [INFO] [1776864404.257683891] [motor5]: added effort actuator for joint: joint5
-[mujoco_ros2_control-2] [INFO] [1776864404.257685592] [motor6]: added effort actuator for joint: joint6
-[mujoco_ros2_control-2] [INFO] [1776864404.257690512] [resource_manager]: Initialize hardware 'arm_hw' 
-[mujoco_ros2_control-2] [INFO] [1776864404.257721392] [resource_manager]: Successful initialization of hardware 'arm_hw'
-[mujoco_ros2_control-2] [INFO] [1776864404.257738102] [resource_manager]: 'configure' hardware 'arm_hw' 
-[mujoco_ros2_control-2] [INFO] [1776864404.257742604] [resource_manager]: Successful 'configure' of hardware 'arm_hw'
-[mujoco_ros2_control-2] [INFO] [1776864404.257746910] [resource_manager]: 'activate' hardware 'arm_hw' 
-[mujoco_ros2_control-2] [INFO] [1776864404.257749853] [resource_manager]: Successful 'activate' of hardware 'arm_hw'
+[rviz2-6] [INFO] [1777681318.477682375] [rviz2]: Stereo is NOT SUPPORTED
+[rviz2-6] [INFO] [1777681318.477802597] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
 [vision_node-5] 后端 0 打开摄像头索引 4 失败
+[spawner-9] [INFO] [1777681318.481307632] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (2075) handleMessage OpenCV | GStreamer warning: Embedded video playback halted; module v4l2src1 reported: Cannot identify device '/dev/video4'.
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (1053) open OpenCV | GStreamer warning: unable to start pipeline
 [vision_node-5] [ WARN:0] global ./modules/videoio/src/cap_gstreamer.cpp (616) isPipelinePlaying OpenCV | GStreamer warning: GStreamer: pipeline have not been created
 [vision_node-5] 后端 1800 打开摄像头索引 4 失败
 [vision_node-5] 无法打开摄像头，请检查设备索引和占用情况
-[rviz2-6] [INFO] [1776864404.332067655] [rviz2]: Stereo is NOT SUPPORTED
-[rviz2-6] [INFO] [1776864404.332163735] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
-[rviz2-6] [INFO] [1776864404.348052302] [rviz2]: Stereo is NOT SUPPORTED
-[ERROR] [vision_node-5]: process has died [pid 31065, exit code 255, cmd '/home/kyy/MyProject/RC2026_RoboticArm2/install/vision/lib/vision/vision_node --ros-args'].
-[mujoco_ros2_control-2] [INFO] [1776864404.506190085] [controller_manager]: Loading controller 'dog_controller'
-[spawner-10] [INFO] [1776864404.524459332] [spawner_dog_controller]: [94mLoaded [1mdog_controller[0m
-[mujoco_ros2_control-2] [INFO] [1776864404.525884912] [controller_manager]: Configuring controller 'dog_controller'
-[mujoco_ros2_control-2] [INFO] [1776864404.732678480] [pose_sensor_registration]: [ee_site] frame: ee_site
-[arm_task-4] [INFO] [1776864405.025533730] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864405.032441261] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[mujoco_ros2_control-2] [INFO] [1776864405.085085103] [mujoco_ros2_control]: Sim environment setup complete
-[arm_calc-3] [INFO] [1776864405.085796719] [arm_calc_node]: 进入IDEL模式
-[spawner-10] [INFO] [1776864405.086829396] [spawner_dog_controller]: [92mConfigured and activated [1mdog_controller[0m
-[arm_calc-3] [INFO] [1776864405.087912490] [arm_calc_node]: EE pose pos=(0.0051, -0.0374, 1.2605) rpy=(0.0015, -0.0114, -3.1413)
-[INFO] [spawner-10]: process has finished cleanly [pid 31075]
-[arm_task-4] [INFO] [1776864406.025874670] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864406.032790754] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864406.107865436] [arm_calc_node]: EE pose pos=(0.0056, -0.0374, 1.2604) rpy=(0.0015, -0.0016, 3.1416)
-[INFO] [catch_kfs_test-11]: process started with pid [31371]
-[arm_task-4] [INFO] [1776864407.026048032] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864407.033059422] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864407.127883094] [arm_calc_node]: EE pose pos=(0.0057, -0.0374, 1.2604) rpy=(0.0015, -0.0014, 3.1416)
-[catch_kfs_test-11] [INFO] [1776864407.985157937] [catch_kfs_test_node]: 发送抓取请求: task_id=2, target=(0.700, 0.000, 0.350), quat=(0.000, 0.000, 0.000, 1.000)
-[arm_task-8] [INFO] [1776864407.985696128] [arm_task_node]: 接收到新动作请求: task_id=2, data_size=8
-[catch_kfs_test-11] [INFO] [1776864407.985950660] [catch_kfs_test_node]: 抓取目标已被接受，等待执行结果
-[arm_task-8] [INFO] [1776864407.985978025] [arm_task_node]: 动作目标已接受，通知 idel 任务开始分发
-[arm_task-8] [INFO] [1776864407.986030592] [arm_task_node]: idel 收到抓取任务，切换到 catch_kfs
-[arm_task-8] [INFO] [1776864407.986057318] [arm_task_node]: 任务切换: [idel] -> [catch_kfs]
-[arm_task-4] [INFO] [1776864408.026211769] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864408.147869077] [arm_calc_node]: EE pose pos=(0.0057, -0.0374, 1.2604) rpy=(0.0015, -0.0014, -3.1416)
-[arm_task-8] [WARN] [1776864408.486279041] [arm_task_node]: driver_node 的参数服务不可用
-[arm_task-8] [WARN] [1776864408.486426421] [arm_task_node]: 设置 grasp_state=0 失败
-[arm_task-8] [INFO] [1776864408.486476560] [arm_task_node]: 移动到释放位置 [ready_interm]
-[arm_task-8] [INFO] [1776864408.486497866] [arm_task_node]: Executing joint space trajectory
-[arm_calc-3] [INFO] [1776864408.588067606] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864408.588184300] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_task-4] [INFO] [1776864409.026373335] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864409.148160694] [arm_calc_node]: EE pose pos=(0.0118, -0.0373, 1.2603) rpy=(0.0005, -0.0006, -3.1412)
-[arm_task-4] [INFO] [1776864410.026560288] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864410.148192455] [arm_calc_node]: EE pose pos=(0.0894, -0.0358, 1.2370) rpy=(3.1278, 3.1324, 0.0054)
-[arm_task-4] [INFO] [1776864411.026736867] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864411.168171480] [arm_calc_node]: EE pose pos=(0.1909, -0.0320, 1.1153) rpy=(3.1034, 3.1162, 0.0141)
-[arm_task-4] [INFO] [1776864412.026915125] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864412.188167730] [arm_calc_node]: EE pose pos=(0.2192, -0.0298, 1.0177) rpy=(3.0907, 3.1079, 0.0190)
-[arm_task-8] [INFO] [1776864412.632397061] [arm_task_node]: 移动到准备位置
-[arm_task-8] [INFO] [1776864412.632454307] [arm_task_node]: Executing joint space trajectory
-[arm_calc-3] [INFO] [1776864412.733156777] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864412.733222437] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_task-4] [INFO] [1776864413.027077298] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864413.193244627] [arm_calc_node]: EE pose pos=(0.2284, -0.0295, 1.0073) rpy=(3.0904, 3.0892, 0.0205)
-[arm_task-4] [INFO] [1776864414.027225569] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864414.193264837] [arm_calc_node]: EE pose pos=(0.3726, -0.0247, 0.8582) rpy=(3.0884, 2.7142, 0.0460)
-[arm_task-4] [INFO] [1776864415.027386848] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864415.213233476] [arm_calc_node]: EE pose pos=(0.4700, -0.0164, 0.5129) rpy=(3.0183, 2.0066, 0.1296)
-[arm_task-4] [INFO] [1776864416.027543348] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864416.213242019] [arm_calc_node]: EE pose pos=(0.4161, -0.0158, 0.3243) rpy=(1.8341, 1.6237, 1.3078)
-[arm_task-4] [INFO] [1776864417.027693156] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864417.074144477] [arm_task_node]: 准备获取抓取目标位姿
-[arm_task-8] [INFO] [1776864417.074252727] [arm_task_node]: =====================================
-[arm_task-8] [INFO] [1776864417.074269917] [arm_task_node]: grasp_height = 1.000000
-[arm_task-8] [INFO] [1776864417.074284074] [arm_task_node]: =====================================
-[arm_task-8] [INFO] [1776864417.074295019] [arm_task_node]: 物体在坐标: [0.700, 0.000, 1.000]
-[arm_calc-3] [WARN] [1776864417.074732171] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
-[arm_task-8] [INFO] [1776864417.174666405] [arm_task_node]: 执行抓取动作
-[arm_task-8] [INFO] [1776864417.174810695] [arm_task_node]: Executing Cartesian space trajectory
-[arm_calc-3] [INFO] [1776864417.213370450] [arm_calc_node]: EE pose pos=(0.4094, -0.0160, 0.3123) rpy=(1.2617, 1.6241, 1.8795)
-[arm_calc-3] [WARN] [1776864417.295816096] [arm_calc_node]: Failed to solve IK for Cartesian preview target, keeping current display
-[arm_calc-3] [WARN] [1776864417.315748795] [arm_calc_node]: Failed to solve IK for Cartesian preview target, keeping current display
-[arm_calc-3] [WARN] [1776864417.335792089] [arm_calc_node]: Failed to solve IK for Cartesian preview target, keeping current display
-[arm_calc-3] [WARN] [1776864417.355780602] [arm_calc_node]: Failed to solve IK for Cartesian preview target, keeping current display
-[arm_calc-3] [INFO] [1776864417.375679477] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864417.375768461] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_task-4] [INFO] [1776864418.027858558] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864418.215663402] [arm_calc_node]: EE pose pos=(0.5096, -0.0104, 0.5480) rpy=(1.0327, 2.0087, 1.1101)
-[arm_task-4] [INFO] [1776864419.028021437] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864419.235655329] [arm_calc_node]: EE pose pos=(0.6015, -0.0014, 0.8661) rpy=(0.0179, 2.3105, 0.0059)
-[arm_task-8] [INFO] [1776864419.396316430] [arm_task_node]: 向前推进一段距离以确保吸取稳固
-[arm_task-8] [INFO] [1776864419.396381284] [arm_task_node]: Executing Cartesian space trajectory
-[arm_calc-3] [INFO] [1776864419.597482361] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864419.597568891] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_task-4] [INFO] [1776864420.028198158] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864420.237457931] [arm_calc_node]: EE pose pos=(0.6524, 0.0004, 0.8475) rpy=(0.0008, 2.0379, -0.0009)
-[arm_task-4] [INFO] [1776864421.028367051] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864421.162870468] [arm_task_node]: Executing Cartesian space trajectory
-[arm_calc-3] [INFO] [1776864421.238135171] [arm_calc_node]: EE pose pos=(0.6999, -0.0000, 0.8601) rpy=(0.0001, 1.4277, 0.0041)
-[arm_calc-3] [INFO] [1776864421.363683700] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864421.363782776] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_task-4] [INFO] [1776864422.028534007] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864422.243682008] [arm_calc_node]: EE pose pos=(0.6032, 0.0000, 0.8600) rpy=(3.1411, 1.7136, -3.1355)
-[arm_task-8] [INFO] [1776864422.930333843] [arm_task_node]: 移动到释放位置 [kfs1_detach_pos]
-[arm_task-8] [INFO] [1776864422.930405738] [arm_task_node]: Executing joint space trajectory
-[arm_task-4] [INFO] [1776864423.028685069] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864423.031130023] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864423.031191247] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864423.251167259] [arm_calc_node]: EE pose pos=(0.5491, -0.0001, 0.8608) rpy=(3.1412, 1.7158, -3.1309)
-[arm_task-4] [INFO] [1776864424.028855685] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864424.251188081] [arm_calc_node]: EE pose pos=(0.4478, -0.0109, 0.9389) rpy=(3.1232, 1.9566, -2.5880)
-[arm_task-4] [INFO] [1776864425.029057050] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864425.251198674] [arm_calc_node]: EE pose pos=(0.1295, -0.0319, 1.0644) rpy=(3.1167, 2.5873, -1.2274)
-[arm_task-4] [INFO] [1776864426.029267021] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864426.271154984] [arm_calc_node]: EE pose pos=(-0.1566, -0.0373, 1.0659) rpy=(3.0967, 3.1000, -0.1463)
-[arm_task-4] [INFO] [1776864427.029448151] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864427.271362849] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864428.029640871] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864428.072225880] [arm_task_node]: 抓取流程完成
-[arm_calc-3] [INFO] [1776864428.291343142] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1059, 0.0157)
-[arm_task-8] [WARN] [1776864428.572475545] [arm_task_node]: driver_node 的参数服务不可用
-[arm_task-8] [WARN] [1776864428.572555193] [arm_task_node]: 设置 grasp_state=1 失败
-[arm_task-8] [INFO] [1776864428.572813398] [arm_task_node]: 任务切换: [catch_kfs] -> [idel]
-[catch_kfs_test-11] [INFO] [1776864428.573065153] [catch_kfs_test_node]: 抓取动作成功: err_code=0, reason=抓取流程执行完成
-[INFO] [catch_kfs_test-11]: process has finished cleanly [pid 31371]
-[arm_task-4] [INFO] [1776864429.029899208] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864429.291443665] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1059, 0.0157)
-[arm_task-8] [INFO] [1776864429.572990010] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864430.030112853] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864430.311329066] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864430.573141924] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864431.030317083] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864431.331334481] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864431.573331248] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864432.030512136] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864432.351335326] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864432.573541756] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864433.030736967] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864433.351380128] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864433.573763219] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864434.030983647] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864434.371369224] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864434.574016412] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864435.031223778] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864435.391344616] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864435.574215935] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864435.574328231] [arm_task_node]: idel 检测到 grasp_it=1，切换到 catch_kfs
-[arm_task-8] [INFO] [1776864435.574699608] [arm_task_node]: 任务切换: [idel] -> [catch_kfs]
-[arm_calc-3] [WARN] [1776864435.574835425] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
-[arm_task-4] [INFO] [1776864436.031419152] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864436.031522982] [arm_task_node]: idel 检测到 grasp_it=1，切换到 catch_kfs
-[arm_task-4] [INFO] [1776864436.031968305] [arm_task_node]: 任务切换: [idel] -> [catch_kfs]
-[arm_calc-3] [WARN] [1776864436.032034276] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
-[arm_task-8] [WARN] [1776864436.074888700] [arm_task_node]: driver_node 的参数服务不可用
-[arm_task-8] [WARN] [1776864436.074971280] [arm_task_node]: 设置 grasp_state=0 失败
-[arm_task-8] [WARN] [1776864436.074982780] [arm_task_node]: catch_kfs 未获取到活动任务上下文，使用 TF 目标执行遥控抓取
-[arm_task-8] [INFO] [1776864436.075004717] [arm_task_node]: 移动到释放位置 [ready_interm]
-[arm_task-8] [INFO] [1776864436.075010251] [arm_task_node]: Executing joint space trajectory
-[arm_calc-3] [INFO] [1776864436.175705714] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864436.175791305] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864436.395796458] [arm_calc_node]: EE pose pos=(-0.1993, -0.0370, 1.0589) rpy=(3.0914, -3.1059, 0.0157)
-[arm_task-4] [WARN] [1776864436.532130370] [arm_task_node]: driver_node 的参数服务不可用
-[arm_task-4] [WARN] [1776864436.532200409] [arm_task_node]: 设置 grasp_state=0 失败
-[arm_task-4] [WARN] [1776864436.532211633] [arm_task_node]: catch_kfs 未获取到活动任务上下文，使用 TF 目标执行遥控抓取
-[arm_task-4] [INFO] [1776864436.532228305] [arm_task_node]: 移动到释放位置 [ready_interm]
-[arm_task-4] [INFO] [1776864436.532234088] [arm_task_node]: Executing joint space trajectory
-[arm_calc-3] [INFO] [1776864436.632767378] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864436.633005736] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864436.633097563] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864437.413168041] [arm_calc_node]: EE pose pos=(-0.1701, -0.0364, 1.1373) rpy=(3.0905, -3.1027, 0.0149)
-[arm_calc-3] [INFO] [1776864438.413205830] [arm_calc_node]: EE pose pos=(-0.0079, -0.0336, 1.2597) rpy=(3.0900, -3.1245, 0.0157)
-[arm_calc-3] [INFO] [1776864439.413194816] [arm_calc_node]: EE pose pos=(0.1828, -0.0303, 1.1314) rpy=(3.0901, 3.1223, 0.0183)
-[arm_calc-3] [INFO] [1776864440.413209733] [arm_calc_node]: EE pose pos=(0.2197, -0.0297, 1.0149) rpy=(3.0902, 3.1078, 0.0192)
-[arm_task-4] [INFO] [1776864440.668874727] [arm_task_node]: 移动到准备位置
-[arm_task-4] [INFO] [1776864440.668937572] [arm_task_node]: Executing joint space trajectory
-[arm_task-8] [INFO] [1776864440.668909335] [arm_task_node]: 移动到准备位置
-[arm_task-8] [INFO] [1776864440.668958756] [arm_task_node]: Executing joint space trajectory
-[arm_calc-3] [INFO] [1776864440.769604778] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864440.769675847] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864440.769894164] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864440.769987242] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864440.770070210] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864441.430187018] [arm_calc_node]: EE pose pos=(0.2433, -0.0291, 0.9960) rpy=(3.0907, 3.0561, 0.0229)
-[arm_calc-3] [INFO] [1776864442.450172302] [arm_calc_node]: EE pose pos=(0.4123, -0.0227, 0.7908) rpy=(3.0836, 2.5685, 0.0564)
-[arm_calc-3] [INFO] [1776864443.450170951] [arm_calc_node]: EE pose pos=(0.4622, -0.0157, 0.4535) rpy=(2.9707, 1.8838, 0.1764)
-[arm_calc-3] [INFO] [1776864444.470182569] [arm_calc_node]: EE pose pos=(0.4109, -0.0159, 0.3150) rpy=(1.3844, 1.6225, 1.7569)
-[arm_task-8] [INFO] [1776864445.106060773] [arm_task_node]: 准备获取抓取目标位姿
-[arm_task-4] [INFO] [1776864445.106057273] [arm_task_node]: 准备获取抓取目标位姿
-[arm_task-8] [ERROR] [1776864445.106260373] [arm_task_node]: 抓取200位置
-[arm_task-8] [INFO] [1776864445.106324842] [arm_task_node]: =====================================
-[arm_task-8] [INFO] [1776864445.106338552] [arm_task_node]: position.x = 0.640000
-[arm_task-8] [INFO] [1776864445.106356040] [arm_task_node]: position.y = 0.000000
-[arm_task-8] [INFO] [1776864445.106366568] [arm_task_node]: position.z = 0.520000
-[arm_task-8] [INFO] [1776864445.106376845] [arm_task_node]: orientation.x = 0.000000
-[arm_task-8] [INFO] [1776864445.106386635] [arm_task_node]: orientation.y = 0.000000
-[arm_task-8] [INFO] [1776864445.106396462] [arm_task_node]: orientation.z = 0.000000
-[arm_task-4] [ERROR] [1776864445.106260569] [arm_task_node]: 抓取200位置
-[arm_task-4] [INFO] [1776864445.106324814] [arm_task_node]: =====================================
-[arm_task-4] [INFO] [1776864445.106338168] [arm_task_node]: position.x = 0.640000
-[arm_task-4] [INFO] [1776864445.106357366] [arm_task_node]: position.y = 0.000000
-[arm_task-4] [INFO] [1776864445.106368154] [arm_task_node]: position.z = 0.520000
-[arm_task-4] [INFO] [1776864445.106378365] [arm_task_node]: orientation.x = 0.000000
-[arm_task-4] [INFO] [1776864445.106388588] [arm_task_node]: orientation.y = 0.000000
-[arm_task-4] [INFO] [1776864445.106399024] [arm_task_node]: orientation.z = 0.000000
-[arm_task-4] [INFO] [1776864445.106408965] [arm_task_node]: orientation.w = 1.000000
-[arm_task-8] [INFO] [1776864445.106406304] [arm_task_node]: orientation.w = 1.000000
-[arm_task-8] [INFO] [1776864445.106416036] [arm_task_node]: =====================================
-[arm_task-8] [INFO] [1776864445.106426034] [arm_task_node]: 物体在坐标: [0.640, 0.000, 0.520]
-[arm_task-4] [INFO] [1776864445.106418880] [arm_task_node]: =====================================
-[arm_task-4] [INFO] [1776864445.106428904] [arm_task_node]: 物体在坐标: [0.640, 0.000, 0.520]
-[arm_calc-3] [WARN] [1776864445.106856467] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
-[arm_calc-3] [WARN] [1776864445.106993261] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
-[arm_task-4] [INFO] [1776864445.206754978] [arm_task_node]: 执行抓取动作
-[arm_task-4] [INFO] [1776864445.206849373] [arm_task_node]: Executing Cartesian space trajectory
-[arm_task-8] [INFO] [1776864445.206757372] [arm_task_node]: 执行抓取动作
-[arm_task-8] [INFO] [1776864445.206849534] [arm_task_node]: Executing Cartesian space trajectory
-[arm_calc-3] [INFO] [1776864445.407586609] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864445.407683625] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864445.407984383] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864445.488042948] [arm_calc_node]: EE pose pos=(0.4095, -0.0160, 0.3124) rpy=(1.2628, 1.6245, 1.8773)
-[arm_calc-3] [INFO] [1776864446.508052597] [arm_calc_node]: EE pose pos=(0.5440, -0.0065, 0.4334) rpy=(0.6809, 2.2176, 0.7137)
-[arm_task-8] [INFO] [1776864447.428255580] [arm_task_node]: 向前推进一段距离以确保吸取稳固
-[arm_task-8] [INFO] [1776864447.428331032] [arm_task_node]: Executing Cartesian space trajectory
-[arm_task-4] [INFO] [1776864447.428281956] [arm_task_node]: 向前推进一段距离以确保吸取稳固
-[arm_task-4] [INFO] [1776864447.428339685] [arm_task_node]: Executing Cartesian space trajectory
-[arm_calc-3] [INFO] [1776864447.508878754] [arm_calc_node]: EE pose pos=(0.6400, 0.0000, 0.5200) rpy=(0.0000, 2.3561, -0.0000)
-[arm_calc-3] [INFO] [1776864447.629250523] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864447.629386734] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864447.629774896] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864448.509823146] [arm_calc_node]: EE pose pos=(0.6402, 0.0000, 0.4294) rpy=(0.0007, 1.7563, -0.0005)
-[arm_task-8] [INFO] [1776864449.143667984] [arm_task_node]: Executing Cartesian space trajectory
-[arm_task-4] [INFO] [1776864449.143720126] [arm_task_node]: Executing Cartesian space trajectory
-[arm_calc-3] [INFO] [1776864449.344474999] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864449.344587880] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864449.344943787] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864449.524973209] [arm_calc_node]: EE pose pos=(0.6382, 0.0000, 0.3800) rpy=(3.1415, 1.7134, -3.1347)
-[arm_calc-3] [INFO] [1776864450.524989948] [arm_calc_node]: EE pose pos=(0.5016, 0.0000, 0.3800) rpy=(3.1416, 1.7135, -3.1353)
-[arm_task-8] [INFO] [1776864450.858683760] [arm_task_node]: 移动到释放位置 [kfs1_detach_pos]
-[arm_task-8] [INFO] [1776864450.858768066] [arm_task_node]: Executing joint space trajectory
-[arm_task-4] [INFO] [1776864450.858772389] [arm_task_node]: 移动到释放位置 [kfs1_detach_pos]
-[arm_task-4] [INFO] [1776864450.858835054] [arm_task_node]: Executing joint space trajectory
-[arm_calc-3] [INFO] [1776864450.959591731] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864450.959689897] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864450.959939824] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864450.960052961] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864450.960166280] [arm_calc_node]: 进入关节空间轨迹执行模式
-[arm_calc-3] [INFO] [1776864451.540274211] [arm_calc_node]: EE pose pos=(0.5147, 0.0016, 0.4095) rpy=(3.1360, 1.7478, -3.0555)
-[arm_calc-3] [INFO] [1776864452.540297241] [arm_calc_node]: EE pose pos=(0.6227, 0.0014, 0.8428) rpy=(3.1240, 2.1592, -2.1420)
-[arm_calc-3] [INFO] [1776864453.560259442] [arm_calc_node]: EE pose pos=(0.1101, -0.0320, 1.2316) rpy=(3.1098, 2.8312, -0.7153)
-[arm_calc-3] [INFO] [1776864454.580259023] [arm_calc_node]: EE pose pos=(-0.1917, -0.0371, 1.0674) rpy=(3.0923, -3.1178, -0.0090)
-[arm_calc-3] [INFO] [1776864455.580406881] [arm_calc_node]: EE pose pos=(-0.1995, -0.0370, 1.0578) rpy=(3.0914, -3.1059, 0.0157)
-[arm_task-8] [INFO] [1776864455.997516747] [arm_task_node]: 抓取流程完成
-[arm_task-4] [INFO] [1776864455.997516628] [arm_task_node]: 抓取流程完成
-[arm_task-4] [WARN] [1776864456.497754214] [arm_task_node]: driver_node 的参数服务不可用
-[arm_task-4] [WARN] [1776864456.497839724] [arm_task_node]: 设置 grasp_state=1 失败
-[arm_task-4] [INFO] [1776864456.497864501] [arm_task_node]: 任务切换: [catch_kfs] -> [idel]
-[arm_task-8] [WARN] [1776864456.497766087] [arm_task_node]: driver_node 的参数服务不可用
-[arm_task-8] [WARN] [1776864456.497839384] [arm_task_node]: 设置 grasp_state=1 失败
-[arm_task-8] [INFO] [1776864456.497865195] [arm_task_node]: 任务切换: [catch_kfs] -> [idel]
-[arm_calc-3] [INFO] [1776864456.580432307] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864457.497979895] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864457.497978712] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864457.580430494] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864458.498169585] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864458.498169294] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864458.600436729] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864459.498393625] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864459.498393042] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864459.600492762] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864460.498620278] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864460.498620242] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864460.620434891] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864461.498866357] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864461.498865480] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864461.640414526] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864462.499060748] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864462.499062022] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864462.640427892] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864463.499283213] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864463.499283268] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864463.660435579] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864464.499475431] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864464.499475356] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864464.680408264] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864465.499678419] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864465.499678667] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864465.700449432] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864466.499901592] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864466.499903557] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864466.700454329] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864467.500141816] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864467.500141840] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864467.720406860] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864468.500405149] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864468.500405973] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864468.740416965] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864469.500599113] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864469.500703774] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864469.740426764] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864470.500797288] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864470.500876013] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864470.760406938] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864471.500967963] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864471.501033771] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864471.760411640] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864472.501146759] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864472.501228703] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864472.760417362] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864473.501329413] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864473.501392706] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864473.780399167] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864474.501505836] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864474.501546698] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864474.800385238] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864475.501674804] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864475.501698503] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864475.800412354] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864476.501864089] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864476.501872875] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864476.820389682] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864477.502067558] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864477.502152368] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864477.820399538] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864478.502313265] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864478.502323705] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864478.840414590] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864479.502500993] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864479.502506429] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864479.860405253] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864480.502684193] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864480.502696825] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864480.860435712] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864481.502853304] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864481.502865239] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864481.880405119] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864482.503033753] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864482.503033739] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864482.900416757] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864483.503235043] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864483.503232912] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864483.920387752] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864484.503415159] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864484.503415117] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864484.920396074] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864485.503587609] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864485.503588120] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864485.940418628] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864486.503767322] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864486.503767679] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864486.960424030] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864487.503952373] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864487.503954059] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864487.980396821] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864488.504139366] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864488.504149810] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864488.980398313] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864489.504316570] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864489.504316180] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864490.000379624] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864490.504490554] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864490.504491197] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864491.000394085] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864491.504683439] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864491.504697265] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864492.000416475] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864492.504871017] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864492.504871262] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864493.000438154] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864493.505110538] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864493.505096795] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864494.020425455] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864494.505391890] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864494.505389906] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864495.020427073] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864495.505562040] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864495.505561798] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864496.040400676] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864496.505743817] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864496.505748699] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864497.040414671] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-8] [INFO] [1776864497.505924252] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-4] [INFO] [1776864497.505920235] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864498.040411223] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
-[arm_task-4] [INFO] [1776864498.506135055] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_task-8] [INFO] [1776864498.506156272] [arm_task_node]: idel 等待新任务信号超时，继续等待
-[arm_calc-3] [INFO] [1776864499.060383161] [arm_calc_node]: EE pose pos=(-0.1996, -0.0370, 1.0578) rpy=(3.0914, -3.1058, 0.0157)
+[spawner-10] [INFO] [1777681318.484616498] [spawner_dog_controller]: waiting for service /controller_manager/list_controllers to become available...
+[rviz2-6] [INFO] [1777681318.507279167] [rviz2]: Stereo is NOT SUPPORTED
+[mujoco_ros2_control-2] [INFO] [1777681318.530926467] [mujoco_ros2_control]: loaded mujoco model
+[mujoco_ros2_control-2] [INFO] [1777681318.531675424] [mujoco_ros2_control]: Created mujoco data
+[mujoco_ros2_control-2] [INFO] [1777681318.531694733] [mujoco_ros2_control]: init controller manager
+[mujoco_ros2_control-2] [INFO] [1777681318.536034942] [arm_hw]: Initializing Hardware Interface
+[mujoco_ros2_control-2] [INFO] [1777681318.536062706] [arm_hw]:   joint1
+[mujoco_ros2_control-2] [INFO] [1777681318.536311787] [arm_hw]:   joint2
+[mujoco_ros2_control-2] [INFO] [1777681318.536370108] [arm_hw]:   joint3
+[mujoco_ros2_control-2] [INFO] [1777681318.536419838] [arm_hw]:   joint4
+[mujoco_ros2_control-2] [INFO] [1777681318.536466886] [arm_hw]:   joint5
+[mujoco_ros2_control-2] [INFO] [1777681318.536528833] [arm_hw]:   joint6
+[mujoco_ros2_control-2] [INFO] [1777681318.536599436] [motor1]: added effort actuator for joint: joint1
+[mujoco_ros2_control-2] [INFO] [1777681318.536606707] [motor2]: added effort actuator for joint: joint2
+[mujoco_ros2_control-2] [INFO] [1777681318.536611859] [motor3]: added effort actuator for joint: joint3
+[mujoco_ros2_control-2] [INFO] [1777681318.536616370] [motor4]: added effort actuator for joint: joint4
+[mujoco_ros2_control-2] [INFO] [1777681318.536620679] [motor5]: added effort actuator for joint: joint5
+[mujoco_ros2_control-2] [INFO] [1777681318.536625055] [motor6]: added effort actuator for joint: joint6
+[mujoco_ros2_control-2] [INFO] [1777681318.536636054] [resource_manager]: Initialize hardware 'arm_hw' 
+[mujoco_ros2_control-2] [INFO] [1777681318.536700453] [resource_manager]: Successful initialization of hardware 'arm_hw'
+[mujoco_ros2_control-2] [INFO] [1777681318.536736084] [resource_manager]: 'configure' hardware 'arm_hw' 
+[mujoco_ros2_control-2] [INFO] [1777681318.536746249] [resource_manager]: Successful 'configure' of hardware 'arm_hw'
+[mujoco_ros2_control-2] [INFO] [1777681318.536756089] [resource_manager]: 'activate' hardware 'arm_hw' 
+[mujoco_ros2_control-2] [INFO] [1777681318.536762799] [resource_manager]: Successful 'activate' of hardware 'arm_hw'
+[ERROR] [vision_node-5]: process has died [pid 15923, exit code 255, cmd '/home/kyy/Desktop/RC2026_RoboticArm2_newmodel/install/vision/lib/vision/vision_node --ros-args'].
+[mujoco_ros2_control-2] [INFO] [1777681318.734577432] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[spawner-9] [INFO] [1777681318.745536781] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[mujoco_ros2_control-2] [INFO] [1777681318.746631742] [controller_manager]: Loading controller 'dog_controller'
+[mujoco_ros2_control-2] [INFO] [1777681318.763364004] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[mujoco_ros2_control-2] [INFO] [1777681318.763587536] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[spawner-10] [INFO] [1777681318.764868420] [spawner_dog_controller]: [94mLoaded [1mdog_controller[0m
+[mujoco_ros2_control-2] [INFO] [1777681318.774240271] [controller_manager]: Configuring controller 'dog_controller'
+[arm_task-4] [INFO] [1777681318.996942791] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_task-4] [INFO] [1777681319.997298549] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[mujoco_ros2_control-2] [INFO] [1777681320.415839600] [pose_sensor_registration]: [ee_site] frame: ee_site
+[INFO] [catch_kfs_test-11]: process started with pid [16213]
+[arm_task-4] [INFO] [1777681320.997552048] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[mujoco_ros2_control-2] [INFO] [1777681321.059525685] [mujoco_ros2_control]: Sim environment setup complete
+[spawner-9] [INFO] [1777681321.061708194] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[arm_calc-3] [INFO] [1777681321.090962559] [arm_calc_node]: 进入IDEL模式
+[spawner-10] [INFO] [1777681321.092156037] [spawner_dog_controller]: [92mConfigured and activated [1mdog_controller[0m
+[arm_calc-3] [INFO] [1777681321.101213407] [arm_calc_node]: EE pose pos=(0.0027, -0.0538, 1.3279) rpy=(0.0074, -0.0088, -1.3197)
+[INFO] [spawner-9]: process has finished cleanly [pid 15931]
+[INFO] [spawner-10]: process has finished cleanly [pid 15933]
+[catch_kfs_test-11] [INFO] [1777681321.977890633] [catch_kfs_test_node]: 发送抓取请求: task_id=2, target=(0.600, 0.000, 0.558), quat=(0.000, 0.000, 0.000, 1.000)
+[arm_task-4] [INFO] [1777681321.978587853] [arm_task_node]: 接收到新动作请求: task_id=2, data_size=8
+[arm_task-4] [INFO] [1777681321.978831943] [arm_task_node]: 动作目标已接受，通知 idel 任务开始分发
+[arm_task-4] [INFO] [1777681321.978883047] [arm_task_node]: idel 收到抓取任务，切换到 catch_kfs
+[arm_task-4] [INFO] [1777681321.978940282] [arm_task_node]: 任务切换: [idel] -> [catch_kfs]
+[catch_kfs_test-11] [INFO] [1777681321.978849872] [catch_kfs_test_node]: 抓取目标已被接受，等待执行结果
+[arm_calc-3] [INFO] [1777681322.121178255] [arm_calc_node]: EE pose pos=(0.0031, -0.0538, 1.3279) rpy=(0.0074, -0.0072, -1.3200)
+[arm_task-4] [WARN] [1777681322.479145172] [arm_task_node]: driver_node 的参数服务不可用
+[arm_task-4] [WARN] [1777681322.479251671] [arm_task_node]: 设置 grasp_state=0 失败
+[arm_task-4] [ERROR] [1777681322.479285657] [arm_task_node]: 抓取400位置
+[arm_task-4] [INFO] [1777681322.479353172] [arm_task_node]: 移动到准备位置
+[arm_task-4] [INFO] [1777681322.479366428] [arm_task_node]: Executing joint space trajectory
+[arm_calc-3] [INFO] [1777681322.580543521] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681322.580618393] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681323.140622926] [arm_calc_node]: EE pose pos=(0.3981, -0.0523, 1.2008) rpy=(0.0064, 0.5303, -1.3199)
+[arm_calc-3] [INFO] [1777681324.140933202] [arm_calc_node]: EE pose pos=(0.6674, -0.0421, 0.3358) rpy=(0.0345, 1.8552, -1.3580)
+[arm_task-4] [INFO] [1777681324.898367059] [arm_task_node]: 准备获取抓取目标位姿
+[arm_task-4] [ERROR] [1777681324.898474242] [arm_task_node]: 抓取400位置
+[arm_task-4] [INFO] [1777681324.898528836] [arm_task_node]: 物体在坐标: [0.600, 0.000, 0.680]
+[arm_task-4] [INFO] [1777681324.898818169] [arm_task_node]: 执行抓取动作
+[arm_task-4] [INFO] [1777681324.898835646] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [WARN] [1777681324.899041103] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
+[arm_calc-3] [INFO] [1777681324.999806918] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681324.999940146] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681325.159803264] [arm_calc_node]: EE pose pos=(0.6647, -0.0410, 0.3263) rpy=(0.0681, 1.8793, -1.3590)
+[arm_task-4] [INFO] [1777681325.861611277] [arm_task_node]: 执行按压动作
+[arm_task-4] [INFO] [1777681325.861689918] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [INFO] [1777681325.962623129] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681325.962740573] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681326.162665956] [arm_calc_node]: EE pose pos=(0.6074, 0.0045, 0.6675) rpy=(2.9743, 1.8649, -2.9799)
+[arm_calc-3] [INFO] [1777681327.162739623] [arm_calc_node]: EE pose pos=(0.7014, 0.0054, 0.5497) rpy=(2.8584, 1.6999, -2.8604)
+[arm_task-4] [INFO] [1777681327.888197084] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [INFO] [1777681327.989000633] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681327.989094212] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681328.169083055] [arm_calc_node]: EE pose pos=(0.7207, 0.0025, 0.5415) rpy=(2.8201, 1.6865, -2.8234)
+[arm_task-4] [INFO] [1777681328.747088584] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [INFO] [1777681328.848277069] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681328.848421756] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681329.188249338] [arm_calc_node]: EE pose pos=(0.6357, 0.0047, 0.5896) rpy=(0.2275, 1.7736, -0.2254)
+[arm_task-4] [ERROR] [1777681329.709902212] [arm_task_node]: 抓取400位置，移动到 kfs_up400_detach
+[arm_task-4] [INFO] [1777681329.710067635] [arm_task_node]: 移动到释放位置 [kfs_up400_detach]
+[arm_task-4] [INFO] [1777681329.710098158] [arm_task_node]: Executing joint space trajectory
+[arm_calc-3] [INFO] [1777681329.811200559] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681329.811282091] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681330.191296862] [arm_calc_node]: EE pose pos=(0.4562, 0.0115, 0.5559) rpy=(0.2818, 1.9188, -0.3497)
+[arm_calc-3] [INFO] [1777681331.191347838] [arm_calc_node]: EE pose pos=(0.7178, -0.0264, 0.1865) rpy=(3.1405, 0.3870, 1.9855)
+[arm_calc-3] [INFO] [1777681332.191495562] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1077) rpy=(3.1387, 0.2615, 1.8056)
+[arm_task-4] [INFO] [1777681332.733971293] [arm_task_node]: 抓取流程完成
+[arm_calc-3] [INFO] [1777681333.191555927] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1075) rpy=(3.1388, 0.2612, 1.8055)
+[arm_task-4] [WARN] [1777681333.234211656] [arm_task_node]: driver_node 的参数服务不可用
+[arm_task-4] [WARN] [1777681333.234302966] [arm_task_node]: 设置 grasp_state=1 失败
+[arm_task-4] [INFO] [1777681333.234512921] [arm_task_node]: 任务切换: [catch_kfs] -> [idel]
+[catch_kfs_test-11] [INFO] [1777681333.234741959] [catch_kfs_test_node]: 抓取动作成功: err_code=0, reason=抓取流程执行完成
+[INFO] [catch_kfs_test-11]: process has finished cleanly [pid 16213]
+[arm_calc-3] [INFO] [1777681334.191612365] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681334.234629407] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681335.211618552] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681335.234844896] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681336.211684589] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681336.235020120] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681337.231547157] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681337.235216888] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681338.231628088] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681338.235403455] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681339.231652742] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681339.235611854] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681340.231676839] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681340.235778507] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_task-4] [INFO] [1777681341.235947404] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681341.251641394] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681342.236144800] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681342.251721609] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681343.236334107] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681343.251747684] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681344.236524565] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681344.251877453] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681345.236702948] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681345.271777107] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681346.236884278] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681346.271785164] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681347.237075595] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681347.291809051] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681348.237289884] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681348.311871957] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681349.237472044] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681349.331815422] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681350.237691001] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681350.331842591] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681351.237983434] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681351.331860985] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [INFO] [1777681352.238175639] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_task-4] [INFO] [1777681352.238289461] [arm_task_node]: idel 检测到 grasp_it=1，切换到 catch_kfs
+[arm_task-4] [INFO] [1777681352.238638324] [arm_task_node]: 任务切换: [idel] -> [catch_kfs]
+[arm_calc-3] [WARN] [1777681352.238716680] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
+[arm_calc-3] [INFO] [1777681352.331873710] [arm_calc_node]: EE pose pos=(0.7392, -0.0409, 0.1076) rpy=(3.1388, 0.2614, 1.8055)
+[arm_task-4] [WARN] [1777681352.738798361] [arm_task_node]: driver_node 的参数服务不可用
+[arm_task-4] [WARN] [1777681352.738870122] [arm_task_node]: 设置 grasp_state=0 失败
+[arm_task-4] [WARN] [1777681352.738883040] [arm_task_node]: catch_kfs 未获取到活动任务上下文，使用 TF 目标执行遥控抓取
+[arm_task-4] [ERROR] [1777681352.738899134] [arm_task_node]: 抓取200位置
+[arm_task-4] [INFO] [1777681352.738947787] [arm_task_node]: 移动到准备位置
+[arm_task-4] [INFO] [1777681352.738955094] [arm_task_node]: Executing joint space trajectory
+[arm_calc-3] [INFO] [1777681352.839641470] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681352.839700779] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681353.339790103] [arm_calc_node]: EE pose pos=(0.6965, -0.0358, 0.1375) rpy=(0.0080, 2.5632, -1.3460)
+[arm_calc-3] [INFO] [1777681354.340023270] [arm_calc_node]: EE pose pos=(0.4461, -0.0305, 0.2572) rpy=(1.2142, 1.6190, -2.5347)
+[arm_task-4] [INFO] [1777681355.154552471] [arm_task_node]: 准备获取抓取目标位姿
+[arm_task-4] [ERROR] [1777681355.154715937] [arm_task_node]: 抓取200位置
+[arm_task-4] [INFO] [1777681355.154787215] [arm_task_node]: =====================================
+[arm_task-4] [INFO] [1777681355.154801934] [arm_task_node]: position.x = 0.600000
+[arm_task-4] [INFO] [1777681355.154816967] [arm_task_node]: position.y = 0.000000
+[arm_task-4] [INFO] [1777681355.154828441] [arm_task_node]: position.z = 0.410000
+[arm_task-4] [INFO] [1777681355.154839084] [arm_task_node]: orientation.x = 0.000000
+[arm_task-4] [INFO] [1777681355.154849308] [arm_task_node]: orientation.y = 0.000000
+[arm_task-4] [INFO] [1777681355.154859374] [arm_task_node]: orientation.z = 0.000000
+[arm_task-4] [INFO] [1777681355.154869193] [arm_task_node]: orientation.w = 1.000000
+[arm_task-4] [INFO] [1777681355.154878959] [arm_task_node]: =====================================
+[arm_task-4] [INFO] [1777681355.154888707] [arm_task_node]: 物体在坐标: [0.600, 0.000, 0.410]
+[arm_task-4] [INFO] [1777681355.155139641] [arm_task_node]: 执行抓取动作
+[arm_task-4] [INFO] [1777681355.155157334] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [WARN] [1777681355.155407300] [rclcpp]: Failed to set parameter: parameter 'enable_air_pump' cannot be set because it was not declared
+[arm_calc-3] [INFO] [1777681355.256018556] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681355.256146493] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681355.356131076] [arm_calc_node]: EE pose pos=(0.4465, -0.0301, 0.2580) rpy=(1.2188, 1.6217, -2.5201)
+[arm_task-4] [INFO] [1777681355.914960800] [arm_task_node]: 执行按压动作
+[arm_task-4] [INFO] [1777681355.915026513] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [INFO] [1777681356.015970752] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681356.016112931] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681356.376004513] [arm_calc_node]: EE pose pos=(0.5053, 0.0055, 0.3889) rpy=(2.8886, 1.8518, -2.8986)
+[arm_calc-3] [INFO] [1777681357.376012437] [arm_calc_node]: EE pose pos=(0.6018, 0.0036, 0.2760) rpy=(2.8414, 1.7287, -2.8454)
+[arm_task-4] [INFO] [1777681357.938724659] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [INFO] [1777681358.039546377] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681358.039673357] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681358.379584465] [arm_calc_node]: EE pose pos=(0.6198, 0.0033, 0.2824) rpy=(1.4831, 1.6197, -1.4865)
+[arm_task-4] [INFO] [1777681358.798445498] [arm_task_node]: Executing Cartesian space trajectory
+[arm_calc-3] [INFO] [1777681358.899232905] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681358.899352861] [arm_calc_node]: 进入笛卡尔空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681359.399306478] [arm_calc_node]: EE pose pos=(0.4320, 0.0063, 0.3205) rpy=(0.4288, 1.7763, -0.4223)
+[arm_task-4] [ERROR] [1777681359.761640172] [arm_task_node]: 抓取200位置，移动到 kfs_detach
+[arm_task-4] [INFO] [1777681359.761751186] [arm_task_node]: 移动到释放位置 [kfs_detach]
+[arm_task-4] [INFO] [1777681359.761774143] [arm_task_node]: 释放位置，200
+[arm_task-4] [INFO] [1777681359.761786035] [arm_task_node]: Executing joint space trajectory
+[arm_calc-3] [INFO] [1777681359.862572895] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681359.862642592] [arm_calc_node]: 进入关节空间轨迹执行模式
+[arm_calc-3] [INFO] [1777681360.402729428] [arm_calc_node]: EE pose pos=(0.4174, 0.0030, 0.2028) rpy=(0.0937, 2.3060, -0.6207)
+[arm_calc-3] [INFO] [1777681361.403079987] [arm_calc_node]: EE pose pos=(0.4074, -0.0466, -0.1456) rpy=(3.1315, -0.1536, 1.8027)
+[arm_task-4] [INFO] [1777681362.075314251] [arm_task_node]: 抓取流程完成
+[arm_calc-3] [INFO] [1777681362.422939254] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [WARN] [1777681362.575617730] [arm_task_node]: driver_node 的参数服务不可用
+[arm_task-4] [WARN] [1777681362.575728710] [arm_task_node]: 设置 grasp_state=1 失败
+[arm_task-4] [INFO] [1777681362.575759717] [arm_task_node]: 任务切换: [catch_kfs] -> [idel]
+[arm_calc-3] [INFO] [1777681363.422991306] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681363.575890922] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681364.423084648] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681364.576148405] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681365.443095119] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681365.576376594] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681366.463092478] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681366.576550075] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681367.483112976] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681367.576804565] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681368.503110055] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681368.577001661] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681369.523081908] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681369.577212334] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681370.523158630] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681370.577415934] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681371.543181265] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681371.577676114] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681372.543182574] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681372.577877409] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681373.543218233] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681373.578090126] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681374.543238962] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681374.578296460] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681375.563284033] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681375.578555853] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681376.563293480] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681376.578759787] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681377.563306506] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681377.578977713] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681378.563353885] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681378.579183635] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681379.563368158] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681379.579447530] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681380.563366653] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681380.579660169] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681381.563385613] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681381.579882570] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681382.563380388] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681382.580114273] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681383.563456698] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681383.580321624] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_task-4] [INFO] [1777681384.580539144] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681384.583441800] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681385.580770707] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681385.603434917] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681386.581007239] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681386.603544355] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681387.581212262] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681387.603539749] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681388.581397261] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681388.623557878] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681389.581601582] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681389.623554212] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681390.581793146] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681390.623558194] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681391.582015874] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681391.623666142] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681392.582214629] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681392.643670440] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681393.582431221] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681393.643676480] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681394.582657583] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681394.663649740] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681395.582858969] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681395.663769954] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681396.583151020] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681396.683682438] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681397.583370374] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681397.683713384] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681398.583558353] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681398.683757772] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681399.583778918] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681399.683779792] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681400.583990717] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681400.683831221] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681401.584187998] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681401.703870892] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681402.584380172] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681402.703884954] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681403.584533077] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681403.703925346] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681404.584719446] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681404.703934562] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681405.584946319] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681405.703982493] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681406.585152665] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681406.704015164] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681407.585340014] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681407.724004239] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681408.585542734] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681408.743999431] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681409.585751356] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681409.744036623] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681410.585937575] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681410.764032437] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681411.586145494] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681411.764105620] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681412.586353389] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681412.784182079] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681413.586606102] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681413.784201345] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681414.586791053] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681414.784252232] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681415.586985116] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681415.784294378] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681416.587182355] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681416.804200805] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681417.587409911] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681417.804279855] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681418.587601201] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681418.804309906] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681419.587778975] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681419.824314198] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681420.588003947] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681420.824333811] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681421.588196484] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681421.824376991] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681422.588407530] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681422.844421327] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681423.588649488] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681423.844409069] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681424.588846779] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681424.864443839] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681425.589058923] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681425.864477139] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681426.589282032] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681426.864609546] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681427.589519782] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681427.884504220] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681428.589744512] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681428.884524432] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681429.589941730] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681429.884631559] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681430.590137997] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681430.904574673] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681431.590329038] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681431.904624257] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681432.590646365] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681432.904709983] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)
+[arm_task-4] [INFO] [1777681433.590881876] [arm_task_node]: idel 等待新任务信号超时，继续等待
+[arm_calc-3] [INFO] [1777681433.904718792] [arm_calc_node]: EE pose pos=(0.4061, -0.0467, -0.1462) rpy=(3.1315, -0.1574, 1.8028)

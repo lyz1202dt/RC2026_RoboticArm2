@@ -68,8 +68,8 @@ static const vector<Point3f> OBJ_PTS = {
 /**
  * 相机内参矩阵 K
  * 格式：[fx,  0, cx]
- *       [ 0, fy, cy]
- *       [ 0,  0,  1]
+ *      [ 0, fy, cy]
+ *      [ 0,  0,  1]
  */
 static const Mat K = (Mat_<double>(3,3) <<
     786.19375828781722, 0.,                  668.98017421012958,
@@ -88,6 +88,25 @@ static const Mat D = (Mat_<double>(1,5) <<
      0.0019411199567928366,
     -0.0032091194694991478,
     -0.34311667376016997);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -181,6 +200,20 @@ struct CornerKF
         return Point2f((float)pred.at<double>(0), (float)pred.at<double>(1));
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -286,6 +319,15 @@ void putLabel(Mat& img, const string& text, Point org,
     // 再绘制彩色文字
     putText(img, text, org, FONT_HERSHEY_SIMPLEX, scale, color, thick);
 }
+
+
+
+
+
+
+
+
+
 
 // ================================================================
 //  核心：从彩色帧里提取箱子四角

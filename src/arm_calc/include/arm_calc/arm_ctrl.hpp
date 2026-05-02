@@ -74,7 +74,7 @@ private:
 
     std::vector<std::string> joint_names_{"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
     std::string base_link_{"base_link"};
-    std::string tip_link_{"link6"};
+    std::string tip_link_{"Link6"};
     CartesianPose cartesian_target_{};
     CartesianPose visual_target_{};
     JointState joint_target_state_{};

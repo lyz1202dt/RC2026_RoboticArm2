@@ -166,7 +166,7 @@ public:
     std::string base_frame_{"base_link"};
     std::string camera_frame_{"camera_link"};
     std::string object_frame_{"target_object"};
-    std::string tip_frame_{"link6"};
+    std::string tip_frame_{"Link6"};
     std::string arm_calc_node_name_{"arm_calc_node"};
     std::string driver_node_name_{"driver_node"};
     double approach_distance_{0.1};  // meters above target

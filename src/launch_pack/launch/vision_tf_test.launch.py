@@ -50,7 +50,7 @@ def generate_launch_description():
     arguments=[
         "0.1", "0.09", "-0.03",
         "0.0", "0.7071068", "0.0", "0.7071068",
-        "link4",
+        "Link4",
         "camera_link"
     ],
     output="screen",
