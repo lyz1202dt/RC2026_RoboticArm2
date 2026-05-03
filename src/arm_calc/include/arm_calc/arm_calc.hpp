@@ -41,7 +41,7 @@ public:
     void set_joint_pd(std::size_t index, double kp, double kd);
     void get_joint_pd(std::size_t index, double& kp, double& kd) const;
 
-    JointTrajectoryPoint signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target);
+    JointTrajectoryPoint signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target,const JointVector& seed_joint_pos);
 
 private:
     static KDL::Frame to_kdl_frame(const CartesianPose& pose);

@@ -278,11 +278,12 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // 强制规定姿态
     tf2::Quaternion quat;
-    quat.setRPY(0, M_PI / 2, 0);
+    quat.setRPY(0,M_PI, 0);
     object_pose.pose.orientation.w = quat.getW();
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
+
 
     // 3. Move to approach position (distance above target)
     RCLCPP_INFO(this->get_logger(), "移动到接近位置");

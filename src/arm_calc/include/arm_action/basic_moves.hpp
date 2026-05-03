@@ -2,6 +2,7 @@
 
 #include "arm_calc/arm_calc.hpp"
 #include "arm_calc/trajectory_calc.hpp"
+#include "arm_calc/common_types.hpp"
 
 #include <memory>
 
@@ -44,7 +45,7 @@ public:
     void set_start_state(const JointState& state);
     void set_goal_state(const CartesianPose& pose, double duration);
     void start(double start_time_sec);
-    JointTrajectoryPoint sample(double current_time_sec);
+    JointTrajectoryPoint sample(double current_time_sec,JointVector current_joint);
     bool active(double current_time_sec) const;
     bool started() const;
 

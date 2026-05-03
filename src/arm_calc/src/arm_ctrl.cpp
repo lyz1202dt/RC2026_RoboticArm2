@@ -250,7 +250,7 @@ std::string ArmCtrlNode::load_local_urdf() const {
     // 获取arm包的share目录路径
     const std::string arm_share = ament_index_cpp::get_package_share_directory("arm");
     // 构建URDF文件路径
-    const std::string urdf_path = arm_share + "/model/robotic_arm.urdf";
+    const std::string urdf_path = arm_share + "/model/arm3.urdf";
     // 打开文件
     std::ifstream input(urdf_path);
     if (!input.is_open()) {
@@ -530,7 +530,8 @@ void ArmCtrlNode::publish_control_loop() {
         break;
 
     case MotionMode::kCartesianSpace:                                              // 笛卡尔空间轨迹模式（逻辑同关节空间）
-        target_point = cartesian_space_move_->sample(now_sec);
+            
+        target_point = cartesian_space_move_->sample(now_sec,current_joint_state_.position);
         if (!cartesian_space_move_->active(now_sec) && cartesian_space_move_->started()) {
             set_idle_hold_point(target_point);
             set_execute_trajectory_flag(false);

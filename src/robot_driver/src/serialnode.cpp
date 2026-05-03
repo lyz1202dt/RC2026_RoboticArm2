@@ -97,22 +97,23 @@ void ArmNode::armSubscribCb(const robot_interfaces::msg::Arm& msg) {
    
     arm_target.servo1.up=msg.motor[3].rad;
     arm_target.servo1.low=msg.motor[2].rad;
-    arm_target.rob01.except_pos=-msg.motor[1].rad;
-    arm_target.rob02.target_pos=msg.motor[0].rad;
-    arm_target.rob02.target_pos=arm_target.rob02.target_pos+0.0f;
+    arm_target.servo1.down=msg.motor[1].rad;
+    arm_target.rob01.except_pos=msg.motor[0].rad;
+    
     arm_target.pack_type=0x01; // 0x01 代表这是一个机械臂目标数据包    
-    arm_target.air_pump = air_pump;
+    arm_target.arm_pump = air_pump;
     cdc_trans->send_struct(arm_target); // 一旦订阅到最新的包，立即发送到下位机
 
     target_log_print_cnt++;
     if (target_log_update_cnt/4 == target_log_print_cnt) {
         target_log_print_cnt = 0;
         // RCLCPP_INFO(this->get_logger(), "订阅到电机目标值 %f %f %f %f,气泵状态 %d",
-        //     arm_target.rob02.target_pos,
+           
         //     arm_target.rob01.except_pos,
+        //     arm_target.servo1.down,
         //     arm_target.servo1.low,
         //     arm_target.servo1.up,
-        // arm_target.air_pump);
+        // arm_target.arm_pump);
     }
 
     first_update = false;

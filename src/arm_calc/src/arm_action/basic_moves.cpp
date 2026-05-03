@@ -126,11 +126,11 @@ void JCartesianSpaceMove::start(double start_time_sec) {
     started_ = true;
 }
 
-JointTrajectoryPoint JCartesianSpaceMove::sample(double current_time_sec) {
+JointTrajectoryPoint JCartesianSpaceMove::sample(double current_time_sec,JointVector current_joint) {
     if (!started_ || !arm_calc_) {
         return BuildJointPoint(arm_calc_, start_joint_state_.position);
     }
-    return arm_calc_->signal_arm_calc(build_cartesian_target(current_time_sec));
+    return arm_calc_->signal_arm_calc(build_cartesian_target(current_time_sec),current_joint);
 }
 
 bool JCartesianSpaceMove::active(double current_time_sec) const {
@@ -218,7 +218,7 @@ JointTrajectoryPoint VisualServoMove::sample(double current_time_sec) {
     cartesian_target.angular_velocity.setZero();
     cartesian_target.angular_acceleration.setZero();
 
-    return arm_calc_->signal_arm_calc(cartesian_target);
+    return arm_calc_->signal_arm_calc(cartesian_target,current_joint_state_.position);
 }
 
 }  // namespace arm_action
