@@ -620,7 +620,7 @@ bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped&
         pose_out.pose.position.x  = transform.transform.translation.x;
         pose_out.pose.position.y  = transform.transform.translation.y;
         pose_out.pose.position.z  = transform.transform.translation.z;
-        pose_out.pose.position.z  = -0.256;
+        pose_out.pose.position.z  = -0.26;
         pose_out.pose.orientation = transform.transform.rotation;
         return true;
 

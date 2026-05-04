@@ -40,70 +40,165 @@ ArmCalc::ArmCalc(const KDL::Chain& chain)
 
 
 
-//====================== 最终推荐版本 ======================
+
+
 JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
     return joint_pos(pose, result, from_kdl_joints(last_joint_solution_));
 }
 
-Eigen::Vector4d ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
+JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
     KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
     KDL::Frame frame;
-    
+
     // 1. 位置
     const Eigen::Vector3d& target_pos = pose.position;
     frame.p = KDL::Vector(target_pos[0], target_pos[1], target_pos[2]);
 
-    // 2. 直接使用输入的完整姿态（不再强行只用 pitch + 自定义轴）
-    frame.M = KDL::Rotation::Quaternion(
-        pose.orientation.x(),
-        pose.orientation.y(),
-        pose.orientation.z(),
-        pose.orientation.w()
-    );
+    // 2. 从输入提取 pitch
+    KDL::Rotation input_rot = KDL::Rotation::Quaternion(
+        pose.orientation.x(), pose.orientation.y(),
+        pose.orientation.z(), pose.orientation.w());
+    double roll, pitch, yaw;
+    input_rot.GetRPY(roll, pitch, yaw);
 
-    // 3. 多候选种子 IK 求解（核心抗翻转机制）
-    *result = -1;
-    JointVector best_solution = seed_joint_pos;
-    double best_dist = std::numeric_limits<double>::max();
+    double prev_joint4 = last_joint_solution_(3);
+    double current_joint4 = seed_joint_pos[3];
 
-    std::vector<JointVector> candidates;
-    candidates.push_back(seed_joint_pos);                    // 当前 seed
+    // ====================== 只在切换瞬间强保姿态 ======================
+    double joint_diff = (seed_joint_pos - from_kdl_joints(last_joint_solution_)).norm();
 
-    // 对 wrist joint (joint4, 索引3) 做大量偏移尝试
-    for (double offset : {-2*M_PI, -M_PI, -0.5*M_PI, 0.5*M_PI, M_PI, 2*M_PI}) {
-        JointVector cand = seed_joint_pos;
-        cand[3] += offset;
-        candidates.push_back(cand);
-    }
-
-    for (const auto& cand : candidates) {
-        KDL::JntArray try_seed = to_kdl_joints(cand);
-        int ret = ik_solver_.CartToJnt(try_seed, frame, try_seed);
-        
-        if (ret >= 0) {
-            JointVector sol = from_kdl_joints(try_seed);
-            // 选择离上一帧最近的解（最重要！）
-            double dist = (sol - from_kdl_joints(last_joint_solution_)).norm();
-            
-            if (dist < best_dist) {
-                best_dist = dist;
-                best_solution = sol;
-                *result = ret;
+    // 如果是切换瞬间（关节几乎没变化），强制使用当前真实 wrist 角度
+    if (joint_diff < 0.06) {          // 阈值调小，更精准判断切换
+        pitch = current_joint4;
+    } 
+    else {
+        // 正常运动时做常规连续性修正
+        if (std::fabs(pitch - current_joint4) > M_PI / 2.0) {
+            if (pitch > current_joint4) {
+                pitch -= 2 * M_PI;
+            } else {
+                pitch += 2 * M_PI;
             }
         }
     }
 
-    // 更新历史解
-    if (*result >= 0) {
-        last_joint_solution_ = to_kdl_joints(best_solution);
-        
+    // 3. Axis-Angle 构建（完全保留你原来的写法）
+    double ax = -target_pos[1];
+    double ay = target_pos[0];
+    double az = 0.0;
+    double len = std::sqrt(ax * ax + ay * ay);
+
+    if (len < 1e-8) {
+        frame.M = KDL::Rotation::RPY(0.0, pitch, 0.0);
     } else {
-        
-        return seed_joint_pos;
+        ax /= len;
+        ay /= len;
+
+        double half = pitch * 0.5;
+        double qw = std::cos(half);
+        double qx = ax * std::sin(half);
+        double qy = ay * std::sin(half);
+        double qz = az * std::sin(half);
+
+        double qnorm = std::sqrt(qw*qw + qx*qx + qy*qy + qz*qz);
+        if (qnorm > 1e-12) {
+            qw /= qnorm; qx /= qnorm; qy /= qnorm; qz /= qnorm;
+        }
+        frame.M = KDL::Rotation::Quaternion(qx, qy, qz, qw);
     }
 
-    return best_solution;
+    // 4. IK 求解（只保留少量偏移，减少转圈）
+    *result = ik_solver_.CartToJnt(seed, frame, seed);
+
+    if (*result >= 0) {
+        last_joint_solution_ = seed;
+        return from_kdl_joints(seed);
+    } 
+    else {
+        // IK失败时尝试少量偏移再试一次
+        JointVector cand = seed_joint_pos;
+        cand[3] += M_PI;
+        seed = to_kdl_joints(cand);
+        *result = ik_solver_.CartToJnt(seed, frame, seed);
+        
+        if (*result >= 0) {
+            last_joint_solution_ = seed;
+            return from_kdl_joints(seed);
+        }
+    }
+
+    // 完全失败返回当前关节
+    *result = -1;
+    return seed_joint_pos;
 }
+
+
+
+
+// //====================== 最终推荐版本 ======================
+// JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
+//     return joint_pos(pose, result, from_kdl_joints(last_joint_solution_));
+// }
+
+// JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
+//     KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
+//     KDL::Frame frame;
+    
+//     // 1. 位置
+//     const Eigen::Vector3d& target_pos = pose.position;
+//     frame.p = KDL::Vector(target_pos[0], target_pos[1], target_pos[2]);
+
+//     // 2. 直接使用输入的完整姿态（不再强行只用 pitch + 自定义轴）
+//     frame.M = KDL::Rotation::Quaternion(
+//         pose.orientation.x(),
+//         pose.orientation.y(),
+//         pose.orientation.z(),
+//         pose.orientation.w()
+//     );
+
+//     // 3. 多候选种子 IK 求解（核心抗翻转机制）
+//     *result = -1;
+//     JointVector best_solution = seed_joint_pos;
+//     double best_dist = std::numeric_limits<double>::max();
+
+//     std::vector<JointVector> candidates;
+//     candidates.push_back(seed_joint_pos);                    // 当前 seed
+
+//     // 对 wrist joint (joint4, 索引3) 做大量偏移尝试
+//     for (double offset : {-2*M_PI, -M_PI, -0.5*M_PI, 0.5*M_PI, M_PI, 2*M_PI}) {
+//         JointVector cand = seed_joint_pos;
+//         cand[3] += offset;
+//         candidates.push_back(cand);
+//     }
+
+//     for (const auto& cand : candidates) {
+//         KDL::JntArray try_seed = to_kdl_joints(cand);
+//         int ret = ik_solver_.CartToJnt(try_seed, frame, try_seed);
+        
+//         if (ret >= 0) {
+//             JointVector sol = from_kdl_joints(try_seed);
+//             // 选择离上一帧最近的解（最重要！）
+//             double dist = (sol - from_kdl_joints(last_joint_solution_)).norm();
+            
+//             if (dist < best_dist) {
+//                 best_dist = dist;
+//                 best_solution = sol;
+//                 *result = ret;
+//             }
+//         }
+//     }
+
+//     // 更新历史解
+//     if (*result >= 0) {
+//         last_joint_solution_ = to_kdl_joints(best_solution);
+        
+//     } else {
+        
+//         return seed_joint_pos;
+//     }
+
+//     return best_solution;
+// }
 
 
 // JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
