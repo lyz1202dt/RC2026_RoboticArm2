@@ -250,7 +250,7 @@ std::string ArmCtrlNode::load_local_urdf() const {
     // 获取arm包的share目录路径
     const std::string arm_share = ament_index_cpp::get_package_share_directory("arm");
     // 构建URDF文件路径
-    const std::string urdf_path = arm_share + "/model/robotic_arm.urdf";
+    const std::string urdf_path = arm_share + "/model/arm4.urdf";
     // 打开文件
     std::ifstream input(urdf_path);
     if (!input.is_open()) {

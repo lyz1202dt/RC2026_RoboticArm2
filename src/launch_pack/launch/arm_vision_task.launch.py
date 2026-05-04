@@ -12,7 +12,7 @@ def generate_launch_description():
     arm_share = get_package_share_directory("arm")
     launch_pack_share = get_package_share_directory("launch_pack")
 
-    urdf_path = os.path.join(arm_share, "model", "robotic_arm.urdf")
+    urdf_path = os.path.join(arm_share, "model", "arm4.urdf")
     controller_yaml = os.path.join(launch_pack_share, "config", "ros2_controller.yaml")
     rviz_path = os.path.join(launch_pack_share, "rviz", "display_config.rviz")
 
@@ -68,7 +68,7 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "0.29", "0.0", "0.0",  # x, y, z translation
+            "0.06", "-0.02", "0.29",  # x, y, z translation
             "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
             "camera_link",
             "target_object"
@@ -85,7 +85,7 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "-0.01865", "0.042", "0.0",  # x, y, z translation
+            "-0.03165", "0.042", "0.0",  # x, y, z translation
             "0.0", "0.7071", "0.0", "0.7071",  # quaternion (x, y, z, w) - 90° rotation about Y
             "link5",
             "camera_link"
@@ -102,6 +102,7 @@ def generate_launch_description():
         arm_task,
         arm_driver,
         static_tf_camera,
+        static_tf_target,
        
         
     ])
