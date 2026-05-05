@@ -115,14 +115,14 @@ private:
             return;
         }
 
-        double grasp_it = this->get_parameter("grasp_it").as_double();
+        double grasp_it = this->get_parameter("grasp_height").as_double();
         double grasp_height = 0.0;
-        if (grasp_it == -1.0) {
-            grasp_height = 1.0;  // 低位抓取
-        } else if (grasp_it == 0.0) {
-            grasp_height = 0.0;  // 中位抓取
+        if (grasp_it == 0.0) {
+            grasp_height = 0.02;  // 低位抓取
+        } else if (grasp_it == 1.0) {
+            grasp_height = 0.41;  // 中位抓取
         } else {
-            grasp_height = 2.0;  // 高位抓取
+            grasp_height = 0.68;  // 高位抓取
         }
 
         ArmTask::Goal goal_msg;
