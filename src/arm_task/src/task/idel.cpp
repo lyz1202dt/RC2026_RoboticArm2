@@ -32,6 +32,21 @@ std::string IdelTask::process(const std::string last_task_name)
         return "catch_kfs";
     }
 
+    if (is_first_run) {
+        std::vector<double> ready_joint_angles;
+        std::string ready_position_name = "ready";
+        
+        if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
+            RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
+        }
+
+        RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
+        if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+        }
+
+        is_first_run = false;
+    }
+
     // // TODO: 移动到ready位置
     // std::vector<double> ready_joint_angles;
     // robot->get_named_joint_position("ready", ready_joint_angles);

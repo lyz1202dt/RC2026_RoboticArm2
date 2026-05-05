@@ -9,5 +9,6 @@ public:
     std::string process(const std::string last_task_name) override;
 
 private:
+    bool is_first_run = true;
 
 };
