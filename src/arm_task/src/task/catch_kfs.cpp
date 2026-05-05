@@ -156,22 +156,33 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
         } else {
             RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", robot->node_->get_parameter("grasp_height").as_double());
+            if (goal_handle) {
+                robot->finish_current_task(goal_handle, false, "未知的 grasp_height 参数值");
+            }
             return "idel";
         }
 
+        // object_pose.header.frame_id = "base_link";
+        // object_pose.header.stamp = robot->node_->now();
+        // object_pose.pose.position.x = context.data[0];
+        // object_pose.pose.position.y = context.data[1];
+
+
+        // object_pose.pose.position.z = grasp_height_for_check;
+
+
+        // object_pose.pose.orientation.x = context.data[3];
+        // object_pose.pose.orientation.y = context.data[4];
+        // object_pose.pose.orientation.z = context.data[5]; 
+        // object_pose.pose.orientation.w = context.data[6];
+
+        const geometry_msgs::msg::TransformStamped target_tf =
+        robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
         object_pose.header.frame_id = "base_link";
         object_pose.header.stamp = robot->node_->now();
-        object_pose.pose.position.x = context.data[0];
-        object_pose.pose.position.y = context.data[1];
-
-
-        object_pose.pose.position.z = grasp_height_for_check;
-
-
-        object_pose.pose.orientation.x = context.data[3];
-        object_pose.pose.orientation.y = context.data[4];
-        object_pose.pose.orientation.z = context.data[5]; 
-        object_pose.pose.orientation.w = context.data[6];
+        object_pose.pose.position.x = target_tf.transform.translation.x;
+        object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
+        object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
 
 
 
