@@ -45,7 +45,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
     node_->declare_parameter<double>("grasp_height", 1.0);
-    node_->declare_parameter<double>("grasp_right_run", 0.0);
+    node_->declare_parameter<double>("grasp_right_run", 0.10);
     node_->declare_parameter<double>("grasp_down_run", 0.15);
     node_->declare_parameter<double>("grasp_right_run_qian", 0.00);
 

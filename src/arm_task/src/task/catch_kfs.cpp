@@ -102,7 +102,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return "idel";
     }
 
-    std::this_thread::sleep_for(10s);
+    std::this_thread::sleep_for(5s);
 
     // 2. 获取目标位姿：优先使用 action 数据，否则使用 TF
     RCLCPP_INFO(robot->node_->get_logger(), "准备获取抓取目标位姿");
@@ -166,7 +166,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
                 RCLCPP_ERROR(robot->node_->get_logger(), "抓取200位置");
                 grasp_height = 0.41;
                 grasp_down_run_ = robot->node_->get_parameter("grasp_down_run").as_double(); // 0.18;
-                grasp_right_run_ = robot->node_->get_parameter("grasp_right_run").as_double(); // 0.00;
+                grasp_right_run_ = robot->node_->get_parameter("grasp_right_run").as_double(); // 0.10;
                 grasp_duration_ = 0.6;
 
             } else if (robot->node_->get_parameter("grasp_height").as_double() == 2.0) {
@@ -184,8 +184,8 @@ std::string CatchKFS::process(const std::string last_task_name) {
             object_pose.header.frame_id = "base_link";
             object_pose.header.stamp = robot->node_->now();
             object_pose.pose.position.x = target_tf.transform.translation.x;
-            object_pose.pose.position.y = target_tf.transform.translation.y;
-            object_pose.pose.position.z = grasp_height;
+            object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
+            object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
 
             RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
             RCLCPP_INFO(robot->node_->get_logger(), "position.x = %lf", object_pose.pose.position.x);
@@ -215,7 +215,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
-    // object_pose.pose.position.x -= grasp_right_run_;
+    object_pose.pose.position.x -= grasp_right_run_;
 
     if (!robot->set_air_pump(true)) {
         if (goal_handle) {
