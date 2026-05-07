@@ -55,8 +55,23 @@ std::string CatchKFS::process(const std::string last_task_name) {
     // 获取抓取高度：优先使用 action 数据，否则使用 ROS 参数
     // action 发送的是索引 (0.0/1.0/2.0)，需要转换为实际高度值 (0.02/0.41/0.68)
     double grasp_height_for_check = 0.0;
+    double position_x_ = 0.0;
+    double position_y_ = 0.0;
+    double position_z_ = 0.0;
+    double orientation_x_ = 0.0;
+    double orientation_y_ = 0.0;
+    double orientation_z_ = 0.0;
+    double orientation_w_ = 0.0;
+
     if (has_action_context && context.data.size() >= 8) {
         grasp_height_for_check = context.data[7];
+        position_x_ = context.data[0];
+        position_y_ = context.data[1];
+        position_z_ = context.data[2];
+        orientation_x_ = context.data[3];
+        orientation_y_ = context.data[4];
+        orientation_z_ = context.data[5];
+        orientation_w_ = context.data[6];
     } else {
         grasp_height_for_check = robot->node_->get_parameter("grasp_height").as_double() == 0.0 ? 0.02 :
                                   robot->node_->get_parameter("grasp_height").as_double() == 1.0 ? 0.41 : 0.68;
@@ -108,7 +123,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return fail_task("抓取前移动到准备位失败");
     }
 
-    std::this_thread::sleep_for(5s);
+    std::this_thread::sleep_for(1s);
 
     // 2. 获取目标位姿：优先使用 action 数据，否则使用 TF
     RCLCPP_INFO(robot->node_->get_logger(), "准备获取抓取目标位姿");
@@ -162,27 +177,25 @@ std::string CatchKFS::process(const std::string last_task_name) {
             return "idel";
         }
 
-        // object_pose.header.frame_id = "base_link";
-        // object_pose.header.stamp = robot->node_->now();
-        // object_pose.pose.position.x = context.data[0];
-        // object_pose.pose.position.y = context.data[1];
-
-
-        // object_pose.pose.position.z = grasp_height_for_check;
-
-
-        // object_pose.pose.orientation.x = context.data[3];
-        // object_pose.pose.orientation.y = context.data[4];
-        // object_pose.pose.orientation.z = context.data[5]; 
-        // object_pose.pose.orientation.w = context.data[6];
-
-        const geometry_msgs::msg::TransformStamped target_tf =
-        robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
         object_pose.header.frame_id = "base_link";
         object_pose.header.stamp = robot->node_->now();
-        object_pose.pose.position.x = target_tf.transform.translation.x;
-        object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
-        object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
+        object_pose.pose.position.x = position_x_;
+        object_pose.pose.position.y = position_y_;
+        object_pose.pose.position.z = grasp_height_for_check;
+
+
+        object_pose.pose.orientation.x = orientation_x_;
+        object_pose.pose.orientation.y = orientation_y_;
+        object_pose.pose.orientation.z = orientation_z_;
+        object_pose.pose.orientation.w = orientation_w_;
+
+        // const geometry_msgs::msg::TransformStamped target_tf =
+        // robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
+        // object_pose.header.frame_id = "base_link";
+        // object_pose.header.stamp = robot->node_->now();
+        // object_pose.pose.position.x = target_tf.transform.translation.x;
+        // object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
+        // object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
 
 
 
@@ -217,22 +230,32 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
 
 
-
-
-
-
-
-
-
-
-
-            const geometry_msgs::msg::TransformStamped target_tf =
-            robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
             object_pose.header.frame_id = "base_link";
             object_pose.header.stamp = robot->node_->now();
-            object_pose.pose.position.x = target_tf.transform.translation.x;
-            object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
-            object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
+            object_pose.pose.position.x = position_x_;
+            object_pose.pose.position.y = position_y_;
+            object_pose.pose.position.z = grasp_height_for_check;
+
+
+            object_pose.pose.orientation.x = orientation_x_;
+            object_pose.pose.orientation.y = orientation_y_;
+            object_pose.pose.orientation.z = orientation_z_;
+            object_pose.pose.orientation.w = orientation_w_;
+
+
+
+
+
+
+
+
+            // const geometry_msgs::msg::TransformStamped target_tf =
+            // robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
+            // object_pose.header.frame_id = "base_link";
+            // object_pose.header.stamp = robot->node_->now();
+            // object_pose.pose.position.x = target_tf.transform.translation.x;
+            // object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
+            // object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
 
 
             RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
