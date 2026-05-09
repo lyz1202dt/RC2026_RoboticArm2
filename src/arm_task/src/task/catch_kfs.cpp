@@ -177,6 +177,11 @@ std::string CatchKFS::process(const std::string last_task_name) {
             return "idel";
         }
 
+
+
+
+
+
         object_pose.header.frame_id = "base_link";
         object_pose.header.stamp = robot->node_->now();
         object_pose.pose.position.x = position_x_;
@@ -188,6 +193,13 @@ std::string CatchKFS::process(const std::string last_task_name) {
         object_pose.pose.orientation.y = orientation_y_;
         object_pose.pose.orientation.z = orientation_z_;
         object_pose.pose.orientation.w = orientation_w_;
+
+
+
+
+
+
+
 
         // const geometry_msgs::msg::TransformStamped target_tf =
         // robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
@@ -309,9 +321,9 @@ std::string CatchKFS::process(const std::string last_task_name) {
     object_pose.pose.position.x+=0.12+grasp_right_run_qian_;
 
     // object_pose.pose.position.x -= 0.1;
-    RCLCPP_INFO(robot->node_->get_logger(), "执行按压动作");
-    if (!robot->execute_cartesian_space_trajectory(object_pose, 3.0)) { // 2.1
-        return fail_task("执行按压轨迹失败");
+    RCLCPP_INFO(robot->node_->get_logger(), "向前推进");
+    if (!robot->execute_cartesian_space_trajectory(object_pose, 2.1)) { // 2.1
+        return fail_task("向前推进失败");
     }
 
 
@@ -324,20 +336,20 @@ std::string CatchKFS::process(const std::string last_task_name) {
     if (grasp_height_for_check == 0.41 ||
         grasp_height_for_check == 0.68){
 
-        quat.setRPY(0, (M_PI / 1.8), 0);
+        quat.setRPY(0, (M_PI / 1.8), 0); 
         object_pose.pose.orientation.w = quat.getW();
         object_pose.pose.orientation.x = quat.getX();
         object_pose.pose.orientation.y = quat.getY();
         object_pose.pose.orientation.z = quat.getZ();
         object_pose.pose.position.z+=0.07;
-        if (!robot->execute_cartesian_space_trajectory(object_pose, 3.0)) { // 0.8
+        if (!robot->execute_cartesian_space_trajectory(object_pose, 2.0)) { // 0.8
             return fail_task("后退失败");
         }
 
 
         object_pose.pose.position.x-=0.3;
 
-        if (!robot->execute_cartesian_space_trajectory(object_pose, 3.0)) { // 0.6
+        if (!robot->execute_cartesian_space_trajectory(object_pose, 2.0)) { // 0.6
             return fail_task("后退失败");
         }
     }

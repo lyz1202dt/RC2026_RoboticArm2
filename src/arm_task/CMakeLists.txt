@@ -38,6 +38,10 @@ add_executable(catch_kfs_test
   src/catch_kfs_test.cpp
 )
 
+add_executable(move_kfs_test
+  src/move_kfs_test.cpp
+)
+
 add_executable(place_kfs_test
   src/place_kfs_test.cpp
 )
@@ -63,6 +67,12 @@ ament_target_dependencies(catch_kfs_test
   robot_interfaces
 )
 
+ament_target_dependencies(move_kfs_test
+  rclcpp
+  rclcpp_action
+  robot_interfaces
+)
+
 ament_target_dependencies(place_kfs_test
   rclcpp
   rclcpp_action
@@ -78,6 +88,7 @@ target_link_libraries(arm_task
 # Install executable
 install(TARGETS arm_task
   catch_kfs_test
+  move_kfs_test
   place_kfs_test
   DESTINATION lib/${PROJECT_NAME}
 )
