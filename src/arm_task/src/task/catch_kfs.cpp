@@ -247,19 +247,10 @@ std::string CatchKFS::process(const std::string last_task_name) {
             object_pose.pose.position.x = position_x_;
             object_pose.pose.position.y = position_y_;
             object_pose.pose.position.z = grasp_height_for_check;
-
-
             object_pose.pose.orientation.x = orientation_x_;
             object_pose.pose.orientation.y = orientation_y_;
             object_pose.pose.orientation.z = orientation_z_;
             object_pose.pose.orientation.w = orientation_w_;
-
-
-
-
-
-
-
 
             // const geometry_msgs::msg::TransformStamped target_tf =
             // robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);

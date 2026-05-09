@@ -80,13 +80,6 @@ private:
         double joint_5 = 0.0;
         double joint_6 = 0.0;
 
-        std::cout << "请输入移动时长(秒): " << std::flush;
-        if (!(std::cin >> move_duration)) {
-            RCLCPP_ERROR(this->get_logger(), "读取移动时长失败");
-            rclcpp::shutdown();
-            return;
-        }
-
         std::cout << "请输入关节1角度(弧度): " << std::flush;
         if (!(std::cin >> joint_1)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节1角度失败");
@@ -129,29 +122,36 @@ private:
             return;
         }
 
+        std::cout << "请输入移动时长(秒): " << std::flush;
+        if (!(std::cin >> move_duration)) {
+            RCLCPP_ERROR(this->get_logger(), "读取移动时长失败");
+            rclcpp::shutdown();
+            return;
+        }
+
         ArmTask::Goal goal_msg;
         goal_msg.task_id = kMoveTaskId;
         goal_msg.data = {
-            move_duration,
             joint_1,
             joint_2,
             joint_3,
             joint_4,
             joint_5,
             joint_6,
+            move_duration,
         };
 
         RCLCPP_INFO(
             this->get_logger(),
             "发送移动请求: task_id=%d, duration=%.3f, joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f)",
             goal_msg.task_id,
+            goal_msg.data[6],
             goal_msg.data[0],
             goal_msg.data[1],
             goal_msg.data[2],
             goal_msg.data[3],
             goal_msg.data[4],
-            goal_msg.data[5],
-            goal_msg.data[6]);
+            goal_msg.data[5]);
 
         rclcpp_action::Client<ArmTask>::SendGoalOptions send_goal_options;
         send_goal_options.goal_response_callback =

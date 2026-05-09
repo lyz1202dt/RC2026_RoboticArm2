@@ -32,14 +32,14 @@ std::string MoveKFS::process(const std::string last_task_name) {
         return fail_task("接收到的移动任务数据维度不正确");
     }
 
-    const double duration_ = context.data[0];
+    const double duration_ = context.data[6];
     const std::vector<double> joint_angles = {
+        context.data[0],
         context.data[1],
         context.data[2],
         context.data[3],
         context.data[4],
         context.data[5],
-        context.data[6],
     };
 
     RCLCPP_INFO(robot->node_->get_logger(), "执行关节空间移动任务");
