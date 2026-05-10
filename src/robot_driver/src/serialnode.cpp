@@ -80,8 +80,8 @@ SerialNode::SerialNode()
         }
     });
 
-    // 打开 USB CDC 设备（VID: 0x0483, PID: 0x5740）
-    if (!cdc_trans->open(0x0483, 0x5740)) {
+    // 打开 USB CDC 设备（VID: 0x0483, PID: 0x5741）
+    if (!cdc_trans->open(0x0483, 0x5741)) {
         RCLCPP_ERROR(get_logger(), "串口打开失败，无法驱动物理机械臂！");
         exit_thread = true;
     }

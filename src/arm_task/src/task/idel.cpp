@@ -2,6 +2,7 @@
 #include "robot.hpp"
 #include <chrono>
 #include <rclcpp/logging.hpp>
+#include <rclcpp/utilities.hpp>
 
 namespace {
 constexpr int32_t kTaskCatchTarget = 2;
@@ -33,6 +34,11 @@ std::string IdelTask::process(const std::string last_task_name)
     }
 
     if (is_first_run) {
+        // 等待 MuJoCo 和硬件接口完全初始化（约 2 秒）
+        RCLCPP_INFO(robot->node_->get_logger(), "idel 首次运行，等待硬件初始化...");
+        rclcpp::sleep_for(std::chrono::seconds(2));
+        
+        RCLCPP_INFO(robot->node_->get_logger(), "idel 首次运行");
         std::vector<double> ready_joint_angles;
         std::string ready_position_name = "ready";
         
@@ -40,8 +46,9 @@ std::string IdelTask::process(const std::string last_task_name)
             RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
         }
 
-        RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
-        if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+        RCLCPP_INFO(robot->node_->get_logger(), "idel 首次运行，移动到准备位置");
+        if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0n
+            RCLCPP_INFO(robot->node_->get_logger(), "idel 首次运行，移动到准备位置失败");
         }
 
         is_first_run = false;

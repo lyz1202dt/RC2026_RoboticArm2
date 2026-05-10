@@ -113,17 +113,29 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return "idel";
     }
 
-    if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
-        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
-        return fail_task("未找到命名位姿 " + ready_position_name);
-    }
 
-    RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
-        return fail_task("抓取前移动到准备位失败");
-    }
 
-    std::this_thread::sleep_for(1s);
+
+
+    
+
+    // if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
+    //     RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
+    //     return fail_task("未找到命名位姿 " + ready_position_name);
+    // }
+
+    // RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
+    // if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    //     return fail_task("抓取前移动到准备位失败");
+    // }
+
+    // std::this_thread::sleep_for(1s);
+
+
+
+
+
+
 
     // 2. 获取目标位姿：优先使用 action 数据，否则使用 TF
     RCLCPP_INFO(robot->node_->get_logger(), "准备获取抓取目标位姿");
