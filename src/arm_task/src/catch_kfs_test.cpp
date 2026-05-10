@@ -34,10 +34,8 @@
 //   - 在仿真或实际环境中进行端到端测试
 
 #include <chrono>
-#include <future>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -115,16 +113,7 @@ private:
             return;
         }
 
-        double grasp_it = this->get_parameter("grasp_height").as_double();
-        double grasp_height = 0.0;
-        if (grasp_it == 0.0) {
-            grasp_height = 0.02;  // 低位抓取
-        } else if (grasp_it == 1.0) {
-            grasp_height = 0.41;  // 中位抓取
-        } else {
-            grasp_height = 0.68;  // 高位抓取
-        }
-
+        double grasp_height = 0.31;
         ArmTask::Goal goal_msg;
         goal_msg.task_id = kCatchTaskId;
         goal_msg.data = {
@@ -140,7 +129,7 @@ private:
 
         RCLCPP_INFO(
             this->get_logger(),
-            "发送抓取请求: task_id=%d, target=(%.3f, %.3f, %.3f), quat=(%.3f, %.3f, %.3f, %.3f)",
+            "发送抓取请求: task_id=%d, target=(%.3f, %.3f, %.3f), quat=(%.3f, %.3f, %.3f, %.3f), grasp_height=%.3f",
             goal_msg.task_id,
             goal_msg.data[0],
             goal_msg.data[1],
@@ -150,6 +139,7 @@ private:
             goal_msg.data[5],
             goal_msg.data[6],
             goal_msg.data[7]);
+        RCLCPP_INFO(this->get_logger(), "抓取高度: %.3f", grasp_height);
 
         rclcpp_action::Client<ArmTask>::SendGoalOptions send_goal_options;
         send_goal_options.goal_response_callback =
@@ -186,8 +176,8 @@ private:
     //   goal_handle: 目标句柄（未使用）
     //   feedback: 反馈消息，包含执行状态描述
     void on_feedback(
-        GoalHandleArmTask::SharedPtr,
-        const std::shared_ptr<const ArmTask::Feedback> feedback) {
+        const GoalHandleArmTask::SharedPtr&,
+        const std::shared_ptr<const ArmTask::Feedback>& feedback) {
         RCLCPP_INFO(this->get_logger(), "动作反馈: %s", feedback->describe.c_str());
     }
 
