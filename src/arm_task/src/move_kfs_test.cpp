@@ -35,6 +35,7 @@
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include <rclcpp/rclcpp.hpp>
@@ -72,7 +73,7 @@ private:
             return;
         }
 
-        double move_duration = 0.0;
+        double move_duration = 3.0;
         double joint_1 = 0.0;
         double joint_2 = 0.0;
         double joint_3 = 0.0;
@@ -80,51 +81,68 @@ private:
         double joint_5 = 0.0;
         double joint_6 = 0.0;
 
-        std::cout << "请输入关节1角度(弧度): " << std::flush;
-        if (!(std::cin >> joint_1)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节1角度失败");
+        auto read_or_default = [](const std::string& prompt, double default_value, double& output_value) -> bool {
+            std::cout << prompt << " (默认 " << default_value << ", 直接回车使用默认): " << std::flush;
+
+            std::string line;
+            if (!std::getline(std::cin, line)) {
+                return false;
+            }
+
+            if (line.empty()) {
+                output_value = default_value;
+                return true;
+            }
+
+            std::istringstream iss(line);
+            double parsed_value = 0.0;
+            char extra = '\0';
+            if (!(iss >> parsed_value) || (iss >> extra)) {
+                return false;
+            }
+
+            output_value = parsed_value;
+            return true;
+        };
+
+        if (!read_or_default("请输入关节1角度(弧度)", 0.0, joint_1)) {
+            RCLCPP_ERROR(this->get_logger(), "读取关节1角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        std::cout << "请输入关节2角度(弧度): " << std::flush;
-        if (!(std::cin >> joint_2)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节2角度失败");
+        if (!read_or_default("请输入关节2角度(弧度)", 0.0, joint_2)) {
+            RCLCPP_ERROR(this->get_logger(), "读取关节2角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        std::cout << "请输入关节3角度(弧度): " << std::flush;
-        if (!(std::cin >> joint_3)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节3角度失败");
+        if (!read_or_default("请输入关节3角度(弧度)", 0.0, joint_3)) {
+            RCLCPP_ERROR(this->get_logger(), "读取关节3角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        std::cout << "请输入关节4角度(弧度): " << std::flush;
-        if (!(std::cin >> joint_4)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节4角度失败");
+        if (!read_or_default("请输入关节4角度(弧度)", 0.0, joint_4)) {
+            RCLCPP_ERROR(this->get_logger(), "读取关节4角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        std::cout << "请输入关节5角度(弧度): " << std::flush;
-        if (!(std::cin >> joint_5)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节5角度失败");
+        if (!read_or_default("请输入关节5角度(弧度)", 0.0, joint_5)) {
+            RCLCPP_ERROR(this->get_logger(), "读取关节5角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        std::cout << "请输入关节6角度(弧度): " << std::flush;
-        if (!(std::cin >> joint_6)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节6角度失败");
+        if (!read_or_default("请输入关节6角度(弧度)", 0.0, joint_6)) {
+            RCLCPP_ERROR(this->get_logger(), "读取关节6角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        std::cout << "请输入移动时长(秒): " << std::flush;
-        if (!(std::cin >> move_duration)) {
-            RCLCPP_ERROR(this->get_logger(), "读取移动时长失败");
+        if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
+            RCLCPP_ERROR(this->get_logger(), "读取移动时长失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
