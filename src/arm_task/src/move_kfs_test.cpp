@@ -33,6 +33,7 @@
 //   - 在仿真或实际环境中进行端到端测试
 
 #include <chrono>
+#include <array>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -41,11 +42,14 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
+#include <robot_interfaces/msg/arm.hpp>
 
 using namespace std::chrono_literals;
 
 namespace {
 constexpr int32_t kMoveTaskId = 1;
+constexpr size_t kJointCount = 6;
+constexpr std::chrono::seconds kJointStateWaitTimeout(5);
 }  // namespace
 
 class MoveKfsTestNode : public rclcpp::Node {
@@ -56,6 +60,9 @@ public:
     MoveKfsTestNode()
         : Node("move_kfs_test_node") {
         action_client_ = rclcpp_action::create_client<ArmTask>(this, "robotic_task");
+        joint_state_sub_ = this->create_subscription<robot_interfaces::msg::Arm>(
+            "myjoints_state", rclcpp::SensorDataQoS(),
+            std::bind(&MoveKfsTestNode::on_joint_state, this, std::placeholders::_1));
         startup_timer_ = this->create_wall_timer(500ms, std::bind(&MoveKfsTestNode::run_once, this));
     }
 
@@ -64,22 +71,56 @@ private:
         if (request_started_) {
             return;
         }
+        if (!action_server_ready_) {
+            if (!action_client_->wait_for_action_server(0s)) {
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), *this->get_clock(), 2000, "等待动作服务 robotic_task 就绪...");
+                return;
+            }
+
+            action_server_ready_ = true;
+            joint_wait_start_ = this->now();
+            RCLCPP_INFO(this->get_logger(), "动作服务 robotic_task 已就绪，开始等待当前关节状态");
+        }
+
+        if (!has_joint_state_) {
+            const bool wait_timeout = (this->now() - joint_wait_start_) >= rclcpp::Duration::from_seconds(kJointStateWaitTimeout.count());
+            if (!wait_timeout) {
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), *this->get_clock(), 2000, "等待 myjoints_state 当前关节状态...");
+                return;
+            }
+
+            if (!joint_state_timeout_logged_) {
+                RCLCPP_WARN(this->get_logger(), "5秒内未收到 myjoints_state，默认关节角回退为 0.0");
+                joint_state_timeout_logged_ = true;
+            }
+        }
+
         request_started_ = true;
         startup_timer_->cancel();
 
-        if (!action_client_->wait_for_action_server(10s)) {
-            RCLCPP_ERROR(this->get_logger(), "等待动作服务 robotic_task 超时");
-            rclcpp::shutdown();
-            return;
+        std::array<double, kJointCount> default_joints{};
+        if (has_joint_state_) {
+            default_joints = current_joint_rads_;
         }
 
         double move_duration = 3.0;
-        double joint_1 = 0.0;
-        double joint_2 = 0.0;
-        double joint_3 = 0.0;
-        double joint_4 = 0.0;
-        double joint_5 = 0.0;
-        double joint_6 = 0.0;
+        double joint_1 = default_joints[0];
+        double joint_2 = default_joints[1];
+        double joint_3 = default_joints[2];
+        double joint_4 = default_joints[3];
+        double joint_5 = default_joints[4];
+        double joint_6 = default_joints[5];
+
+        if (has_joint_state_) {
+            RCLCPP_INFO(
+                this->get_logger(),
+                "默认关节角使用当前状态: joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f)",
+                joint_1, joint_2, joint_3, joint_4, joint_5, joint_6);
+        } else {
+            RCLCPP_INFO(this->get_logger(), "默认关节角使用回退值: joints=(0.000, 0.000, 0.000, 0.000, 0.000, 0.000)");
+        }
 
         auto read_or_default = [](const std::string& prompt, double default_value, double& output_value) -> bool {
             std::cout << prompt << " (默认 " << default_value << ", 直接回车使用默认): " << std::flush;
@@ -105,37 +146,37 @@ private:
             return true;
         };
 
-        if (!read_or_default("请输入关节1角度(弧度)", 0.0, joint_1)) {
+        if (!read_or_default("请输入关节1角度(弧度)", joint_1, joint_1)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节1角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        if (!read_or_default("请输入关节2角度(弧度)", 0.0, joint_2)) {
+        if (!read_or_default("请输入关节2角度(弧度)", joint_2, joint_2)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节2角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        if (!read_or_default("请输入关节3角度(弧度)", 0.0, joint_3)) {
+        if (!read_or_default("请输入关节3角度(弧度)", joint_3, joint_3)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节3角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        if (!read_or_default("请输入关节4角度(弧度)", 0.0, joint_4)) {
+        if (!read_or_default("请输入关节4角度(弧度)", joint_4, joint_4)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节4角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        if (!read_or_default("请输入关节5角度(弧度)", 0.0, joint_5)) {
+        if (!read_or_default("请输入关节5角度(弧度)", joint_5, joint_5)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节5角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
         }
 
-        if (!read_or_default("请输入关节6角度(弧度)", 0.0, joint_6)) {
+        if (!read_or_default("请输入关节6角度(弧度)", joint_6, joint_6)) {
             RCLCPP_ERROR(this->get_logger(), "读取关节6角度失败，输入必须是数字或空行");
             rclcpp::shutdown();
             return;
@@ -143,6 +184,19 @@ private:
 
         if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
             RCLCPP_ERROR(this->get_logger(), "读取移动时长失败，输入必须是数字或空行");
+            rclcpp::shutdown();
+            return;
+        }
+
+        double pump_switch = 0.0; // 0: off, 1: on (default off)
+        if (!read_or_default("请输入气泵开关(0关,1开)", 0.0, pump_switch)) {
+            RCLCPP_ERROR(this->get_logger(), "读取气泵开关失败，输入必须是 0 或 1 或空行");
+            rclcpp::shutdown();
+            return;
+        }
+
+        if (!(pump_switch == 0.0 || pump_switch == 1.0)) {
+            RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开)");
             rclcpp::shutdown();
             return;
         }
@@ -157,11 +211,12 @@ private:
             joint_5,
             joint_6,
             move_duration,
+            pump_switch,
         };
 
         RCLCPP_INFO(
             this->get_logger(),
-            "发送移动请求: task_id=%d, duration=%.3f, joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f)",
+            "发送移动请求: task_id=%d, duration=%.3f, joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f), pump=%d",
             goal_msg.task_id,
             goal_msg.data[6],
             goal_msg.data[0],
@@ -169,7 +224,8 @@ private:
             goal_msg.data[2],
             goal_msg.data[3],
             goal_msg.data[4],
-            goal_msg.data[5]);
+            goal_msg.data[5],
+            static_cast<int>(goal_msg.data[7]));
 
         rclcpp_action::Client<ArmTask>::SendGoalOptions send_goal_options;
         send_goal_options.goal_response_callback =
@@ -223,8 +279,25 @@ private:
         rclcpp::shutdown();
     }
 
+    void on_joint_state(const std::shared_ptr<const robot_interfaces::msg::Arm>& msg) {
+        for (size_t i = 0; i < kJointCount; ++i) {
+            current_joint_rads_[i] = msg->motor[i].rad;
+        }
+
+        if (!has_joint_state_) {
+            RCLCPP_INFO(this->get_logger(), "已收到当前关节状态，将作为默认关节角");
+        }
+        has_joint_state_ = true;
+    }
+
     rclcpp_action::Client<ArmTask>::SharedPtr action_client_;
+    rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_state_sub_;
     rclcpp::TimerBase::SharedPtr startup_timer_;
+    std::array<double, kJointCount> current_joint_rads_{};
+    rclcpp::Time joint_wait_start_;
+    bool action_server_ready_{false};
+    bool has_joint_state_{false};
+    bool joint_state_timeout_logged_{false};
     bool request_started_{false};
 };
 

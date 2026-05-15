@@ -27,8 +27,10 @@ std::string MoveKFS::process(const std::string last_task_name) {
         return "idel";
     };
 
-    if (context.data.size() != 7) {
-        RCLCPP_ERROR(robot->node_->get_logger(), "接收到的移动任务数据维度不正确，预期为7，实际为%zu", context.data.size());
+    // Support legacy format (7 values: 6 joints + duration) and optional
+    // extended format (8 values: 6 joints + duration + pump_switch).
+    if (context.data.size() != 7 && context.data.size() != 8) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "接收到的移动任务数据维度不正确，预期为7或8，实际为%zu", context.data.size());
         return fail_task("接收到的移动任务数据维度不正确");
     }
 
@@ -42,6 +44,18 @@ std::string MoveKFS::process(const std::string last_task_name) {
         context.data[5],
     };
 
+    // If an optional pump switch is provided, apply it before executing trajectory.
+    bool pump_requested = false;
+    bool pump_enable = false;
+    if (context.data.size() == 8) {
+        pump_requested = true;
+        pump_enable = (static_cast<int>(context.data[7]) != 0);
+        RCLCPP_INFO(robot->node_->get_logger(), "移动任务包含气泵开关: %d", pump_enable ? 1 : 0);
+        if (!robot->set_air_pump(pump_enable)) {
+            RCLCPP_WARN(robot->node_->get_logger(), "设置气泵状态失败 (requested=%d)", pump_enable ? 1 : 0);
+        }
+    }
+
     RCLCPP_INFO(robot->node_->get_logger(), "执行关节空间移动任务");
     if (!robot->execute_joint_space_trajectory(joint_angles, duration_)) {
         return fail_task("执行移动轨迹失败");
@@ -51,6 +65,10 @@ std::string MoveKFS::process(const std::string last_task_name) {
     if (goal_handle) {
         robot->finish_current_task(goal_handle, true, "移动流程执行完成");
     }
+
+    // Note: we intentionally do not automatically disable the pump here.
+    // If caller provided pump switch and wants it turned off after motion,
+    // they should send pump=0 in a subsequent task or rely on task logic.
 
     return "idel";
 }

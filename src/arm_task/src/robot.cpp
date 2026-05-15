@@ -514,13 +514,22 @@ bool Robot::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseSta
 void Robot::execute_visual_servo(const geometry_msgs::msg::Twist& velocity) { (void)velocity; }
 
 bool Robot::set_air_pump(const bool& enable) {
-    if (arm_calc_param_client_->wait_for_service(std::chrono::duration<double>(0.5))) {
+    // Prefer setting the parameter on the driver node (driver_node_name_),
+    // since SerialNode declares and reacts to the "enable_air_pump" parameter.
+    if (driver_param_client_ && driver_param_client_->wait_for_service(std::chrono::duration<double>(0.5))) {
+        driver_param_client_->set_parameters({rclcpp::Parameter("enable_air_pump", enable)});
+        return true;
+    }
+
+    // Fallback: try arm_calc parameter client for backward compatibility.
+    if (arm_calc_param_client_ && arm_calc_param_client_->wait_for_service(std::chrono::duration<double>(0.5))) {
         arm_calc_param_client_->set_parameters({rclcpp::Parameter("enable_air_pump", enable)});
         return true;
-    } else {
-        RCLCPP_WARN(node_->get_logger(), "%s 的参数服务不可用", arm_calc_node_name_.c_str());
-        return false;
     }
+
+    RCLCPP_WARN(node_->get_logger(), "无法设置气泵参数: driver(%s) 或 arm_calc(%s) 参数服务不可用",
+                driver_node_name_.c_str(), arm_calc_node_name_.c_str());
+    return false;
 }
 
 bool Robot::set_grasp_state(const bool& finished) {
