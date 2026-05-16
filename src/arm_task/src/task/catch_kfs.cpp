@@ -28,14 +28,17 @@ std::string CatchKFS::process(const std::string last_task_name) {
     if (!robot->set_grasp_state(false)) {
         RCLCPP_WARN(robot->node_->get_logger(), "设置 grasp_state=0 失败");
     }
-
-    if (robot->current_kfs_num_ == 1) {
-        RCLCPP_WARN(robot->node_->get_logger(), "当前车上 KFS 数量为 1 ，不能再执行抓取任务。");
-        return "idel";
-    }
-
-
     
+
+
+
+
+
+
+
+
+
+
     Robot::ActiveTaskContext context;
     const bool has_action_context = robot->get_active_task_context(context);
     const auto goal_handle = has_action_context ? context.goal_handle : nullptr;
@@ -54,64 +57,18 @@ std::string CatchKFS::process(const std::string last_task_name) {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 获取抓取高度：优先使用 action 数据，否则使用 ROS 参数
     // action 发送的是索引 (0.0/1.0/2.0)，需要转换为实际高度值 (0.02/0.41/0.68)
-    double grasp_height_for_check = 0.0;
-    double position_x_ = 0.0;
-    double position_y_ = 0.0;
-    double position_z_ = 0.0;
-    double orientation_x_ = 0.0;
-    double orientation_y_ = 0.0;
-    double orientation_z_ = 0.0;
-    double orientation_w_ = 0.0;
 
-    if (has_action_context && context.data.size() >= 8) {
-        grasp_height_for_check = context.data[7];
-        position_x_ = context.data[0];
-        position_y_ = context.data[1];
-        position_z_ = context.data[2];
-        orientation_x_ = context.data[3];
-        orientation_y_ = context.data[4];
-        orientation_z_ = context.data[5];
-        orientation_w_ = context.data[6];
-    } else {
-        grasp_height_for_check = robot->node_->get_parameter("grasp_height").as_double() == 0.0 ? 0.02 :
-                                  robot->node_->get_parameter("grasp_height").as_double() == 1.0 ? 0.41 : 0.68;
-    }
 
-    if (grasp_height_for_check == 0.68) {
-        std::string detach_pos_name_ = "ready_interm";
-        std::vector<double> detach_pos_;
-        if (!robot->get_named_joint_position(detach_pos_name_, detach_pos_)) {
-            RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", detach_pos_name_.c_str());
-            return fail_task("未找到命名位姿 " + detach_pos_name_);
-        }
 
-        RCLCPP_INFO(robot->node_->get_logger(), "移动到过渡位置 [%s]", detach_pos_name_.c_str());
-        if (!robot->execute_joint_space_trajectory(detach_pos_, 3.0)) { // 2
-            return fail_task("移动到过渡位置失败");
-        }
-    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     std::vector<double> ready_joint_angles;
-    double grasp_height_ = -1.0;
     std::string ready_position_name = "ready";
-    if (grasp_height_for_check < 0.10 && grasp_height_for_check > -0.10) {
-        RCLCPP_INFO(robot->node_->get_logger(), "抓取-200位置");
-        ready_position_name = "ready";
-        grasp_height_ = 0.0;
-    } else if (grasp_height_for_check < 0.40 && grasp_height_for_check > 0.10) {
-        RCLCPP_INFO(robot->node_->get_logger(), "抓取200位置");
-        ready_position_name = "ready";
-        grasp_height_ = 1.0;
-    } else if (grasp_height_for_check < 0.70 && grasp_height_for_check > 0.40) {
-        RCLCPP_INFO(robot->node_->get_logger(), "抓取400位置");
-        ready_position_name = "ready";
-        grasp_height_ = 2.0;
-    } else {
-        RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", grasp_height_for_check);
-        return "idel";
-    }
+    ready_position_name = "ready";
+
+
 
 
 
@@ -119,17 +76,36 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
     
 
-    // if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
-    //     RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
-    //     return fail_task("未找到命名位姿 " + ready_position_name);
-    // }
+    if (!robot->set_air_pump(true)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "气泵开启失败");
+        return "idel";
+    }
+    std::this_thread::sleep_for(1s);
 
-    // RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
-    // if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
-    //     return fail_task("抓取前移动到准备位失败");
-    // }
+     if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
+        return fail_task("未找到命名位姿 " + ready_position_name);
+    }
 
-    // std::this_thread::sleep_for(1s);
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到准备位置");
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+        return fail_task("抓取前移动到准备位失败");
+    }
+
+    std::this_thread::sleep_for(1s);
+
+
+    if (!robot->set_air_pump(false)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "气泵关闭失败");
+        return "idel";
+    }
+    std::this_thread::sleep_for(10s);
+
+
+
+
+
+
 
 
 
@@ -146,82 +122,24 @@ std::string CatchKFS::process(const std::string last_task_name) {
     double grasp_duration_ = 0.8;
     double grasp_height = 0.0;
     if (has_action_context) {
-        if (context.data.size() != (3 + 4 + 1)) {
-            RCLCPP_ERROR(
-                robot->node_->get_logger(), "接收到的目标位姿数据维度不正确，预期为3+4+1，实际为%zu", context.data.size());
-            return fail_task("接收到的目标位姿数据维度不正确");
-        }
 
-        // if (robot->node_->get_parameter("grasp_height").as_double() == 0.0) {
-        //     RCLCPP_ERROR(robot->node_->get_logger(), "抓取-200位置");
-        //     grasp_height = 0.10;
-        // } else if (robot->node_->get_parameter("grasp_height").as_double() == 1.0) {
-        //     RCLCPP_ERROR(robot->node_->get_logger(), "抓取200位置");
-        //     grasp_height = 0.51;
-        //     grasp_down_run_ = 0.17;
-        //     // object_pose.pose.position.x -= 0.09;
-        // } else if (robot->node_->get_parameter("grasp_height").as_double() == 2.0) {
-        //     RCLCPP_ERROR(robot->node_->get_logger(), "抓取400位置");
-        //     grasp_height = 0.68;
-        //     grasp_down_run_ = 0.14;
-        // } else {
-        //     RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", robot->node_->get_parameter("grasp_height").as_double());
-        //     return "idel";
-        // }
-
-        if (grasp_height_ == 0.0) {
-            RCLCPP_INFO(robot->node_->get_logger(), "抓取-200位置");
-            grasp_height = 0.02;
-        } else if (grasp_height_ == 1.0) {
-            RCLCPP_INFO(robot->node_->get_logger(), "抓取200位置");
-            grasp_height = 0.41;
-
-            // object_pose.pose.position.x -= 0.09;
-        } else if (grasp_height_ == 2.0) {
-            RCLCPP_INFO(robot->node_->get_logger(), "抓取400位置");
-            grasp_height = 0.68;
-
-        } else {
-            RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", robot->node_->get_parameter("grasp_height").as_double());
-            if (goal_handle) {
-                robot->finish_current_task(goal_handle, false, "未知的 grasp_height 参数值");
-            }
-            return "idel";
-        }
-
-
-
-
-
-
+        const geometry_msgs::msg::TransformStamped target_tf =
+        robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
         object_pose.header.frame_id = "base_link";
         object_pose.header.stamp = robot->node_->now();
-        object_pose.pose.position.x = position_x_;
-        object_pose.pose.position.y = position_y_;
-        object_pose.pose.position.z = grasp_height_for_check;
+        object_pose.pose.position.x = target_tf.transform.translation.x;
+        object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
+        object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
 
-
-        object_pose.pose.orientation.x = orientation_x_;
-        object_pose.pose.orientation.y = orientation_y_;
-        object_pose.pose.orientation.z = orientation_z_;
-        object_pose.pose.orientation.w = orientation_w_;
-
-
-
-
-
-
-
-
-        // const geometry_msgs::msg::TransformStamped target_tf =
-        // robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
-        // object_pose.header.frame_id = "base_link";
-        // object_pose.header.stamp = robot->node_->now();
-        // object_pose.pose.position.x = target_tf.transform.translation.x;
-        // object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
-        // object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
-
-
+        RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
+        RCLCPP_INFO(robot->node_->get_logger(), "position.x = %lf", object_pose.pose.position.x);
+        RCLCPP_INFO(robot->node_->get_logger(), "position.y = %lf", object_pose.pose.position.y);
+        RCLCPP_INFO(robot->node_->get_logger(), "position.z = %lf", object_pose.pose.position.z);
+        RCLCPP_INFO(robot->node_->get_logger(), "orientation.x = %lf", object_pose.pose.orientation.x);
+        RCLCPP_INFO(robot->node_->get_logger(), "orientation.y = %lf", object_pose.pose.orientation.y);
+        RCLCPP_INFO(robot->node_->get_logger(), "orientation.z = %lf", object_pose.pose.orientation.z);
+        RCLCPP_INFO(robot->node_->get_logger(), "orientation.w = %lf", object_pose.pose.orientation.w);
+        RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
 
     } else {
         try {
@@ -230,47 +148,13 @@ std::string CatchKFS::process(const std::string last_task_name) {
                 return "idel";
             }
 
-            // 使用 ROS 参数设置抓取高度和偏移量（TF 模式下）
-            if (grasp_height_ == 0.0) {
-                RCLCPP_INFO(robot->node_->get_logger(), "抓取-200位置");
-                grasp_height = 0.02;
-                grasp_right_run_ = 0.10;
-
-                grasp_right_run_qian_ = 0.0;
-            } else if (grasp_height_ == 1.0) {
-                RCLCPP_INFO(robot->node_->get_logger(), "抓取200位置");
-                grasp_height = 0.41;
-                grasp_right_run_ = robot->node_->get_parameter("grasp_right_run").as_double(); // 0.10;
-                grasp_duration_ = 0.6;
-
-            } else if (grasp_height_ == 2.0) {
-                RCLCPP_INFO(robot->node_->get_logger(), "抓取400位置");
-                grasp_height = 0.68;
-                grasp_right_run_ = robot->node_->get_parameter("grasp_right_run").as_double(); // 0.10;
-            } else {
-                RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", grasp_height_);
-                return "idel";
-            }
-
-
-
+            const geometry_msgs::msg::TransformStamped target_tf =
+            robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
             object_pose.header.frame_id = "base_link";
             object_pose.header.stamp = robot->node_->now();
-            object_pose.pose.position.x = position_x_;
-            object_pose.pose.position.y = position_y_;
-            object_pose.pose.position.z = grasp_height_for_check;
-            object_pose.pose.orientation.x = orientation_x_;
-            object_pose.pose.orientation.y = orientation_y_;
-            object_pose.pose.orientation.z = orientation_z_;
-            object_pose.pose.orientation.w = orientation_w_;
-
-            // const geometry_msgs::msg::TransformStamped target_tf =
-            // robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
-            // object_pose.header.frame_id = "base_link";
-            // object_pose.header.stamp = robot->node_->now();
-            // object_pose.pose.position.x = target_tf.transform.translation.x;
-            // object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
-            // object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
+            object_pose.pose.position.x = target_tf.transform.translation.x;
+            object_pose.pose.position.y = -(target_tf.transform.translation.y+0.05);
+            object_pose.pose.position.z = target_tf.transform.translation.z; // grasp_height;q
 
 
             RCLCPP_INFO(robot->node_->get_logger(), "=====================================");
@@ -296,38 +180,32 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
     // 强制规定姿态
     tf2::Quaternion quat;
-    quat.setRPY(-M_PI/2.2, 0.0, 0.0);
+    quat.setRPY(0.0, M_PI/2.0, 0.0);
     object_pose.pose.orientation.w = quat.getW();
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
     object_pose.pose.position.x -= grasp_right_run_;
 
+
+    // // std::this_thread::sleep_for(100ms);
+
+    // RCLCPP_INFO(robot->node_->get_logger(), "执行抓取动作");
+    // if (!robot->execute_cartesian_space_trajectory(object_pose, 3.0)) { // 0.8
+    //     return fail_task("执行抓取轨迹失败");
+    // }
+
+    // TODO: 使用视觉伺服移动到目标位置
+
+
+
+
+
     if (!robot->set_air_pump(true)) {
         return fail_task("气泵开启失败");
     }
-    // std::this_thread::sleep_for(100ms);
+    std::this_thread::sleep_for(3s);
 
-    RCLCPP_INFO(robot->node_->get_logger(), "执行抓取动作");
-    if (!robot->execute_cartesian_space_trajectory(object_pose, 3.0)) { // 0.8
-        return fail_task("执行抓取轨迹失败");
-    }
-
-    // std::this_thread::sleep_for(3s);
-
-
-    quat.setRPY(-M_PI/2.2, 0.0, 0.0);
-    object_pose.pose.orientation.w = quat.getW();
-    object_pose.pose.orientation.x = quat.getX();
-    object_pose.pose.orientation.y = quat.getY();
-    object_pose.pose.orientation.z = quat.getZ();
-    object_pose.pose.position.y+=0.12+grasp_right_run_qian_;
-
-    // object_pose.pose.position.x -= 0.1;
-    RCLCPP_INFO(robot->node_->get_logger(), "向前推进");
-    if (!robot->execute_cartesian_space_trajectory(object_pose, 2.1)) { // 2.1
-        return fail_task("向前推进失败");
-    }
 
 
     robot->current_kfs_num_ += 1;
@@ -360,34 +238,11 @@ std::string CatchKFS::process(const std::string last_task_name) {
     std::string detach_pos_name;
     std::vector<double> detach_pos;
     // 3. 移动到 kfs_detach
-    if (grasp_height_ == 0.0) {
-        RCLCPP_INFO(robot->node_->get_logger(), "抓取-200位置，移动到 kfs_detach");
         detach_pos_name = "kfs_detach";
-    } else if (grasp_height_ == 1.0) {
-        RCLCPP_INFO(robot->node_->get_logger(), "抓取200位置，移动到 kfs_detach");
-        detach_pos_name = "kfs_detach";
-    } else if (grasp_height_ == 2.0) {
-        RCLCPP_INFO(robot->node_->get_logger(), "抓取400位置，移动到 kfs_up400_detach");
-        detach_pos_name = "kfs_up400_detach";
-    } else {
-        RCLCPP_ERROR(robot->node_->get_logger(), "未知的 grasp_height 参数值: %lf", robot->node_->get_parameter("grasp_height").as_double());
-        return "idel";
-    }
-    if (!robot->get_named_joint_position(detach_pos_name, detach_pos)) {
-        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", detach_pos_name.c_str());
-        return fail_task("未找到命名位姿 " + detach_pos_name);
-    }
 
-    RCLCPP_INFO(robot->node_->get_logger(), "移动到释放位置 [%s]", detach_pos_name.c_str());
-    if (grasp_height_ == 0.0 || grasp_height_ == 1.0) {
-        if (!robot->execute_joint_space_trajectory(detach_pos, 3.0)) {
-            return fail_task("移动到释放位置失败");
-        }
-    } else if (grasp_height_ == 2.0) {
-        RCLCPP_INFO(robot->node_->get_logger(), "释放位置，400");
-        if (!robot->execute_joint_space_trajectory(detach_pos, 3.0)) {
-            return fail_task("移动到释放位置失败");
-        }
+    RCLCPP_INFO(robot->node_->get_logger(), "释放位置，400");
+    if (!robot->execute_joint_space_trajectory(detach_pos, 3.0)) {
+        return fail_task("移动到释放位置失败");
     }
 
     // 4. 等待 1s
