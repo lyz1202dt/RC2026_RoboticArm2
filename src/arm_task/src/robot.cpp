@@ -35,7 +35,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<std::string>("base_frame", "base_link");
     node_->declare_parameter<std::string>("camera_frame", "camera_link");
     node_->declare_parameter<std::string>("object_frame", "target_object");
-    node_->declare_parameter<std::string>("tip_frame", "Link6");
+    node_->declare_parameter<std::string>("tip_frame", "link6");
     node_->declare_parameter<std::string>("arm_calc_node_name", "arm_calc_node");
     node_->declare_parameter<std::string>("driver_node_name", "driver_node");
     node_->declare_parameter<double>("max_linear_velocity", 0.1);

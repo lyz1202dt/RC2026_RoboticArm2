@@ -56,11 +56,26 @@ def generate_launch_description():
     arguments=[
         "0.1", "0.09", "-0.03",
         "0.0", "0.7071068", "0.0", "0.7071068",
-        "Link4",
+        "link4",
         "camera_link"
     ],
     output="screen",
-)
+    )
+
+    joint_state_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+        output="screen",
+    )
+
+    joint_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["dog_controller", "--controller-manager", "/controller_manager"],
+        output="screen",
+    )
+
 
     return LaunchDescription([
         arm_driver,

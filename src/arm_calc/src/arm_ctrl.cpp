@@ -65,7 +65,7 @@ void ArmCtrlNode::declare_parameters() {
     this->declare_parameter<double>("visual_servo_kp", 2.0);
     this->declare_parameter<double>("visual_servo_max_linear_acceleration", 0.5);
     this->declare_parameter<std::string>("base_link", "base_link");
-    this->declare_parameter<std::string>("tip_link", "Link6");
+    this->declare_parameter<std::string>("tip_link", "link6");
     this->declare_parameter<std::vector<double>>("joint_target", std::vector<double>(kJointDoF, 0.0));
     this->declare_parameter<std::vector<double>>("cartesian_target_position", std::vector<double>{0.7, 0.0, 0.15});
     this->declare_parameter<std::vector<double>>("cartesian_target_quaternion", std::vector<double>{1.0, 0.0, 0.0, 0.0});
@@ -611,6 +611,7 @@ robot_interfaces::msg::Arm ArmCtrlNode::to_arm_message(const JointTrajectoryPoin
 sensor_msgs::msg::JointState ArmCtrlNode::to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp) {
     sensor_msgs::msg::JointState msg;
     msg.header.stamp = stamp;
+    msg.header.frame_id = "base_link";
     msg.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
     msg.position.resize(kJointDoF);
     msg.velocity.resize(kJointDoF);

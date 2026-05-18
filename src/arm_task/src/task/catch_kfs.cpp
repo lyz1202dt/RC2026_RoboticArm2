@@ -29,12 +29,12 @@ std::string CatchKFS::process(const std::string last_task_name) {
         RCLCPP_WARN(robot->node_->get_logger(), "设置 grasp_state=0 失败");
     }
 
-    if (robot->current_kfs_num_ == 1) {
+    if (robot->current_kfs_num_ == 2) {
         RCLCPP_WARN(robot->node_->get_logger(), "当前车上 KFS 数量为 1 ，不能再执行抓取任务。");
         return "idel";
     }
 
-
+    
     
     Robot::ActiveTaskContext context;
     const bool has_action_context = robot->get_active_task_context(context);
