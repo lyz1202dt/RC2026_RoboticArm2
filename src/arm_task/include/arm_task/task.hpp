@@ -30,7 +30,8 @@ public:
 private:
 
     void vision_callback(const robot_interfaces::msg::Vis& msg);
-
+    void if_catch_callback(const robot_interfaces::msg::Vis& msg);
+    void arm_cmd_callback(const robot_interfaces::msg::Armmode& msg);
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
@@ -40,10 +41,11 @@ private:
     // State machine for task execution
     void execute_task_state_machine();
     void execute_grasp_flow();
-    void execute_place_flow();
+    void execute_place_flow_first();
     void execute_move_to_position(int position_index);
-    void execute_place_flow_rad();
+    void execute_place_flow_second();
     void execute_place_place_rad();
+    void execute_place_flow_rad();
 
 
     // Arm control operations (private methods)
@@ -52,6 +54,7 @@ private:
     void execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
     bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
+    bool wait_for_catch_result();
 
     // Helper methods
     bool get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped& pose_out);
@@ -74,8 +77,15 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr air_pub_;
+    rclcpp::Publisher<robot_interfaces::msg::Vis>::SharedPtr detect_pub;
+    rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_;
+
     // Subscribers
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr place_target_sub_;
+    rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr vision_sub_;
+    rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr arm_if_catch;
+    rclcpp::Subscription<robot_interfaces::msg::Armmode>::SharedPtr arm_cmd_sub_;
+
 
     // Parameters
     std::atomic<int32_t> arm_task_mode_{0}; // 0: standby, 1: grasp, 2: place, 1x: move to position x
@@ -111,6 +121,8 @@ private:
     double visual_servo_kp_{0.1};
     double visual_servo_max_linear_acc_{0.1};
     int air_pump_pin_{0};             // Parameter service index for air pump control
+    int arm_up_cmd{0};
+    std::atomic<int> catch_result_{0}; // 0等待 1成功 -1失败              // 0: unknown, 1: success, -1: failure
 
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
@@ -130,8 +142,7 @@ private:
 
 
     
-    rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr vision_sub_;
-
+   
     geometry_msgs::msg::PoseStamped latest_visual_pose_; // 新增
     bool has_visual_pose_ = false;                       // 新增
 };

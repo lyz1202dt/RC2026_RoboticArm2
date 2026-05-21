@@ -66,6 +66,15 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     vision_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
         "pnp_move", 10, std::bind(&ArmTaskNode::vision_callback, this, std::placeholders::_1));
 
+    detect_pub = this->create_publisher<robot_interfaces::msg::Vis>("start_detect", 10);
+
+    arm_state_pub_ = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_state", 10);
+
+    arm_if_catch = this->create_subscription<robot_interfaces::msg::Vis>(
+        "detect_result", 10, std::bind(&ArmTaskNode::if_catch_callback, this, std::placeholders::_1));
+
+    arm_cmd_sub_ = this->create_subscription<robot_interfaces::msg::Armmode>(
+        "arm_cmd", 10, std::bind(&ArmTaskNode::arm_cmd_callback, this, std::placeholders::_1));
 
     air_pub_ = this->create_publisher<robot_interfaces::msg::Armmode>("air_pump_target", 10);
 
@@ -149,7 +158,7 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
     }
 }
 
-//用于接受视觉放置坐标的函数
+// 用于接受视觉放置坐标的函数
 void ArmTaskNode::on_place_target_pose(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
     std::lock_guard<std::mutex> lock(pose_mutex_);
     place_target_pose_ = *msg;
@@ -194,9 +203,10 @@ void ArmTaskNode::task_execution_thread() {
 
 void ArmTaskNode::execute_task_state_machine() {
     int32_t current_mode = arm_task_mode_.load();
+    current_mode = arm_up_cmd;
 
     if (current_mode == 0) {
-       
+
         return;
     }
 
@@ -217,18 +227,18 @@ void ArmTaskNode::execute_task_state_machine() {
         } else if (current_mode == 2) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始放置任务");
-            execute_place_flow();
-        } else if (current_mode == 3) {
+            execute_place_flow_first();
+        } else if (current_mode == 5) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
             execute_place_flow_rad();
         } else if (current_mode == 4) {
             RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
             execute_place_place_rad();
-        } else if (current_mode == 5) {
+        } else if (current_mode == 3) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始抓取任务");
-            execute_place_place_rad();
+            execute_place_flow_second();
         } else if (current_mode >= 10 && current_mode < 20) {
             // Move to position x
             int position_index = current_mode - 10;
@@ -262,13 +272,15 @@ void ArmTaskNode::execute_grasp_flow() {
     RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
     geometry_msgs::msg::PoseStamped object_pose;
     int retry_count = 0;
-    while (!get_object_pose_in_base_frame(object_pose) && retry_count < 50) {
+    while (!get_object_pose_in_base_frame(object_pose) && retry_count < 10) {
         std::this_thread::sleep_for(100ms);
         retry_count++;
     }
 
-    if (retry_count >= 50) {
+    if (retry_count >= 10) {
         RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
+        execute_joint_space_trajectory(home_position_, trajectory_duration_); 
+
         return;
     }
 
@@ -278,11 +290,12 @@ void ArmTaskNode::execute_grasp_flow() {
 
     // 强制规定姿态
     tf2::Quaternion quat;
-    quat.setRPY(0, M_PI / 2, 0);
+    quat.setRPY(0, M_PI, 0);
     object_pose.pose.orientation.w = quat.getW();
     object_pose.pose.orientation.x = quat.getX();
     object_pose.pose.orientation.y = quat.getY();
     object_pose.pose.orientation.z = quat.getZ();
+
 
     // 3. Move to approach position (distance above target)
     RCLCPP_INFO(this->get_logger(), "移动到接近位置");
@@ -304,6 +317,22 @@ void ArmTaskNode::execute_grasp_flow() {
     air_pub_->publish(msg);
     std::this_thread::sleep_for(500ms);
 
+    robot_interfaces::msg::Vis detect_msg;
+    detect_msg.x = 1;
+
+    // 清状态
+    catch_result_.store(0);
+
+    // 发请求
+    detect_pub->publish(detect_msg);
+
+    // 阻塞等待
+    if (!wait_for_catch_result()) {
+        return;
+    }
+
+    detect_msg.x = 0;
+    detect_pub->publish(detect_msg);
 
     // 6. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
@@ -313,42 +342,139 @@ void ArmTaskNode::execute_grasp_flow() {
     RCLCPP_INFO(this->get_logger(), "抓取流程完成");
 }
 
-void ArmTaskNode::execute_place_flow() {
+void ArmTaskNode::execute_place_flow_first() {
     // 1. Move to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
 
-    // 2. Check for place target pose
-    geometry_msgs::msg::PoseStamped place_pose;
-    {
-        std::lock_guard<std::mutex> lock(pose_mutex_);
-        if (!has_place_target_) {
-            RCLCPP_ERROR(this->get_logger(), "没有检测到期望位置");
-            return;
-        }
-        place_pose = place_target_pose_;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+
+    // 2. Wait for object pose from camera
+    RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
+    geometry_msgs::msg::PoseStamped object_pose;
+    int retry_count = 0;
+    while (!get_object_pose_in_base_frame(object_pose) && retry_count < 50) {
+        std::this_thread::sleep_for(100ms);
+        retry_count++;
+    }
+
+    if (retry_count >= 50) {
+        execute_joint_space_trajectory(home_position_, trajectory_duration_); 
+        RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
+        return;
     }
 
     RCLCPP_INFO(
-        this->get_logger(), "放置位置: [%.3f, %.3f, %.3f]", place_pose.pose.position.x, place_pose.pose.position.y,
-        place_pose.pose.position.z);
+        this->get_logger(), "物体在坐标: [%.3f, %.3f, %.3f]", object_pose.pose.position.x, object_pose.pose.position.y,
+        object_pose.pose.position.z);
 
-    // 3. Execute Cartesian trajectory to place position
-    RCLCPP_INFO(this->get_logger(), "移动到目标放置位置");
-    execute_cartesian_space_trajectory(place_pose, trajectory_duration_);
+    // 强制规定姿态
+    tf2::Quaternion quat;
+    quat.setRPY(0, M_PI, 0);
+    object_pose.pose.orientation.w = quat.getW();
+    object_pose.pose.orientation.x = quat.getX();
+    object_pose.pose.orientation.y = quat.getY();
+    object_pose.pose.orientation.z = quat.getZ();
+
+
+    // 3. Move to approach position (distance above target)
+    RCLCPP_INFO(this->get_logger(), "移动到接近位置");
+    auto approach_pose = create_approach_pose(object_pose, 0.0);
+    execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
-    // 4. Deactivate air pump to release object
-    RCLCPP_INFO(this->get_logger(), "关掉气泵");
-    set_parameter_on_remote_node("air_pump_controller", "pump_state", rclcpp::Parameter("pump_state", false));
+    // // 4. Execute visual servo to grasp object
+    // RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
+    // execute_visual_servo(object_pose);
+    // wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
+    // visual_servo_active_ = false;
+
+    // stop_arm_motion();  // 必须先停止上一次视觉伺服，否则 mode 切换会失效
+
+    RCLCPP_INFO(this->get_logger(), "关闭气泵");
+    robot_interfaces::msg::Armmode msg;
+    msg.mode = 0;
+    air_pub_->publish(msg);
     std::this_thread::sleep_for(500ms);
 
-    // 5. Move back to ready position
-    RCLCPP_INFO(this->get_logger(), "返回准备位置");
+   
+
+    // 6. Move back to ready position
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(home_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
+   
+    RCLCPP_INFO(this->get_logger(), "放块任务结束");
+}
+
+void ArmTaskNode::execute_place_flow_second() {
+    // 1. Move to ready position
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
+    execute_joint_space_trajectory(ready_position_, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+
+    // 2. Wait for object pose from camera
+    RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
+    geometry_msgs::msg::PoseStamped object_pose;
+    int retry_count = 0;
+    while (!get_object_pose_in_base_frame(object_pose) && retry_count < 50) {
+        std::this_thread::sleep_for(100ms);
+        retry_count++;
+    }
+
+    if (retry_count >= 50) {
+        execute_joint_space_trajectory(home_position_, trajectory_duration_); 
+        RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
+        return;
+    }
+
+    RCLCPP_INFO(
+        this->get_logger(), "物体在坐标: [%.3f, %.3f, %.3f]", object_pose.pose.position.x, object_pose.pose.position.y,
+        object_pose.pose.position.z);
+
+    // 强制规定姿态
+    tf2::Quaternion quat;
+    quat.setRPY(0, M_PI, 0);
+    object_pose.pose.orientation.w = quat.getW();
+    object_pose.pose.orientation.x = quat.getX();
+    object_pose.pose.orientation.y = quat.getY();
+    object_pose.pose.orientation.z = quat.getZ();
+
+
+    // 3. Move to approach position (distance above target)
+    RCLCPP_INFO(this->get_logger(), "移动到接近位置");
+    auto approach_pose = create_approach_pose(object_pose, 0.0);
+    execute_cartesian_space_trajectory(approach_pose, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+    // // 4. Execute visual servo to grasp object
+    // RCLCPP_INFO(this->get_logger(), "开始视觉伺服抓取");
+    // execute_visual_servo(object_pose);
+    // wait_for_visual_servo_convergence(kVisualServoExitPositionToleranceMeters, kVisualServoConvergenceTimeoutSec);
+    // visual_servo_active_ = false;
+
+    // stop_arm_motion();  // 必须先停止上一次视觉伺服，否则 mode 切换会失效
+
+    RCLCPP_INFO(this->get_logger(), "关闭气泵");
+    robot_interfaces::msg::Armmode msg;
+    msg.mode = 0;
+    air_pub_->publish(msg);
+    std::this_thread::sleep_for(500ms);
+
+   
+
+    // 6. Move back to ready position
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
+    execute_joint_space_trajectory(home_position_, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+   
     RCLCPP_INFO(this->get_logger(), "放块任务结束");
 }
 
@@ -375,7 +501,7 @@ void ArmTaskNode::stop_arm_motion() {
     }
 }
 
-//关节轨迹规划控制
+// 关节轨迹规划控制
 void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration) {
     RCLCPP_INFO(this->get_logger(), "执行关节轨迹规划");
 
@@ -619,7 +745,7 @@ bool ArmTaskNode::get_object_pose_in_base_frame(geometry_msgs::msg::PoseStamped&
         pose_out.pose.position.x  = transform.transform.translation.x;
         pose_out.pose.position.y  = transform.transform.translation.y;
         pose_out.pose.position.z  = transform.transform.translation.z;
-        pose_out.pose.position.z  = -0.256;
+        pose_out.pose.position.z  = -0.26;
         pose_out.pose.orientation = transform.transform.rotation;
         return true;
 
@@ -642,6 +768,11 @@ void ArmTaskNode::set_parameter_on_remote_node(
         RCLCPP_WARN(this->get_logger(), "Parameter service for %s not available", node_name.c_str());
     }
 }
+
+void ArmTaskNode::if_catch_callback(const robot_interfaces::msg::Vis& msg) { catch_result_.store(msg.y); }
+
+void ArmTaskNode::arm_cmd_callback(const robot_interfaces::msg::Armmode& msg) { arm_up_cmd = msg.mode; }
+
 
 void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg) {
     std::lock_guard<std::mutex> lock(pose_mutex_);
@@ -740,6 +871,45 @@ void ArmTaskNode::execute_place_place_rad() {
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000)));
 
     RCLCPP_INFO(this->get_logger(), "任务结束");
+}
+
+bool ArmTaskNode::wait_for_catch_result() {
+    RCLCPP_INFO(this->get_logger(), "等待抓取结果...");
+
+    auto start = std::chrono::steady_clock::now();
+
+    while (rclcpp::ok()) {
+
+        int result = catch_result_.load();
+
+        if (result == 1) {
+            RCLCPP_INFO(this->get_logger(), "抓取成功");
+            robot_interfaces::msg::Armmode msg;
+            msg.mode = 1;
+            arm_state_pub_->publish(msg);
+            return true;
+        }
+
+        if (result == -1) {
+            RCLCPP_ERROR(this->get_logger(), "抓取失败");
+            robot_interfaces::msg::Armmode msg;
+            msg.mode = -1;
+            arm_state_pub_->publish(msg);
+            return false;
+        }
+
+        // 超时保护
+        auto now = std::chrono::steady_clock::now();
+        if (now - start > std::chrono::seconds(30)) {
+            RCLCPP_ERROR(this->get_logger(), "等待抓取结果超时");
+
+            return false;
+        }
+
+        std::this_thread::sleep_for(50ms);
+    }
+
+    return false;
 }
 
 
