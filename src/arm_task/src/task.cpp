@@ -231,7 +231,7 @@ void ArmTaskNode::execute_task_state_machine() {
         } else if (current_mode == 5) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
-            execute_place_flow_rad();
+            execute_look_for();
         } else if (current_mode == 4) {
             RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
             execute_place_place_rad();
@@ -348,7 +348,7 @@ void ArmTaskNode::execute_place_flow_first() {
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
     // 2. Wait for object pose from camera
@@ -416,7 +416,7 @@ void ArmTaskNode::execute_place_flow_second() {
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
 
     // 2. Wait for object pose from camera
@@ -476,6 +476,13 @@ void ArmTaskNode::execute_place_flow_second() {
 
    
     RCLCPP_INFO(this->get_logger(), "放块任务结束");
+}
+
+void ArmTaskNode::execute_look_for() {
+    
+    execute_joint_space_trajectory(look_for_position_, trajectory_duration_);
+
+   
 }
 
 void ArmTaskNode::execute_move_to_position(int position_index) {
@@ -819,35 +826,6 @@ geometry_msgs::msg::PoseStamped ArmTaskNode::create_approach_pose(const geometry
     return approach_pose;
 }
 
-void ArmTaskNode::execute_place_flow_rad() {
-    // 1. Move to ready position
-    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
-    execute_joint_space_trajectory(grasp_position, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
-
-
-    // 4. Deactivate air pump to release object
-    RCLCPP_INFO(this->get_logger(), "打开气泵");
-    robot_interfaces::msg::Armmode msg;
-    msg.mode = 1;
-    air_pub_->publish(msg);
-    std::this_thread::sleep_for(500ms);
-
-
-    RCLCPP_INFO(this->get_logger(), "移动到二次准备位置");
-    execute_joint_space_trajectory(grasp_position_two, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000)));
-
-
-
-
-    // 5. Move back to ready position
-    RCLCPP_INFO(this->get_logger(), "返回准备位置");
-    execute_joint_space_trajectory(home_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
-
-    RCLCPP_INFO(this->get_logger(), "任务结束");
-}
 
 void ArmTaskNode::execute_place_place_rad() {
     // 1. Move to ready position

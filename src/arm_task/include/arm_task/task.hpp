@@ -46,6 +46,7 @@ private:
     void execute_place_flow_second();
     void execute_place_place_rad();
     void execute_place_flow_rad();
+    void execute_look_for();
 
 
     // Arm control operations (private methods)
@@ -132,6 +133,7 @@ private:
     std::vector<double> grasp_position_two{0.0, 3.14159, 2.4, 2.55};
     std::vector<double> place_position{0.0,3.14159,3.1,3.1};
     std::vector<double> place_position_2{0.0,3.14159,3.1,3.1};
+    std::vector<double> look_for_position_{0.0, 1.5, 2.45, 2.48};
     
 
     // Parameter callback handle
