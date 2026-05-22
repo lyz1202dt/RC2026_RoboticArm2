@@ -16,6 +16,7 @@
 #include <robot_interfaces/msg/arm.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <data_pack.h>
+#include <mutex>
 
 // SerialNode 是一个 ROS2 节点，负责上位机与下位机之间的双向数据通信。
 //
@@ -91,6 +92,9 @@ private:
 
     // 机械臂目标状态数据包，待发送给下位机。
     ArmTarget_t arm_target;
+
+    // 发送互斥，保护对 CDCTrans 的并发发送调用
+    std::mutex send_mutex;
 
     // 关节位置缓存（暂未使用）。
     std::vector<double> joint_pos;

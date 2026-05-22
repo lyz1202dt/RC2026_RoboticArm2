@@ -1,172 +1,189 @@
-#include <task/visual_serve.hpp>
 #include "robot.hpp"
-#include <geometry_msgs/msg/transform_stamped.hpp>
-#include <geometry_msgs/msg/twist.hpp>
-#include <tf2/exceptions.h>
-#include <rclcpp/rclcpp.hpp>
-#include <chrono>
-#include <cmath>
-#include <thread>
+#include <task/visual_serve.hpp>
 
-using namespace std::chrono_literals;
+#include <rclcpp/logging.hpp>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/exceptions.h>
+#include <chrono>
+#include <string>
+#include <thread>
+#include <cmath>
 
 VisualServe::VisualServe(Robot* context, const std::string name)
-    : BaseTask(context, name) {
-}
+	: BaseTask(context, name) {}
 
 VisualServe::~VisualServe() {}
 
-std::string VisualServe::process(const std::string last_task_name) {
-    (void)last_task_name;
 
-    // 获取活动任务上下文
-    Robot::ActiveTaskContext context;
-    const bool has_action_context = robot->get_active_task_context(context);
-    const auto goal_handle = has_action_context ? context.goal_handle : nullptr;
+std::string VisualServe::process(const std::string /*last_task_name*/) {
+	// Try to obtain active action context if present
+	Robot::ActiveTaskContext context;
+	const bool has_action_context = robot->get_active_task_context(context);
+	const auto goal_handle = has_action_context ? context.goal_handle : nullptr;
 
-    if (!has_action_context) {
-        RCLCPP_WARN(robot->node_->get_logger(), "visual_serve 未获取到活动任务上下文，使用 TF 目标执行视觉伺服");
-    }
+	auto fail_task = [&](const std::string& msg) {
+		if (goal_handle) {
+			robot->finish_current_task(goal_handle, false, msg);
+		}
+		return std::string("idel");
+	};
 
-    // 定义失败处理 lambda
-    auto fail_task = [&](const std::string& error_msg) {
-        if (goal_handle) {
-            robot->finish_current_task(goal_handle, false, error_msg);
-        }
-        return "idel";
-    };
+	auto stop_visual_servo_if_needed = [&]() {
+		robot->stop_visual_servo();
+	};
 
-    try {
-        // 1. 直接从 TF 获取目标位姿
-        if (!robot->tf_buffer_->canTransform("base_link", robot->object_frame_, tf2::TimePointZero, 2s)) {
-            RCLCPP_ERROR(robot->node_->get_logger(), "等待 TF base_link -> %s 超时", robot->object_frame_.c_str());
-            return fail_task("获取目标 TF 变换超时");
-        }
+	// 1. Lookup object pose in base frame via TF
+	geometry_msgs::msg::PoseStamped object_pose;
+	try {
+		if (!robot->tf_buffer_->canTransform(robot->base_frame_, robot->object_frame_, tf2::TimePointZero, std::chrono::seconds(2))) {
+			RCLCPP_ERROR(robot->node_->get_logger(), "等待 TF %s -> %s 超时", robot->base_frame_.c_str(), robot->object_frame_.c_str());
+			return fail_task("TF timeout");
+		}
 
-        const geometry_msgs::msg::TransformStamped target_tf =
-            robot->tf_buffer_->lookupTransform("base_link", robot->object_frame_, tf2::TimePointZero);
+		const geometry_msgs::msg::TransformStamped target_tf =
+			robot->tf_buffer_->lookupTransform(robot->base_frame_, robot->object_frame_, tf2::TimePointZero);
 
-        geometry_msgs::msg::PoseStamped object_pose;
-        object_pose.header.frame_id = "base_link";
-        object_pose.header.stamp = robot->node_->now();
-        object_pose.pose.position.x = target_tf.transform.translation.x;
-        object_pose.pose.position.y = -(target_tf.transform.translation.y + 0.05);
-        object_pose.pose.position.z = target_tf.transform.translation.z;
+		object_pose.header.frame_id = robot->base_frame_;
+		object_pose.header.stamp = robot->node_->now();
+		object_pose.pose.position.x = target_tf.transform.translation.x;
+		object_pose.pose.position.y = -(target_tf.transform.translation.y + 0.05);
+		object_pose.pose.position.z = target_tf.transform.translation.z;
 
-        // 设置姿态为 x 轴向下的抓取姿态
-        tf2::Quaternion quat;
-        quat.setRPY(0.0, M_PI / 2.0, 0.0);
-        object_pose.pose.orientation.w = quat.getW();
-        object_pose.pose.orientation.x = quat.getX();
-        object_pose.pose.orientation.y = quat.getY();
-        object_pose.pose.orientation.z = quat.getZ();
+	} catch (const tf2::TransformException& ex) {
+		RCLCPP_ERROR(robot->node_->get_logger(), "读取 TF 目标失败: %s", ex.what());
+		return fail_task("TF lookup failed");
+	}
 
-        RCLCPP_INFO(robot->node_->get_logger(), "目标位置: [%.3f, %.3f, %.3f]",
-                    object_pose.pose.position.x, object_pose.pose.position.y, object_pose.pose.position.z);
+	// Force a reasonable end-effector orientation (match visual_serve_test.cpp)
+	tf2::Quaternion quat;
+	quat.setRPY(0.0, M_PI / 2.0, 0.0);
+	object_pose.pose.orientation.w = quat.getW();
+	object_pose.pose.orientation.x = quat.getX();
+	object_pose.pose.orientation.y = quat.getY();
+	object_pose.pose.orientation.z = quat.getZ();
 
-        // 2. 使用视觉伺服控制机械臂移动到目标位置
-        RCLCPP_INFO(robot->node_->get_logger(), "开始视觉伺服控制");
+	// 2. Start visual servo using Robot API and monitor convergence/cancel state
+	RCLCPP_INFO(robot->node_->get_logger(), "启动视觉伺服至目标 (%.3f, %.3f, %.3f)", object_pose.pose.position.x,
+				object_pose.pose.position.y, object_pose.pose.position.z);
 
-        // 视觉伺服参数
-        const double max_linear_velocity = 0.1;  // 最大线速度 (m/s)
-        const double max_angular_velocity = 0.5; // 最大角速度 (rad/s)
-        const double position_tolerance = 0.01;  // 位置公差 (m)
-        const double orientation_tolerance = 0.05; // 姿态公差 (rad)
-        const double timeout = 30.0; // 视觉伺服超时 (s)
+	// Read optional parameters from node (override defaults)
+	try {
+		rclcpp::Parameter p;
+		if (robot->node_->get_parameter("vs_timeout_unlock", p)) {
+			vs_timeout_unlock_ = p.as_double();
+		}
+		if (robot->node_->get_parameter("vs_timeout_lock", p)) {
+			vs_timeout_lock_ = p.as_double();
+		}
+		if (robot->node_->get_parameter("vs_monitor_interval_ms", p)) {
+			vs_monitor_interval_ms_ = p.as_int();
+		}
+	} catch (...) {
+		// ignore parameter read failures and use defaults
+	}
 
-        auto start_time = std::chrono::steady_clock::now();
-        bool servo_completed = false;
+	robot->execute_visual_servo(object_pose);
 
-        while (!servo_completed) {
-            // 检查超时
-            auto elapsed_time = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
-            if (elapsed_time > timeout) {
-                return fail_task("视觉伺服超时");
-            }
+	const double kPositionTolerance = kVisualServoConvergencePositionToleranceMeters;
 
-            // 获取当前末端执行器位置 (通过 TF 查询)
-            try {
-                const geometry_msgs::msg::TransformStamped current_tf =
-                    robot->tf_buffer_->lookupTransform("base_link", robot->tip_frame_, tf2::TimePointZero);
+	const auto start_time = std::chrono::steady_clock::now();
+	const auto unlock_deadline = start_time + std::chrono::duration<double>(vs_timeout_unlock_);
 
-                // 计算位置误差
-                double dx = object_pose.pose.position.x - current_tf.transform.translation.x;
-                double dy = object_pose.pose.position.y - current_tf.transform.translation.y;
-                double dz = object_pose.pose.position.z - current_tf.transform.translation.z;
+	bool converged = false;
+	bool camera_locked = false;
+	std::chrono::steady_clock::time_point lock_start;
+	double min_distance_seen = std::numeric_limits<double>::infinity();
 
-                double position_error = std::sqrt(dx * dx + dy * dy + dz * dz);
+	while (rclcpp::ok()) {
+		// Query current distance via Robot helper
+		double current_distance = 0.0;
+		robot->is_visual_servo_converged(kPositionTolerance, &current_distance);
+		if (current_distance > 0.0 && current_distance < min_distance_seen) {
+			min_distance_seen = current_distance;
+		}
 
-                // 检查是否到达目标位置
-                if (position_error < position_tolerance) {
-                    RCLCPP_INFO(robot->node_->get_logger(), "视觉伺服完成，位置误差: %.4f m", position_error);
-                    servo_completed = true;
-                    break;
-                }
+		// Check convergence
+		if (robot->is_visual_servo_converged(kPositionTolerance, &current_distance)) {
+			RCLCPP_INFO(robot->node_->get_logger(), "视觉伺服已收敛，当前误差 %.4f m", current_distance);
+			converged = true;
+			break;
+		}
 
-                // 计算速度命令
-                geometry_msgs::msg::Twist velocity;
+		// Check active state
+		if (!robot->is_visual_servo_active()) {
+			RCLCPP_WARN(robot->node_->get_logger(), "视觉伺服已被外部取消或提前结束");
+			break;
+		}
 
-                // 线速度：简单的比例控制
-                double scale = std::min(1.0, max_linear_velocity / (position_error + 1e-6));
-                velocity.linear.x = dx * scale;
-                velocity.linear.y = dy * scale;
-                velocity.linear.z = dz * scale;
+		// Detect camera lock (distance from camera to object)
+		bool now_locked = is_camera_data_locked();
+		if (now_locked && !camera_locked) {
+			camera_locked = true;
+			lock_start = std::chrono::steady_clock::now();
+			RCLCPP_INFO(robot->node_->get_logger(), "camera_data_locked=true (进入已锁定阶段)");
+		}
 
-                // 约束最大速度
-                double linear_norm = std::sqrt(velocity.linear.x * velocity.linear.x +
-                                              velocity.linear.y * velocity.linear.y +
-                                              velocity.linear.z * velocity.linear.z);
-                if (linear_norm > max_linear_velocity) {
-                    velocity.linear.x = velocity.linear.x / linear_norm * max_linear_velocity;
-                    velocity.linear.y = velocity.linear.y / linear_norm * max_linear_velocity;
-                    velocity.linear.z = velocity.linear.z / linear_norm * max_linear_velocity;
-                }
+		const auto now = std::chrono::steady_clock::now();
+		if (!camera_locked && now >= unlock_deadline) {
+			RCLCPP_WARN(robot->node_->get_logger(), "未能在 %.1f s 内锁定相机数据，停止视觉伺服", vs_timeout_unlock_);
+			break;
+		}
 
-                // 角速度：暂时设置为零（可根据需要添加姿态控制）
-                velocity.angular.x = 0.0;
-                velocity.angular.y = 0.0;
-                velocity.angular.z = 0.0;
+		if (camera_locked) {
+			if (now - lock_start >= std::chrono::duration<double>(vs_timeout_lock_)) {
+				RCLCPP_WARN(robot->node_->get_logger(), "已锁定但在 %.1f s 内未收敛到 %.3f m，停止视觉伺服", vs_timeout_lock_, kPositionTolerance);
+				break;
+			}
+		}
 
-                // 执行视觉伺服速度命令
-                robot->execute_visual_servo(velocity);
+		// Throttled monitoring log
+		RCLCPP_INFO_THROTTLE(robot->node_->get_logger(), *robot->node_->get_clock(), 500,
+							 "视觉伺服监测: dist=%.4f m, min=%.4f m, locked=%d", current_distance, min_distance_seen,
+							 static_cast<int>(camera_locked));
 
-                // 日志输出（每 10 次循环输出一次）
-                static int loop_count = 0;
-                if (loop_count++ % 10 == 0) {
-                    RCLCPP_DEBUG(robot->node_->get_logger(),
-                                "视觉伺服中... 位置误差: %.4f m, 速度: [%.4f, %.4f, %.4f]",
-                                position_error, velocity.linear.x, velocity.linear.y, velocity.linear.z);
-                }
+		std::this_thread::sleep_for(std::chrono::milliseconds(vs_monitor_interval_ms_));
+	}
 
-                // 控制频率（10Hz）
-                std::this_thread::sleep_for(100ms);
+	if (!converged) {
+		const bool was_active = robot->is_visual_servo_active();
+		stop_visual_servo_if_needed();
+		return fail_task(was_active ? "visual servo timeout" : "visual servo canceled or not converged");
+	}
 
-            } catch (const std::exception& e) {
-                RCLCPP_ERROR(robot->node_->get_logger(), "获取当前位置 TF 失败: %s", e.what());
-                return fail_task("获取当前位置失败");
-            }
-        }
+	stop_visual_servo_if_needed();
 
-        // 停止机械臂运动
-        geometry_msgs::msg::Twist zero_velocity;
-        zero_velocity.linear.x = 0.0;
-        zero_velocity.linear.y = 0.0;
-        zero_velocity.linear.z = 0.0;
-        zero_velocity.angular.x = 0.0;
-        zero_velocity.angular.y = 0.0;
-        zero_velocity.angular.z = 0.0;
-        robot->execute_visual_servo(zero_velocity);
+	// Optional: enable pump / mark grasped if this task is meant to grasp
+	if (!robot->set_air_pump(true)) {
+		RCLCPP_WARN(robot->node_->get_logger(), "启动气泵失败");
+	}
 
-        // 任务完成
-        if (goal_handle) {
-            robot->finish_current_task(goal_handle, true, "视觉伺服成功完成");
-        }
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        RCLCPP_INFO(robot->node_->get_logger(), "视觉伺服任务执行完成");
-        return "idel";
+	if (goal_handle) {
+		robot->finish_current_task(goal_handle, true, "视觉伺服完成");
+	}
 
-    } catch (const std::exception& e) {
-        RCLCPP_ERROR(robot->node_->get_logger(), "视觉伺服执行失败: %s", e.what());
-        return fail_task(std::string("视觉伺服异常: ") + e.what());
-    }
+	return "idel";
 }
+
+bool VisualServe::is_camera_data_locked() {
+	try {
+		const auto tf = robot->tf_buffer_->lookupTransform(robot->camera_frame_, robot->object_frame_, tf2::TimePointZero,
+															tf2::durationFromSec(0.1));
+		const auto& t = tf.transform.translation;
+		const double dist = std::sqrt(t.x * t.x + t.y * t.y + t.z * t.z);
+		return dist < kCameraDataLockDistanceMeters;
+	} catch (const tf2::TransformException& ex) {
+		RCLCPP_WARN_THROTTLE(robot->node_->get_logger(), *robot->node_->get_clock(), 1000, "检测 camera->object TF 失败: %s",
+							 ex.what());
+		return false;
+	}
+}
+
+bool VisualServe::query_current_distance(double* out_distance_m) {
+	if (!out_distance_m) return false;
+	// Reuse Robot's helper which computes distance between target and end effector
+	return robot->is_visual_servo_converged(kVisualServoConvergencePositionToleranceMeters, out_distance_m);
+}
+
+

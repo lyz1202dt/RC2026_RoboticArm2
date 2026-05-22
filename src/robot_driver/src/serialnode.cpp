@@ -36,6 +36,14 @@ SerialNode::SerialNode()
             for (const auto& param : params) {
                 if (param.get_name() == "enable_air_pump") {
                     enable_air_pump = param.as_bool();
+                    // 立即更新数据包并发送，确保参数变更即时生效
+                    arm_target.air_pump = enable_air_pump ? 1 : 0;
+                    {
+                        std::lock_guard<std::mutex> lock(send_mutex);
+                        if (cdc_trans) {
+                            cdc_trans->send_struct(arm_target);
+                        }
+                    }
                     RCLCPP_INFO(this->get_logger(), 
                                "气泵状态变更: %d", enable_air_pump ? 1 : 0);
                 } else if (param.get_name() == "grasp_it") {
@@ -147,8 +155,13 @@ void SerialNode::legsSubscribCb(const robot_interfaces::msg::Arm& msg) {
     arm_target.grasp_state = grasp_state_send_once_pending ? 1U : 0U;
     grasp_state_send_once_pending = false;
 
-    // 通过 USB CDC 发送目标数据包到下位机
-    cdc_trans->send_struct(arm_target);
+    // 通过 USB CDC 发送目标数据包到下位机（加锁以避免与参数回调并发发送冲突）
+    {
+        std::lock_guard<std::mutex> lock(send_mutex);
+        if (cdc_trans) {
+            cdc_trans->send_struct(arm_target);
+        }
+    }
 }
 
 void SerialNode::handleGraspIt(const ArmState_t* arm_state) {

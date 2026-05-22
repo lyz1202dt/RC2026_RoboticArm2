@@ -148,7 +148,17 @@ public:
     //执行笛卡尔空间轨迹
     bool execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
     //执行视觉伺服控制
-    void execute_visual_servo(const geometry_msgs::msg::Twist& velocity);
+    void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
+    // 查询当前视觉伺服是否仍在运行
+    bool is_visual_servo_active() const;
+    // 查询当前视觉伺服是否已经收敛；可选返回当前末端与目标之间的距离
+    bool is_visual_servo_converged(double position_tolerance_m, double* current_distance_m = nullptr);
+    // 启动基于视线（gaze）的视觉伺服，持续发布视觉目标直到收敛或被取消
+    bool start_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
+    // 等待视觉伺服收敛结果，返回 true 表示收敛成功
+    bool wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec);
+    // 停止当前的视觉伺服线程
+    void stop_visual_servo();
     //使能气泵
     bool set_air_pump(const bool &enable);
     //设置抓取完成状态到 driver 节点
@@ -166,7 +176,7 @@ public:
     std::string base_frame_{"base_link"};
     std::string camera_frame_{"camera_link"};
     std::string object_frame_{"target_object"};
-    std::string tip_frame_{"Link6"};
+    std::string tip_frame_{"link6"};
     std::string arm_calc_node_name_{"arm_calc_node"};
     std::string driver_node_name_{"driver_node"};
     double approach_distance_{0.1};  // meters above target
@@ -220,7 +230,20 @@ public:
 private:
     // 获取当前末端执行器的笛卡尔位姿
     bool get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose);
+    // 视觉视线发布线程入口
+    void visual_servo_publish_thread();
     void load_arm_positions_from_yaml();
+
+    // 视觉视线相关成员
+    std::atomic<bool> visual_servo_active_{false};
+    std::thread visual_servo_thread_;
+    std::mutex pose_mutex_; // 保护 target_object_pose_
+    geometry_msgs::msg::PoseStamped target_object_pose_;
+    bool has_object_pose_{false};
+    std::mutex visual_servo_state_mutex_;
+    std::condition_variable visual_servo_state_cv_;
+    bool visual_servo_result_ready_{false};
+    bool visual_servo_succeeded_{false};
 };
 
 

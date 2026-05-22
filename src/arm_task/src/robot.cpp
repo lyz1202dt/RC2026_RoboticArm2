@@ -511,7 +511,269 @@ bool Robot::execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseSta
     return false;
 }
 
-void Robot::execute_visual_servo(const geometry_msgs::msg::Twist& velocity) { (void)velocity; }
+void Robot::execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose) {
+    RCLCPP_INFO(node_->get_logger(), "Executing visual servo");
+
+    {
+        std::lock_guard<std::mutex> lock(pose_mutex_);
+        target_object_pose_ = target_pose;
+        has_object_pose_    = true;
+    }
+
+    if (visual_servo_thread_.joinable()) {
+        visual_servo_active_ = false;
+        visual_servo_thread_.join();
+    }
+
+    {
+        std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+        visual_servo_result_ready_ = false;
+        visual_servo_succeeded_    = false;
+    }
+
+    visual_servo_active_ = true;
+
+    if (arm_calc_param_client_ && arm_calc_param_client_->wait_for_service(5s)) {
+        arm_calc_param_client_->set_parameters({rclcpp::Parameter("motion_mode", 3)});
+
+        std::this_thread::sleep_for(100ms);
+
+        arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
+    } else {
+        RCLCPP_ERROR(node_->get_logger(), "Parameter service for %s not available", arm_calc_node_name_.c_str());
+        visual_servo_active_ = false;
+        return;
+    }
+
+    visual_servo_thread_ = std::thread(&Robot::visual_servo_publish_thread, this);
+}
+
+bool Robot::is_visual_servo_active() const {
+    return visual_servo_active_.load();
+}
+
+bool Robot::is_visual_servo_converged(double position_tolerance_m, double* current_distance_m) {
+    {
+        std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+        if (visual_servo_result_ready_) {
+            if (current_distance_m) {
+                *current_distance_m = 0.0;
+            }
+            return visual_servo_succeeded_;
+        }
+    }
+
+    geometry_msgs::msg::PoseStamped target_pose;
+    bool has_target_pose = false;
+
+    try {
+        const auto target_tf = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+        target_pose.header.frame_id = base_frame_;
+        target_pose.header.stamp = node_->now();
+        target_pose.pose.position.x = target_tf.transform.translation.x;
+        target_pose.pose.position.y = target_tf.transform.translation.y;
+        target_pose.pose.position.z = target_tf.transform.translation.z;
+        target_pose.pose.orientation = target_tf.transform.rotation;
+        has_target_pose = true;
+    } catch (const tf2::TransformException&) {
+        std::lock_guard<std::mutex> lock(pose_mutex_);
+        if (has_object_pose_) {
+            target_pose = target_object_pose_;
+            has_target_pose = true;
+        }
+    }
+
+    if (!has_target_pose) {
+        return false;
+    }
+
+    geometry_msgs::msg::PoseStamped current_pose;
+    if (!get_current_end_pose(current_pose)) {
+        return false;
+    }
+
+    const double dx = target_pose.pose.position.x - current_pose.pose.position.x;
+    const double dy = target_pose.pose.position.y - current_pose.pose.position.y;
+    const double dz = target_pose.pose.position.z - current_pose.pose.position.z;
+    const double distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (current_distance_m) {
+        *current_distance_m = distance;
+    }
+
+    return distance < position_tolerance_m;
+}
+
+bool Robot::start_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose) {
+    {
+        std::lock_guard<std::mutex> lock(pose_mutex_);
+        target_object_pose_ = target_pose;
+        has_object_pose_ = true;
+    }
+
+    // Reset state
+    {
+        std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+        visual_servo_result_ready_ = false;
+        visual_servo_succeeded_ = false;
+    }
+
+    // Ensure previous thread stopped
+    if (visual_servo_thread_.joinable()) {
+        visual_servo_active_ = false;
+        visual_servo_thread_.join();
+    }
+
+    visual_servo_active_ = true;
+
+    // Try to set arm_calc to visual servo mode (motion_mode = 3)
+    if (arm_calc_param_client_ && arm_calc_param_client_->wait_for_service(5s)) {
+        arm_calc_param_client_->set_parameters({rclcpp::Parameter("motion_mode", 3)});
+        std::this_thread::sleep_for(100ms);
+        arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
+    }
+    visual_servo_thread_ = std::thread(&Robot::visual_servo_publish_thread, this);
+    return true;
+}
+
+bool Robot::wait_for_visual_servo_convergence(double position_tolerance_m, double timeout_sec) {
+    std::unique_lock<std::mutex> lock(visual_servo_state_mutex_);
+    const bool completed = visual_servo_state_cv_.wait_for(lock, std::chrono::duration<double>(timeout_sec), [this]() {
+        return visual_servo_result_ready_ || shutdown_requested_.load() || !visual_servo_active_.load();
+    });
+
+    if (visual_servo_result_ready_) {
+        return visual_servo_succeeded_;
+    }
+
+    // Timeout or cancelled
+    lock.unlock();
+    visual_servo_active_ = false;
+    visual_servo_state_cv_.notify_all();
+    if (visual_servo_thread_.joinable()) {
+        visual_servo_thread_.join();
+    }
+
+    return false;
+}
+
+void Robot::stop_visual_servo() {
+    visual_servo_active_ = false;
+    visual_servo_state_cv_.notify_all();
+    if (visual_servo_thread_.joinable()) {
+        visual_servo_thread_.join();
+    }
+}
+
+void Robot::visual_servo_publish_thread() {
+    RCLCPP_INFO(node_->get_logger(), "视觉伺服线程开始执行");
+
+    rclcpp::Rate rate(100); // 100 Hz
+    constexpr double kCameraDataLockDistanceMeters = 0.35;
+    constexpr double kVisualServoConvergencePositionToleranceMeters = 0.05;
+    bool camera_data_locked = false;
+    geometry_msgs::msg::PoseStamped last_trusted_pose;
+    bool has_last_trusted_pose = false;
+
+    auto publish_visual_servo_result = [this](bool succeeded) {
+        {
+            std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
+            if (visual_servo_result_ready_) {
+                return;
+            }
+            visual_servo_result_ready_ = true;
+            visual_servo_succeeded_ = succeeded;
+        }
+        visual_servo_state_cv_.notify_all();
+    };
+
+    while (visual_servo_active_ && !shutdown_requested_.load()) {
+        geometry_msgs::msg::PoseStamped pose_to_publish;
+        bool has_pose = false;
+
+        if (!camera_data_locked) {
+            try {
+                auto target_in_base = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
+                pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
+                pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
+                pose_to_publish.pose.position.z = target_in_base.transform.translation.z;
+                pose_to_publish.header.frame_id = base_frame_;
+                pose_to_publish.header.stamp = node_->now();
+                has_pose = true;
+                last_trusted_pose = pose_to_publish;
+                has_last_trusted_pose = true;
+
+                auto target_in_camera = tf_buffer_->lookupTransform(camera_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
+                const auto& translation = target_in_camera.transform.translation;
+                const double distance_to_target = std::sqrt(translation.x * translation.x + translation.y * translation.y + translation.z * translation.z);
+
+                if (distance_to_target < kCameraDataLockDistanceMeters) {
+                    camera_data_locked = true;
+                    RCLCPP_INFO(node_->get_logger(), "camera_data_locked=true, %s 到 %s 距离为 %.3f m", camera_frame_.c_str(), object_frame_.c_str(), distance_to_target);
+                }
+
+            } catch (const tf2::TransformException& ex) {
+                RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 100, "获取变换失败: %s", ex.what());
+            }
+        }
+
+        if (camera_data_locked && has_last_trusted_pose) {
+            pose_to_publish = last_trusted_pose;
+            has_pose = true;
+
+            try {
+                const auto ee_tf = tf_buffer_->lookupTransform(base_frame_, tip_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+                const double dx = pose_to_publish.pose.position.x - ee_tf.transform.translation.x;
+                const double dy = pose_to_publish.pose.position.y - ee_tf.transform.translation.y;
+                const double dz = pose_to_publish.pose.position.z - ee_tf.transform.translation.z;
+                const double position_error = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+                RCLCPP_INFO_THROTTLE(node_->get_logger(), *node_->get_clock(), 500,
+                                     "视觉伺服位置误差: %.4f m, ee=(%.3f, %.3f, %.3f), locked_target=(%.3f, %.3f, %.3f)", position_error,
+                                     ee_tf.transform.translation.x, ee_tf.transform.translation.y, ee_tf.transform.translation.z,
+                                     pose_to_publish.pose.position.x, pose_to_publish.pose.position.y, pose_to_publish.pose.position.z);
+
+                if (position_error < kVisualServoConvergencePositionToleranceMeters) {
+                    RCLCPP_INFO(node_->get_logger(), "视觉伺服收敛，位置误差 %.4f m 小于阈值 %.4f m", position_error, kVisualServoConvergencePositionToleranceMeters);
+                    publish_visual_servo_result(true);
+                    visual_servo_active_ = false;
+                    break;
+                }
+            } catch (const tf2::TransformException& ex) {
+                RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000, "检查视觉伺服收敛时获取TF失败: %s", ex.what());
+            }
+        }
+
+        if (!has_pose) {
+            std::lock_guard<std::mutex> lock(pose_mutex_);
+            if (has_object_pose_) {
+                pose_to_publish = target_object_pose_;
+                has_pose = true;
+            }
+        }
+
+        tf2::Quaternion q;
+        q.setRPY(0.0, 1.57, 0.0);
+        pose_to_publish.pose.orientation.w = q.w();
+        pose_to_publish.pose.orientation.x = q.x();
+        pose_to_publish.pose.orientation.y = q.y();
+        pose_to_publish.pose.orientation.z = q.z();
+
+        if (has_pose) {
+            visual_target_pub_->publish(pose_to_publish);
+        } else {
+            RCLCPP_WARN_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000, "No object pose available for visual servo");
+            publish_visual_servo_result(false);
+            visual_servo_active_ = false;
+            break;
+        }
+
+        rate.sleep();
+    }
+
+    publish_visual_servo_result(false);
+    RCLCPP_INFO(node_->get_logger(), "视觉伺服线程结束执行");
+}
 
 bool Robot::set_air_pump(const bool& enable) {
     // Prefer setting the parameter on the driver node (driver_node_name_),

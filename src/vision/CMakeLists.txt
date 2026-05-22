@@ -17,11 +17,13 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(realsense2 REQUIRED)
 
 add_executable(vision_node vision.cpp)
 
 target_include_directories(vision_node PRIVATE ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(vision_node ${OpenCV_LIBS})
+target_link_libraries(vision_node ${OpenCV_LIBS} ${realsense2_LIBRARY})
 
 ament_target_dependencies(
   vision_node
@@ -29,6 +31,7 @@ ament_target_dependencies(
   geometry_msgs
   tf2
   tf2_ros
+  tf2_eigen
 )
 
 install(TARGETS
