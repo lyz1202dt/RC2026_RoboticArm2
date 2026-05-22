@@ -203,7 +203,7 @@ void ArmTaskNode::task_execution_thread() {
 
 void ArmTaskNode::execute_task_state_machine() {
     int32_t current_mode = arm_task_mode_.load();
-    current_mode = arm_up_cmd;
+    //current_mode         = arm_up_cmd;
 
     if (current_mode == 0) {
 
@@ -226,18 +226,18 @@ void ArmTaskNode::execute_task_state_machine() {
             execute_grasp_flow();
         } else if (current_mode == 2) {
             // Place flow
-            RCLCPP_INFO(this->get_logger(), "开始放置任务");
+            RCLCPP_INFO(this->get_logger(), "开始第一层放置任务");
             execute_place_flow_first();
         } else if (current_mode == 5) {
             // Place flow
-            RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
+            RCLCPP_INFO(this->get_logger(), "巡视查找物块");
             execute_look_for();
         } else if (current_mode == 4) {
             RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
             execute_place_place_rad();
         } else if (current_mode == 3) {
             // Place flow
-            RCLCPP_INFO(this->get_logger(), "开始抓取任务");
+            RCLCPP_INFO(this->get_logger(), "开始第二层放置任务");
             execute_place_flow_second();
         } else if (current_mode >= 10 && current_mode < 20) {
             // Move to position x
@@ -278,10 +278,17 @@ void ArmTaskNode::execute_grasp_flow() {
     }
 
     if (retry_count >= 10) {
-        RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
-        execute_joint_space_trajectory(home_position_, trajectory_duration_); 
 
-        return;
+        RCLCPP_WARN(this->get_logger(), "未检测到目标，进入巡视模式");
+
+        if (!search_for_object(object_pose)) {
+
+            RCLCPP_ERROR(this->get_logger(), "巡视后仍未发现目标");
+
+            execute_joint_space_trajectory(home_position_, trajectory_duration_);
+
+            return;
+        }
     }
 
     RCLCPP_INFO(
@@ -361,7 +368,7 @@ void ArmTaskNode::execute_place_flow_first() {
     }
 
     if (retry_count >= 50) {
-        execute_joint_space_trajectory(home_position_, trajectory_duration_); 
+        execute_joint_space_trajectory(home_position_, trajectory_duration_);
         RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
         return;
     }
@@ -399,14 +406,14 @@ void ArmTaskNode::execute_place_flow_first() {
     air_pub_->publish(msg);
     std::this_thread::sleep_for(500ms);
 
-   
+
 
     // 6. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(home_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
-   
+
     RCLCPP_INFO(this->get_logger(), "放块任务结束");
 }
 
@@ -429,7 +436,7 @@ void ArmTaskNode::execute_place_flow_second() {
     }
 
     if (retry_count >= 50) {
-        execute_joint_space_trajectory(home_position_, trajectory_duration_); 
+        execute_joint_space_trajectory(home_position_, trajectory_duration_);
         RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
         return;
     }
@@ -467,23 +474,23 @@ void ArmTaskNode::execute_place_flow_second() {
     air_pub_->publish(msg);
     std::this_thread::sleep_for(500ms);
 
-   
+
 
     // 6. Move back to ready position
     RCLCPP_INFO(this->get_logger(), "移动到准备位置");
     execute_joint_space_trajectory(home_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
-   
+
     RCLCPP_INFO(this->get_logger(), "放块任务结束");
 }
 
 void ArmTaskNode::execute_look_for() {
-    
-    execute_joint_space_trajectory(look_for_position_, trajectory_duration_);
 
-   
-}
+    execute_joint_space_trajectory(look_for_position_, trajectory_duration_); 
+
+
+    }
 
 void ArmTaskNode::execute_move_to_position(int position_index) {
     if (arm_positions_.find(position_index) == arm_positions_.end()) {
@@ -885,6 +892,71 @@ bool ArmTaskNode::wait_for_catch_result() {
         }
 
         std::this_thread::sleep_for(50ms);
+    }
+
+    return false;
+}
+
+bool ArmTaskNode::search_for_object(
+    geometry_msgs::msg::PoseStamped& object_pose)
+{
+    RCLCPP_INFO(this->get_logger(), "开始巡视寻找目标");
+
+    std::vector<std::vector<double>> search_positions = {
+
+        look_middle_position_,
+        look_left_position_,
+        look_right_position_,
+        
+    };
+
+    for (const auto& joints : search_positions) {
+
+        // 移动机械臂
+        execute_joint_space_trajectory(
+            joints,
+            4.0);
+
+        std::this_thread::sleep_for(2s);
+
+        // 在当前位置等待视觉
+        auto start = std::chrono::steady_clock::now();
+
+        while (rclcpp::ok()) {
+
+            // 检测到目标
+            if (get_object_pose_in_base_frame(object_pose)) {
+
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "巡视发现目标");
+
+                // 等待视觉稳定
+                std::this_thread::sleep_for(1s);
+
+                // 再读取一次稳定值
+                if (get_object_pose_in_base_frame(object_pose)) {
+
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "稳定目标坐标: [%.3f %.3f %.3f]",
+                        object_pose.pose.position.x,
+                        object_pose.pose.position.y,
+                        object_pose.pose.position.z);
+
+                    return true;
+                }
+            }
+
+            // 当前巡视点等待2秒
+            auto now = std::chrono::steady_clock::now();
+
+            if (now - start > 2s) {
+                break;
+            }
+
+            std::this_thread::sleep_for(100ms);
+        }
     }
 
     return false;

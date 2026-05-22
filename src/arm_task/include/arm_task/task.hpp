@@ -1,23 +1,23 @@
 #pragma once
 
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/float64_multi_array.hpp>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
 #include <atomic>
 #include <condition_variable>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <rclcpp/rclcpp.hpp>
+#include <robot_interfaces/msg/armmode.hpp>
+#include <robot_interfaces/msg/vis.hpp>
+#include <std_msgs/msg/float64_multi_array.hpp>
 #include <string>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
 #include <thread>
 #include <vector>
-#include <robot_interfaces/msg/vis.hpp>
-#include <robot_interfaces/msg/armmode.hpp>
-#include <tf2_ros/transform_broadcaster.h>
-#include <geometry_msgs/msg/transform_stamped.hpp>
 
 
 namespace arm_task {
@@ -28,10 +28,10 @@ public:
     ~ArmTaskNode();
 
 private:
-
     void vision_callback(const robot_interfaces::msg::Vis& msg);
     void if_catch_callback(const robot_interfaces::msg::Vis& msg);
     void arm_cmd_callback(const robot_interfaces::msg::Armmode& msg);
+    bool search_for_object(geometry_msgs::msg::PoseStamped& object_pose);
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
@@ -117,24 +117,28 @@ private:
     std::string object_frame_{"target_object"};
     std::string tip_frame_{"link5"};
     std::string arm_calc_node_name_{"arm_calc_node"};
-    double approach_distance_{0.1};   // meters above target
-    double trajectory_duration_{4.0}; // seconds
+    double approach_distance_{0.1};    // meters above target
+    double trajectory_duration_{4.0};  // seconds
     double visual_servo_kp_{0.1};
     double visual_servo_max_linear_acc_{0.1};
-    int air_pump_pin_{0};             // Parameter service index for air pump control
+    int air_pump_pin_{0};              // Parameter service index for air pump control
     int arm_up_cmd{0};
     std::atomic<int> catch_result_{0}; // 0等待 1成功 -1失败              // 0: unknown, 1: success, -1: failure
 
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
     std::vector<double> ready_position_; // Preparation position
-    std::vector<double> home_position_{0.0,0.0,0.0,0.0};
+    std::vector<double> home_position_{0.0, 0.0, 0.0, 0.0};
     std::vector<double> grasp_position{0.0, 3.14159, 2.45, 2.48};
     std::vector<double> grasp_position_two{0.0, 3.14159, 2.4, 2.55};
-    std::vector<double> place_position{0.0,3.14159,3.1,3.1};
-    std::vector<double> place_position_2{0.0,3.14159,3.1,3.1};
+    std::vector<double> place_position{0.0, 3.14159, 3.1, 3.1};
+    std::vector<double> place_position_2{0.0, 3.14159, 3.1, 3.1};
     std::vector<double> look_for_position_{0.0, 1.5, 2.45, 2.48};
-    
+    std::vector<double> look_left_position_{-1.0, 1.5, 2.45, 2.48};
+    std::vector<double> look_middle_position_{0.0, 1.5, 2.45, 2.48};
+    std::vector<double> look_right_position_{1.0, 1.5, 2.45, 2.48};
+
+
 
     // Parameter callback handle
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
@@ -143,8 +147,8 @@ private:
     rclcpp::AsyncParametersClient::SharedPtr arm_calc_param_client_;
 
 
-    
-   
+
+
     geometry_msgs::msg::PoseStamped latest_visual_pose_; // 新增
     bool has_visual_pose_ = false;                       // 新增
 };

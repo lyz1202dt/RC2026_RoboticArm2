@@ -102,7 +102,7 @@ def generate_launch_description():
         arm_task,
         arm_driver,
         static_tf_camera,
-        static_tf_target,
+        #static_tf_target,
        
         
     ])
