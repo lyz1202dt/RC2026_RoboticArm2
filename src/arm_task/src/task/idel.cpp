@@ -29,7 +29,7 @@ std::string IdelTask::process(const std::string last_task_name)
         RCLCPP_INFO(robot->node_->get_logger(), "idel 检测到 grasp_it=1，切换到 catch_kfs");
         robot->node_->set_parameter(rclcpp::Parameter("grasp_it", 0));
         robot->current_kfs_num_ = 0;
-        robot->set_air_pump(false);
+        robot->set_air_pump(0);
         return "catch_kfs";
     }
 

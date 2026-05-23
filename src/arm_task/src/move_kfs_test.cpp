@@ -189,14 +189,14 @@ private:
         }
 
         double pump_switch = 0.0; // 0: off, 1: on (default off)
-        if (!read_or_default("请输入气泵开关(0关,1开)", 0.0, pump_switch)) {
-            RCLCPP_ERROR(this->get_logger(), "读取气泵开关失败，输入必须是 0 或 1 或空行");
+        if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
+            RCLCPP_ERROR(this->get_logger(), "读取气泵开关失败，输入必须是 0 或 1 或 3 或空行");
             rclcpp::shutdown();
             return;
         }
 
-        if (!(pump_switch == 0.0 || pump_switch == 1.0)) {
-            RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开)");
+        if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 3.0 || pump_switch == 2.0)) {
+            RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 3(自动) 或 2(半自动)");
             rclcpp::shutdown();
             return;
         }

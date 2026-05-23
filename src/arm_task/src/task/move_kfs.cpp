@@ -46,13 +46,13 @@ std::string MoveKFS::process(const std::string last_task_name) {
 
     // If an optional pump switch is provided, apply it before executing trajectory.
     bool pump_requested = false;
-    bool pump_enable = false;
+    int pump_enable = false;
     if (context.data.size() == 8) {
         pump_requested = true;
-        pump_enable = (static_cast<int>(context.data[7]) != 0);
-        RCLCPP_INFO(robot->node_->get_logger(), "移动任务包含气泵开关: %d", pump_enable ? 1 : 0);
+        pump_enable = (static_cast<int>(context.data[7]));
+        RCLCPP_INFO(robot->node_->get_logger(), "移动任务包含气泵开关: %d", pump_enable);
         if (!robot->set_air_pump(pump_enable)) {
-            RCLCPP_WARN(robot->node_->get_logger(), "设置气泵状态失败 (requested=%d)", pump_enable ? 1 : 0);
+            RCLCPP_WARN(robot->node_->get_logger(), "设置气泵状态失败 (requested=%d)", pump_enable);
         }
     }
 

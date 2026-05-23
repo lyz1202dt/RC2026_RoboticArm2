@@ -78,6 +78,10 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     joint_space_target_pub_ = node_->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
     marker_pub_             = node_->create_publisher<visualization_msgs::msg::MarkerArray>("visualization_marker_array", 10);
 
+    // Subscribe to joint_states topic to keep an up-to-date copy of joint positions
+    joint_state_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(
+        "joint_states", 10, std::bind(&Robot::joint_states_callback, this, std::placeholders::_1));
+
     task_handle_server = rclcpp_action::create_server<robot_interfaces::action::ArmTask>(
         node_, "robotic_task", std::bind(&Robot::on_handle_goal, this, std::placeholders::_1, std::placeholders::_2),
         std::bind(&Robot::on_cancel_goal, this, std::placeholders::_1), std::bind(&Robot::on_handle_accepted, this, std::placeholders::_1));
@@ -239,6 +243,24 @@ void Robot::load_arm_positions_from_yaml() {
     } catch (const std::exception& e) {
         RCLCPP_ERROR(node_->get_logger(), "Failed to load arm positions: %s", e.what());
     }
+}
+
+void Robot::joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg) {
+    if (!msg) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(joint_state_mutex_);
+    current_joint_positions_ = msg->position;
+    has_joint_state_ = true;
+}
+
+bool Robot::get_current_joint_positions(std::vector<double>& joints) const {
+    std::lock_guard<std::mutex> lock(joint_state_mutex_);
+    if (!has_joint_state_) {
+        return false;
+    }
+    joints = current_joint_positions_;
+    return true;
 }
 
 void Robot::porcess_task() {

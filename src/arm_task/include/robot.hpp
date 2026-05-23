@@ -13,6 +13,9 @@
 #include <robot_interfaces/srv/forward_kinematics.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+// Joint state messages
+#include <sensor_msgs/msg/joint_state.hpp>
+
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -172,6 +175,8 @@ public:
     //从yaml中得到命名位置的关节角度
     bool get_named_joint_position(const std::string& name, std::vector<double>& joint_angles) const;
     void load_named_joint_positions_from_yaml(const std::string& yaml_path);
+    // 获取当前接收的 joint_states（如果已有）
+    bool get_current_joint_positions(std::vector<double>& joints) const;
     
     rcl_interfaces::msg::SetParametersResult on_parameters_changed(
         const std::vector<rclcpp::Parameter>& params);
@@ -249,6 +254,13 @@ private:
     std::condition_variable visual_servo_state_cv_;
     bool visual_servo_result_ready_{false};
     bool visual_servo_succeeded_{false};
+    
+    // joint_states 订阅相关成员
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub_;
+    std::vector<double> current_joint_positions_;
+    mutable std::mutex joint_state_mutex_;
+    bool has_joint_state_{false};
+    void joint_states_callback(const sensor_msgs::msg::JointState::SharedPtr msg);
     
 };
 
