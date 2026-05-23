@@ -93,6 +93,7 @@ private:
     std::atomic<bool> task_running_{false};
     std::atomic<bool> shutdown_requested_{false};
     std::atomic<bool> visual_servo_active_{false};
+    int current_mode{0};
 
     // Thread safety
     std::mutex task_mutex_;
@@ -122,8 +123,14 @@ private:
     double visual_servo_kp_{0.1};
     double visual_servo_max_linear_acc_{0.1};
     int air_pump_pin_{0};              // Parameter service index for air pump control
-    int arm_up_cmd{0};
+
+    int last_arm_up_cmd{0};
     std::atomic<int> catch_result_{0}; // 0等待 1成功 -1失败              // 0: unknown, 1: success, -1: failure
+    
+
+    std::mutex arm_cmd_mutex_;
+    std::atomic<int> arm_up_cmd_{0};
+
 
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
@@ -151,6 +158,21 @@ private:
 
     geometry_msgs::msg::PoseStamped latest_visual_pose_; // 新增
     bool has_visual_pose_ = false;                       // 新增
+
+
+
+
+
+    //uint32_t last_catch_request_id_{1}; // 用于匹配请求和结果的 ID
+    //uint32_t last_place1_request_id_{1}; // 用于匹配请求和结果的 ID
+    //uint32_t last_place2_request_id_{1}; // 用于匹配请求和结果的 ID
+    //std::string catch_request_name_;
+    //std::string place_request_name_;
+
+
+
+
+
 };
 
 } // namespace arm_task
