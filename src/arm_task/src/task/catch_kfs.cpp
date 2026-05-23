@@ -12,6 +12,7 @@
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2/exceptions.h>
 #include <thread>
+#include <future>
 
 using namespace std::chrono_literals;
 
@@ -60,7 +61,11 @@ std::string CatchKFS::process(const std::string last_task_name) {
     RCLCPP_INFO(robot->node_->get_logger(), "移动到抓杆位置");
     if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
         return fail_task("移动到抓杆位失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到抓杆位置");
     }
+
+     // 等待 1 秒钟，确保机械臂稳定在抓杆位置
 
     if (!robot->set_air_pump(0)) {
         RCLCPP_ERROR(robot->node_->get_logger(), "夹爪关闭失败");
@@ -77,7 +82,9 @@ std::string CatchKFS::process(const std::string last_task_name) {
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到过渡位置");
     if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
-        return fail_task("抓取前移动到过渡位失败");
+        return fail_task("移动到过渡位失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到过渡位置");
     }
 
     ready_position_name = "detach_gan_1";
@@ -90,6 +97,8 @@ std::string CatchKFS::process(const std::string last_task_name) {
     RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆——1位置");
     if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
         return fail_task("移动到放杆——1位失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆——1位置");
     }
 
     ready_position_name = "detach_gan_2";
@@ -102,7 +111,38 @@ std::string CatchKFS::process(const std::string last_task_name) {
     RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆——2位置");
     if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
         return fail_task("移动到放杆——2位失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆——2位置");
     }
+
+    ready_position_name = "detach_gan_end";
+
+    if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
+        return fail_task("未找到命名位姿 " + ready_position_name);
+    }
+
+    // 同时执行：轨迹在后台运行，气泵同步设置
+    auto traj_future = std::async(std::launch::async, [&]() {
+        return robot->execute_joint_space_trajectory(ready_joint_angles, 3.0);
+    });
+
+    // if (!robot->set_air_pump(2)) {
+    //     RCLCPP_ERROR(robot->node_->get_logger(), "夹爪微型开启失败");
+    // }
+
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆——end位置");
+    if (!traj_future.get()) {
+        return fail_task("移动到放杆——end位失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆——end位置");
+    }
+
+    if (!robot->set_air_pump(0)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "夹爪关闭失败");
+    }
+
+
 
 
     // 1. 获取当前机械臂的关节角度（从硬件反馈获取实际值）
@@ -124,27 +164,33 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return fail_task("正运动学求解失败: " + fk_message);
     }
 
+    tf2::Quaternion fk_quat;
+    tf2::fromMsg(current_end_pose.pose.orientation, fk_quat);
+    double fk_roll, fk_pitch, fk_yaw;
+    tf2::Matrix3x3(fk_quat).getRPY(fk_roll, fk_pitch, fk_yaw);
+
     RCLCPP_INFO(robot->node_->get_logger(),
-        "当前末端位姿(FK): position=(%.3f, %.3f, %.3f), orientation=(%.3f, %.3f, %.3f, %.3f)",
+        "当前末端位姿(FK): position=(%.3f, %.3f, %.3f), rpy=(%.3f, %.3f, %.3f)",
         current_end_pose.pose.position.x,
         current_end_pose.pose.position.y,
         current_end_pose.pose.position.z,
-        current_end_pose.pose.orientation.x,
-        current_end_pose.pose.orientation.y,
-        current_end_pose.pose.orientation.z,
-        current_end_pose.pose.orientation.w);
+        fk_roll, fk_pitch, fk_yaw);
 
-    tf2::Quaternion quat;
-    quat.setRPY(0.0, M_PI/2.2, 0.0);
-    current_end_pose.pose.orientation.x = quat.getX();
-    current_end_pose.pose.orientation.y = quat.getY();
-    current_end_pose.pose.orientation.z = quat.getZ();
-    current_end_pose.pose.orientation.w = quat.getW();
-    current_end_pose.pose.position.z -= 0.10;
+    // tf2::Quaternion quat;
+    // quat.setRPY(0.0, M_PI/2.2, 0.0);
+    // current_end_pose.pose.orientation.x = quat.getX();
+    // current_end_pose.pose.orientation.y = quat.getY();
+    // current_end_pose.pose.orientation.z = quat.getZ();
+    // current_end_pose.pose.orientation.w = quat.getW();
+    // current_end_pose.pose.position.z -= 0.20;
 
-    if (!robot->execute_cartesian_space_trajectory(current_end_pose, 3.0)) {
-        return fail_task("执行笛卡尔空间轨迹失败");
-    }
+    // if (!robot->execute_cartesian_space_trajectory(current_end_pose, 3.0)) {
+    //     return fail_task("执行笛卡尔空间轨迹失败");
+    // } else {
+    //     RCLCPP_INFO(robot->node_->get_logger(), "成功执行笛卡尔空间轨迹");
+    // }
+
+    std::this_thread::sleep_for(5s);
 
     RCLCPP_INFO(robot->node_->get_logger(), "抓取流程完成");
     if (!robot->set_grasp_state(true)) {
