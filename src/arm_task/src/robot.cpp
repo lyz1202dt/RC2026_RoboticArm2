@@ -6,8 +6,11 @@
 #include "task/place_kfs.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
+#include <robot_interfaces/srv/forward_kinematics.hpp>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <future>
 #include <memory>
 #include <rclcpp/logging.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
@@ -85,6 +88,10 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     // Create parameter client for arm_calc node
     arm_calc_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, arm_calc_node_name_);
     RCLCPP_INFO(node_->get_logger(), "Using arm_calc parameter client target: %s", arm_calc_node_name_.c_str());
+
+    const std::string forward_kinematics_service_name = "/" + arm_calc_node_name_ + "/forward_kinematics";
+    arm_calc_fk_client_ = node_->create_client<robot_interfaces::srv::ForwardKinematics>(forward_kinematics_service_name);
+    RCLCPP_INFO(node_->get_logger(), "Using arm_calc FK service target: %s", forward_kinematics_service_name.c_str());
 
     // Create parameter client for driver node
     driver_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, driver_node_name_);
@@ -775,7 +782,7 @@ void Robot::visual_servo_publish_thread() {
     RCLCPP_INFO(node_->get_logger(), "视觉伺服线程结束执行");
 }
 
-bool Robot::set_air_pump(const bool& enable) {
+bool Robot::set_air_pump(const int& enable) {
     // Prefer setting the parameter on the driver node (driver_node_name_),
     // since SerialNode declares and reacts to the "enable_air_pump" parameter.
     if (driver_param_client_ && driver_param_client_->wait_for_service(std::chrono::duration<double>(0.5))) {
@@ -882,6 +889,68 @@ bool Robot::get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose) 
     }
 }
 
+bool Robot::forward_kinematics(const std::vector<double>& joint_angles, geometry_msgs::msg::PoseStamped& end_pose,
+                               std::string* message) {
+    if (joint_angles.size() != 6) {
+        if (message) {
+            *message = "joint_angles must contain 6 values";
+        }
+        RCLCPP_WARN(node_->get_logger(), "正运动学请求失败: 关节角数量应为 6，实际为 %zu", joint_angles.size());
+        return false;
+    }
+
+    if (!arm_calc_fk_client_) {
+        if (message) {
+            *message = "forward kinematics client is not initialized";
+        }
+        RCLCPP_ERROR(node_->get_logger(), "正运动学请求失败: FK client 未初始化");
+        return false;
+    }
+
+    if (!arm_calc_fk_client_->wait_for_service(5s)) {
+        if (message) {
+            *message = "forward kinematics service is unavailable";
+        }
+        RCLCPP_WARN(node_->get_logger(), "正运动学服务不可用: %s", arm_calc_fk_client_->get_service_name());
+        return false;
+    }
+
+    auto request = std::make_shared<robot_interfaces::srv::ForwardKinematics::Request>();
+    request->joint_angles = joint_angles;
+
+    auto future = arm_calc_fk_client_->async_send_request(request);
+    if (future.wait_for(5s) != std::future_status::ready) {
+        if (message) {
+            *message = "forward kinematics request timed out";
+        }
+        RCLCPP_WARN(node_->get_logger(), "正运动学请求超时: %s", arm_calc_fk_client_->get_service_name());
+        return false;
+    }
+
+    try {
+        const auto response = future.get();
+        if (!response->success) {
+            if (message) {
+                *message = response->message;
+            }
+            RCLCPP_WARN(node_->get_logger(), "正运动学求解失败: %s", response->message.c_str());
+            return false;
+        }
+
+        end_pose = response->pose;
+        if (message) {
+            *message = response->message;
+        }
+        return true;
+    } catch (const std::exception& ex) {
+        if (message) {
+            *message = ex.what();
+        }
+        RCLCPP_ERROR(node_->get_logger(), "正运动学请求异常: %s", ex.what());
+        return false;
+    }
+}
+
 double Robot::calculate_duration(const geometry_msgs::msg::PoseStamped& target_pose) {
     // 获取当前末端位姿
     geometry_msgs::msg::PoseStamped current_pose;
@@ -933,28 +1002,40 @@ double Robot::calculate_duration(const std::vector<double>& target_joints) {
         return trajectory_duration_;
     }
 
-    // 通过正运动学计算目标关节对应的笛卡尔位姿
-    // 注意：这里需要调用 arm_calc 服务的正运动学功能
-    // 由于当前架构限制，我们使用简化的方法：计算关节角度差
-    
-    // 获取当前关节角度（从TF或其他方式）
-    // 这里暂时使用简化的距离计算方法
-    // 实际应用中应该调用正运动学服务
-    
-    // 方法1：基于关节角度差估算（简化方法）
-    // 假设从参数或其他途径获取当前关节角度
-    // 这里我们先使用笛卡尔距离的近似方法
-    
-    // 由于没有直接获取当前关节角度的方法，我们退回到使用默认轨迹时间
-    // 但可以基于目标关节角度的变化幅度做简单估算
-    
-    // 计算关节角度变化，找出最大变化量
-    const double joint_change_threshold = 0.1;  // 0.1 rad ≈ 5.7度
+    geometry_msgs::msg::PoseStamped target_pose;
+    std::string fk_message;
+    if (forward_kinematics(target_joints, target_pose, &fk_message)) {
+        const double dx = target_pose.pose.position.x - current_pose.pose.position.x;
+        const double dy = target_pose.pose.position.y - current_pose.pose.position.y;
+        const double dz = target_pose.pose.position.z - current_pose.pose.position.z;
+        const double linear_distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+        tf2::Quaternion q_current, q_target;
+        tf2::fromMsg(current_pose.pose.orientation, q_current);
+        tf2::fromMsg(target_pose.pose.orientation, q_target);
+        const double angle_diff = q_current.angleShortestPath(q_target);
+
+        double linear_time = linear_distance / max_linear_velocity_;
+        double angular_time = angle_diff / max_angular_velocity_;
+        double duration = std::max(linear_time, angular_time);
+        duration = std::clamp(duration, min_trajectory_duration_, max_trajectory_duration_);
+
+        RCLCPP_INFO(
+            node_->get_logger(),
+            "计算轨迹时间(FK): 线性距离=%.3f m, 角度差=%.3f rad, 时间=%.2f s",
+            linear_distance, angle_diff, duration);
+        return duration;
+    }
+
+    RCLCPP_WARN(
+        node_->get_logger(), "调用 arm_calc 正运动学失败，降级到关节变化量估算: %s", fk_message.c_str());
+
+    const double joint_change_threshold = 0.1;
     double max_joint_change = 0.0;
     int significant_change_count = 0;
-    
+
     for (const auto& angle : target_joints) {
-        double change = std::abs(angle);
+        const double change = std::abs(angle);
         if (change > joint_change_threshold) {
             significant_change_count++;
             if (change > max_joint_change) {
@@ -962,23 +1043,20 @@ double Robot::calculate_duration(const std::vector<double>& target_joints) {
             }
         }
     }
-    
-    // 如果没有显著变化的关节，使用最小轨迹时间
+
     if (significant_change_count == 0) {
         RCLCPP_INFO(node_->get_logger(), "所有关节变化都很小，使用最小轨迹时间 %.2f s", min_trajectory_duration_);
         return min_trajectory_duration_;
     }
-    
-    // 根据最大关节变化估算时间（运动时间取决于最慢的关节）
+
     double estimated_time = max_joint_change / max_joint_velocity_;
-    RCLCPP_INFO(node_->get_logger(), "max_joint_velocity = %lf", max_joint_velocity_);
     estimated_time = std::clamp(estimated_time, min_trajectory_duration_, max_trajectory_duration_);
-    
+
     RCLCPP_INFO(
         node_->get_logger(),
-        "计算轨迹时间（关节空间）: 显著变化关节数=%d, 最大关节变化=%.3f rad, 时间=%.2f s",
+        "计算轨迹时间（关节空间回退）: 显著变化关节数=%d, 最大关节变化=%.3f rad, 时间=%.2f s",
         significant_change_count, max_joint_change, estimated_time);
-    
+
     return estimated_time;
 }
 

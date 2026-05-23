@@ -7,6 +7,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <robot_interfaces/msg/arm.hpp>
+#include <robot_interfaces/srv/forward_kinematics.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -50,6 +51,9 @@ private:
     void on_joint_state(const robot_interfaces::msg::Arm& msg);
     void on_visual_target(const geometry_msgs::msg::PoseStamped& msg);
     void on_joint_space_target(const std_msgs::msg::Float64MultiArray& msg);
+    void on_forward_kinematics_request(
+        const std::shared_ptr<robot_interfaces::srv::ForwardKinematics::Request> request,
+        std::shared_ptr<robot_interfaces::srv::ForwardKinematics::Response> response);
     rcl_interfaces::msg::SetParametersResult on_parameters_changed(const std::vector<rclcpp::Parameter>& params);
 
     static MotionMode parse_motion_mode(int mode_value);
@@ -92,6 +96,7 @@ private:
     rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr joint_target_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr rviz_joint_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+    rclcpp::Service<robot_interfaces::srv::ForwardKinematics>::SharedPtr forward_kinematics_service_;
     rclcpp::TimerBase::SharedPtr control_timer_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
 };

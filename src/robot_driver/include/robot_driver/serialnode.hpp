@@ -34,7 +34,7 @@
 //     机械臂实际状态，包含6个关节的位置、速度、力矩
 //
 // 参数:
-//   - enable_air_pump (bool): 气泵使能开关，默认为 false
+//   - enable_air_pump (int): 气泵使能开关，默认为 0
 //
 // 使用示例:
 //   SerialNode node;
@@ -115,7 +115,7 @@ private:
     int cur_pub_cnt{0};
 
     // 气泵使能标志，由参数 "enable_air_pump" 控制。
-    bool enable_air_pump{false};
+    int enable_air_pump{0};
 
     // 当前抓取标志，0 表示不抓，1 表示抓。
     int grasp_it{0};

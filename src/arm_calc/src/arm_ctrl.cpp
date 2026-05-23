@@ -85,8 +85,51 @@ void ArmCtrlNode::create_interfaces() {
     rviz_joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>(kRvizJointTopic, 10);
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>(kMarkerTopic, 10);
 
+    const std::string forward_kinematics_service_name = "/" + std::string(this->get_name()) + "/forward_kinematics";
+    forward_kinematics_service_ = this->create_service<robot_interfaces::srv::ForwardKinematics>(
+        forward_kinematics_service_name,
+        std::bind(&ArmCtrlNode::on_forward_kinematics_request, this, std::placeholders::_1, std::placeholders::_2));
+
     control_timer_ = this->create_wall_timer(
         std::chrono::duration<double>(control_period_sec_), std::bind(&ArmCtrlNode::publish_control_loop, this));
+}
+
+void ArmCtrlNode::on_forward_kinematics_request(
+    const std::shared_ptr<robot_interfaces::srv::ForwardKinematics::Request> request,
+    std::shared_ptr<robot_interfaces::srv::ForwardKinematics::Response> response) {
+    if (!arm_calc_) {
+        response->success = false;
+        response->message = "arm_calc solver is not initialized";
+        RCLCPP_ERROR(this->get_logger(), "Forward kinematics request failed: arm_calc solver is not initialized");
+        return;
+    }
+
+    if (request->joint_angles.size() != kJointDoF) {
+        response->success = false;
+        response->message = "joint_angles must contain 6 values";
+        RCLCPP_WARN(
+            this->get_logger(), "Forward kinematics request rejected: expected %zu joint values, got %zu", kJointDoF,
+            request->joint_angles.size());
+        return;
+    }
+
+    JointVector joints = JointVector::Zero();
+    for (std::size_t i = 0; i < kJointDoF; ++i) {
+        joints[static_cast<int>(i)] = request->joint_angles[i];
+    }
+
+    const CartesianPose pose = arm_calc_->end_pose(joints);
+    response->pose.header.frame_id = base_link_;
+    response->pose.header.stamp = this->now();
+    response->pose.pose.position.x = pose.position.x();
+    response->pose.pose.position.y = pose.position.y();
+    response->pose.pose.position.z = pose.position.z();
+    response->pose.pose.orientation.w = pose.orientation.w();
+    response->pose.pose.orientation.x = pose.orientation.x();
+    response->pose.pose.orientation.y = pose.orientation.y();
+    response->pose.pose.orientation.z = pose.orientation.z();
+    response->success = true;
+    response->message = "ok";
 }
 
 void ArmCtrlNode::load_robot_description_and_build_solver() {

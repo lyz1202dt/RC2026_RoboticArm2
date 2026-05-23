@@ -21,7 +21,7 @@ SerialNode::SerialNode()
     arm_target.pack_type = 1;
 
     // 声明参数：气泵使能开关
-    this->declare_parameter<bool>("enable_air_pump", false);
+    this->declare_parameter<int>("enable_air_pump", 0);
     this->declare_parameter<int>("grasp_it", 0);
     this->declare_parameter<int>("grasp_state", 0);
     this->declare_parameter<std::string>("arm_task_node_name", "arm_task_node");
@@ -35,9 +35,9 @@ SerialNode::SerialNode()
 
             for (const auto& param : params) {
                 if (param.get_name() == "enable_air_pump") {
-                    enable_air_pump = param.as_bool();
+                    enable_air_pump = param.as_int();
                     // 立即更新数据包并发送，确保参数变更即时生效
-                    arm_target.air_pump = enable_air_pump ? 1 : 0;
+                    arm_target.air_pump = enable_air_pump;
                     {
                         std::lock_guard<std::mutex> lock(send_mutex);
                         if (cdc_trans) {
@@ -45,7 +45,7 @@ SerialNode::SerialNode()
                         }
                     }
                     RCLCPP_INFO(this->get_logger(), 
-                               "气泵状态变更: %d", enable_air_pump ? 1 : 0);
+                               "气泵状态变更: %d", enable_air_pump);
                 } else if (param.get_name() == "grasp_it") {
                     grasp_it = (param.as_int() == 0) ? 0 : 1;
                     RCLCPP_INFO(this->get_logger(), "抓取状态变更: %d", grasp_it);
@@ -151,7 +151,7 @@ void SerialNode::legsSubscribCb(const robot_interfaces::msg::Arm& msg) {
     }
 
     // 设置气泵状态
-    arm_target.air_pump = enable_air_pump ? 1 : 0;
+    arm_target.air_pump = enable_air_pump;
     arm_target.grasp_state = grasp_state_send_once_pending ? 1U : 0U;
     grasp_state_send_once_pending = false;
 

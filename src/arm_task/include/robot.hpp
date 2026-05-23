@@ -10,6 +10,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
+#include <robot_interfaces/srv/forward_kinematics.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 #include <atomic>
@@ -147,6 +148,9 @@ public:
     bool execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration);
     //执行笛卡尔空间轨迹
     bool execute_cartesian_space_trajectory(const geometry_msgs::msg::PoseStamped& target_pose, double duration);
+    //调用 arm_calc 节点的正运动学接口，返回末端位姿
+    bool forward_kinematics(const std::vector<double>& joint_angles, geometry_msgs::msg::PoseStamped& end_pose,
+                            std::string* message = nullptr);
     //执行视觉伺服控制
     void execute_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose);
     // 查询当前视觉伺服是否仍在运行
@@ -160,7 +164,7 @@ public:
     // 停止当前的视觉伺服线程
     void stop_visual_servo();
     //使能气泵
-    bool set_air_pump(const bool &enable);
+    bool set_air_pump(const int &enable);
     //设置抓取完成状态到 driver 节点
     bool set_grasp_state(const bool &finished);
     //设置轨迹模式
@@ -197,6 +201,7 @@ public:
     // Remote node clients for parameter setting
     rclcpp::AsyncParametersClient::SharedPtr arm_calc_param_client_;
     rclcpp::AsyncParametersClient::SharedPtr driver_param_client_;
+    rclcpp::Client<robot_interfaces::srv::ForwardKinematics>::SharedPtr arm_calc_fk_client_;
 
     mutable std::mutex action_state_mutex_;
     bool task_executing_{false};
@@ -244,6 +249,7 @@ private:
     std::condition_variable visual_servo_state_cv_;
     bool visual_servo_result_ready_{false};
     bool visual_servo_succeeded_{false};
+    
 };
 
 
