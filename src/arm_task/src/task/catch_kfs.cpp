@@ -81,7 +81,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到过渡位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 2.0)) { // 1.0
         return fail_task("移动到过渡位失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到过渡位置");
@@ -95,7 +95,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆——1位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 2.0)) { // 1.0
         return fail_task("移动到放杆——1位失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆——1位置");
@@ -109,7 +109,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆——2位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 2.0)) { // 1.0
         return fail_task("移动到放杆——2位失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆——2位置");
@@ -176,21 +176,23 @@ std::string CatchKFS::process(const std::string last_task_name) {
         current_end_pose.pose.position.z,
         fk_roll, fk_pitch, fk_yaw);
 
-    // tf2::Quaternion quat;
-    // quat.setRPY(0.0, M_PI/2.2, 0.0);
-    // current_end_pose.pose.orientation.x = quat.getX();
-    // current_end_pose.pose.orientation.y = quat.getY();
-    // current_end_pose.pose.orientation.z = quat.getZ();
-    // current_end_pose.pose.orientation.w = quat.getW();
-    // current_end_pose.pose.position.z -= 0.20;
+    
+    current_end_pose.pose.position.z -= 0.2;
+    
+    if (!robot->set_air_pump(2)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "夹爪微型开启失败");
+    }
 
-    // if (!robot->execute_cartesian_space_trajectory(current_end_pose, 3.0)) {
-    //     return fail_task("执行笛卡尔空间轨迹失败");
-    // } else {
-    //     RCLCPP_INFO(robot->node_->get_logger(), "成功执行笛卡尔空间轨迹");
-    // }
+    if (!robot->execute_cartesian_space_trajectory(current_end_pose, 3.0)) {
+        return fail_task("执行笛卡尔空间轨迹失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功执行笛卡尔空间轨迹");
+    }
 
-    std::this_thread::sleep_for(5s);
+    // std::this_thread::sleep_for(5s);
+    if (!robot->set_air_pump(0)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "夹爪关闭失败");
+    }
 
     RCLCPP_INFO(robot->node_->get_logger(), "抓取流程完成");
     if (!robot->set_grasp_state(true)) {

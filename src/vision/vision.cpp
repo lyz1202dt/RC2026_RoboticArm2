@@ -132,19 +132,17 @@ public:
         //   1. 取消下面两行的注释
         //   2. 填入标定结果矩阵替换 T_flange2cam_ 的 Identity()
         //   3. 取消构造函数中 publishStaticHandEyeTransform() 的注释
-        // RCLCPP_INFO(this->get_logger(), "5. 初始化手眼矩阵...");
-        // T_flange2cam_ = Eigen::Matrix4d::Identity();
-        // 例如:
-        // T_flange2cam_ << 1.0, 0.0, 0.0, 0.05,
-        //                  0.0, 1.0, 0.0, 0.02,
-        //                  0.0, 0.0, 1.0, 0.10,
-        //                  0.0, 0.0, 0.0, 1.0;
+        RCLCPP_INFO(this->get_logger(), "5. 初始化手眼矩阵...");
+        T_flange2cam_ << 0.0, 0.0, 1.0, 0.1,
+                         0.0, 1.0, 0.0, 0.09,
+                        -1.0, 0.0, 0.0, -0.03,
+                         0.0, 0.0, 0.0, 1.0;
         // ====================================================================
 
         // 发布相机的静态 TF，方便在 RViz 里查看
         // 【注释】手眼标定：以下代码需要手眼标定矩阵 T_flange2cam_ 正确赋值后才能启用。
         // 要恢复：取消下行注释，并确保 T_flange2cam_ 填入标定结果。
-        // publishStaticHandEyeTransform();
+        publishStaticHandEyeTransform();
 
         // 启动视觉处理线程，避免阻塞 ROS 的 executor
         is_running_ = true;
@@ -160,15 +158,10 @@ public:
     }
 
 private:
-    /* ========== 手眼标定发布函数（当前已注释，未使用） ==========
-    // 恢复方法：
-    //   1. 取消整个函数体的注释
-    //   2. 确保 T_flange2cam_ 填入标定结果（见构造函数中的注释）
-    //   3. 取消构造函数中 publishStaticHandEyeTransform() 的注释
     void publishStaticHandEyeTransform() {
         geometry_msgs::msg::TransformStamped static_tf;
         static_tf.header.stamp = this->now();
-        static_tf.header.frame_id = "tool0";
+        static_tf.header.frame_id = "Link4";
         static_tf.child_frame_id = "camera_link";
 
         Eigen::Affine3d affine_flange2cam(T_flange2cam_);
@@ -176,7 +169,6 @@ private:
 
         static_tf_broadcaster_->sendTransform(static_tf);
     }
-    ================================================================ */
 
     void visionLoop() {
         // ============================================================
@@ -433,7 +425,7 @@ private:
                         // Step 2: 查 TF → T_base2flange (机械臂基座到末端法兰)
                         geometry_msgs::msg::TransformStamped tf_base2flange;
                         try {
-                            tf_base2flange = tf_buffer_->lookupTransform("base_link", "tool0", tf2::TimePointZero);
+                            tf_base2flange = tf_buffer_->lookupTransform("base_link", "Link4", tf2::TimePointZero);
                             Eigen::Affine3d affine_base2flange = tf2::transformToEigen(tf_base2flange.transform);
                             Eigen::Matrix4d T_base2flange = affine_base2flange.matrix();
 

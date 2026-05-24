@@ -1,595 +1,816 @@
-#include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_eigen/tf2_eigen.hpp>
-#include <geometry_msgs/msg/transform_stamped.hpp>
-
-#include <Eigen/Dense>
-#include <opencv2/opencv.hpp>
-#include <librealsense2/rs.hpp>
+/**
+ * @file vision.cpp
+ * @brief 红色箱子视觉识别与位姿估计节点
+ * 
+ * 功能说明：
+ * 1. 从 USB 摄像头读取图像
+ * 2. 通过 HSV 颜色分割检测红色箱子
+ * 3. 使用卡尔曼滤波器平滑角点位置
+ * 4. 使用 solvePnP 计算相机到物体的位姿
+ * 5. 发布 TF 变换（camera_link -> target_object）
+ * 6. 可视化显示检测结果
+ */
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
+#include <array>
 #include <cmath>
-#include <thread>
-#include <mutex>
-#include <optional>
-#include <sstream>
-#include <iomanip>
+#include <algorithm>
+#include <deque>
+#include <memory>
+#include <opencv2/opencv.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_ros/transform_broadcaster.h>
 
-// ============================================================
-// 卡尔曼滤波器 (纯视觉算法部分保持不变)
-// ============================================================
-struct KalmanFilter2D {
-    float pos_noise  = 0.1f;
-    float vel_noise  = 2.0f;
-    float meas_noise = 20.0f;
+using namespace std;
+using namespace cv;
 
-    cv::KalmanFilter kf;
-    bool initialized = false;
+// ================================================================
+//  常量配置区 —— 只改这里就能适配你的箱子
+// ================================================================
 
-    KalmanFilter2D() {
-        kf.init(4, 2, 1, CV_32F);
-        kf.transitionMatrix = (cv::Mat_<float>(4, 4) <<
-            1, 0, 1, 0,
-            0, 1, 0, 1,
-            0, 0, 1, 0,
-            0, 0, 0, 1);
-        kf.measurementMatrix = (cv::Mat_<float>(2, 4) <<
-            1, 0, 0, 0,
-            0, 1, 0, 0);
-    }
+/**
+ * 箱子物理参数
+ */
+static const float BOX_MM      = 350.0f;      // 箱子顶面边长，单位：mm
+static const float HALF        = BOX_MM / 2.f;
+static const double MIN_AREA   = 8000.0;      // 最小有效红色面积阈值（像素），用于过滤噪声
 
-    void initialize(const cv::Point2f& pt) {
-        cv::setIdentity(kf.processNoiseCov, cv::Scalar::all(0));
-        kf.processNoiseCov.at<float>(0, 0) = pos_noise;
-        kf.processNoiseCov.at<float>(1, 1) = pos_noise;
-        kf.processNoiseCov.at<float>(2, 2) = vel_noise;
-        kf.processNoiseCov.at<float>(3, 3) = vel_noise;
+/**
+ * 平滑参数
+ */
+static const int   SMOOTH_N    = 6;           // 位姿平滑的滑动窗口帧数
 
-        cv::setIdentity(kf.measurementNoiseCov, cv::Scalar::all(meas_noise));
-        cv::setIdentity(kf.errorCovPost, cv::Scalar::all(100.0));
+/**
+ * TF 坐标系名称
+ */
+static const char* CAMERA_FRAME_ID = "camera_link";     // 相机坐标系
+static const char* OBJECT_FRAME_ID = "target_object";   // 目标物体坐标系
 
-        kf.statePost.at<float>(0) = pt.x;
-        kf.statePost.at<float>(1) = pt.y;
-        kf.statePost.at<float>(2) = 0.0f;
-        kf.statePost.at<float>(3) = 0.0f;
+/**
+ * 物体坐标系定义：顶面中心为原点，单位 mm
+ * 四个角点的 3D 坐标（用于 PnP 求解）
+ * 顺序：[左上, 右上, 右下, 左下]
+ */
+static const vector<Point3f> OBJ_PTS = {
+    {-HALF, -HALF, 0},  // 0 左上
+    { HALF, -HALF, 0},  // 1 右上
+    { HALF,  HALF, 0},  // 2 右下
+    {-HALF,  HALF, 0}   // 3 左下
+};
 
+
+
+// ===== USB摄像头标定参数（你的参数）=====
+/**
+ * 相机内参矩阵 K
+ * 格式：[fx,  0, cx]
+ *      [ 0, fy, cy]
+ *      [ 0,  0,  1]
+ */
+static const Mat K = (Mat_<double>(3,3) <<
+    786.19375828781722, 0.,                  668.98017421012958,
+    0.,                 791.8946129798486,   373.97215705020159,
+    0.,                 0.,                  1.);
+
+/**
+ * 相机畸变系数 D
+ * 格式：[k1, k2, p1, p2, k3]
+ * k1, k2, k3: 径向畸变系数
+ * p1, p2: 切向畸变系数
+ */
+static const Mat D = (Mat_<double>(1,5) <<
+     0.06420428268786578,
+     0.083133304993222509,
+     0.0019411199567928366,
+    -0.0032091194694991478,
+    -0.34311667376016997);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ================================================================
+//  卡尔曼滤波器封装（对每个角点单独建一个 4 状态 KF：[x, y, vx, vy]）
+// ================================================================
+/**
+ * @struct CornerKF
+ * @brief 单个角点的卡尔曼滤波器封装
+ * 
+ * 状态向量：[x, y, vx, vy]（位置 + 速度）
+ * 测量向量：[x, y]（仅位置）
+ * 
+ * 作用：平滑角点位置，减少抖动，在检测失败时进行预测
+ */
+struct CornerKF
+{
+    KalmanFilter kf;            // OpenCV 卡尔曼滤波器对象
+    bool initialized = false;  // 是否已初始化
+    
+    /**
+     * @brief 初始化卡尔曼滤波器
+     * @param pt 初始角点位置
+     */
+    void init(Point2f pt)
+    {
+        // 初始化卡尔曼滤波器：4个状态变量，2个测量变量
+        kf.init(4, 2, 0, CV_64F);
+        
+        // 状态转移矩阵 A（匀速运动模型）
+        // [1, 0, 1, 0]   x' = x + vx
+        // [0, 1, 0, 1]   y' = y + vy
+        // [0, 0, 1, 0]   vx' = vx
+        // [0, 0, 0, 1]   vy' = vy
+        setIdentity(kf.transitionMatrix);
+        kf.transitionMatrix.at<double>(0,2) = 1.0;
+        kf.transitionMatrix.at<double>(1,3) = 1.0;
+        
+        // 测量矩阵 H（只测量位置）
+        // [1, 0, 0, 0]   z_x = x
+        // [0, 1, 0, 0]   z_y = y
+        kf.measurementMatrix = Mat::zeros(2, 4, CV_64F);
+        kf.measurementMatrix.at<double>(0,0) = 1.0;
+        kf.measurementMatrix.at<double>(1,1) = 1.0;
+        
+        // 过程噪声协方差矩阵 Q（模型不确定性）
+        // 值越小，滤波器越信任模型预测
+        setIdentity(kf.processNoiseCov, Scalar(0.05));
+        
+        // 测量噪声协方差矩阵 R（测量不确定性）
+        // 值越大，滤波器越平滑，但滞后越明显
+        setIdentity(kf.measurementNoiseCov, Scalar(0.8));
+        
+        // 初始后验误差协方差矩阵
+        setIdentity(kf.errorCovPost, Scalar(1));
+        
+        // 初始状态：位置为测量值，速度为 0
+        kf.statePost = (Mat_<double>(4,1) << pt.x, pt.y, 0, 0);
         initialized = true;
     }
-
-    void reset() {
-        initialized = false;
-        kf.statePost    = cv::Mat::zeros(4, 1, CV_32F);
-        kf.errorCovPost = cv::Mat::eye(4, 4, CV_32F) * 100.0f;
+    
+    /**
+     * @brief 更新卡尔曼滤波器（预测 + 校正）
+     * @param measured 测量到的角点位置
+     * @return 滤波后的角点位置
+     */
+    Point2f update(Point2f measured)
+    {
+        if (!initialized) init(measured);
+        
+        // 预测步骤：根据状态转移矩阵预测下一状态
+        Mat pred = kf.predict();
+        
+        // 测量步骤：构造测量向量
+        Mat meas = (Mat_<double>(2,1) << measured.x, measured.y);
+        
+        // 校正步骤：融合预测和测量
+        Mat est = kf.correct(meas);
+        
+        return Point2f((float)est.at<double>(0), (float)est.at<double>(1));
+    }
+    
+    /**
+     * @brief 仅进行预测（检测失败时使用）
+     * @return 预测的角点位置
+     */
+    Point2f predictOnly()
+    {
+        Mat pred = kf.predict();
+        return Point2f((float)pred.at<double>(0), (float)pred.at<double>(1));
     }
 };
 
-class RedSegmentation {
-public:
-    struct Params {
-        int h_low_min = 0, h_low_max = 10;
-        int h_high_min = 160, h_high_max = 180;
-        int s_min = 50, s_max = 255;
-        int v_min = 85, v_max = 255;
-        float max_vertical_deviation = 30.0f;
-        float min_vertical_fill_ratio = 0.9f;
-        float min_aspect_ratio = 8.0f;
-        double min_compactness = 0.7;
-    };
 
-    RedSegmentation() {
-        try {
-            kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(3,19));
-        } catch (...) {
-            RCLCPP_WARN_ONCE(rclcpp::get_logger("RedSegmentation"), "Failed to create morphology kernel");
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ================================================================
+//  工具函数
+// ================================================================
+/**
+ * @brief 对四个角点进行排序
+ * @param in 输入的四个角点（无序）
+ * @return 排序后的角点：[左上, 右上, 右下, 左下]
+ * 
+ * 算法原理：
+ * - s = x + y，最小的是左上角，最大的是右下角
+ * - d = x - y，最大的是右上角，最小的是左下角
+ */
+vector<Point2f> sortCorners(const vector<Point2f>& in)
+{
+    vector<Point2f> r(4);
+    vector<float> s(4), d(4);
+    
+    // 计算每个点的 s 和 d 值
+    for (int i = 0; i < 4; i++) { 
+        s[i] = in[i].x + in[i].y; 
+        d[i] = in[i].x - in[i].y; 
     }
-
-    void process(const cv::Mat& input, cv::Mat& mask) {
-        if (input.empty()) return;
-        cv::Mat hsv;
-        cv::cvtColor(input, hsv, cv::COLOR_BGR2HSV);
-        cv::Mat m1, m2;
-        cv::inRange(hsv, cv::Scalar(p.h_low_min, p.s_min, p.v_min),
-                         cv::Scalar(p.h_low_max, p.s_max, p.v_max), m1);
-        cv::inRange(hsv, cv::Scalar(p.h_high_min, p.s_min, p.v_min),
-                         cv::Scalar(p.h_high_max, p.s_max, p.v_max), m2);
-        cv::bitwise_or(m1, m2, mask);
-        cv::morphologyEx(mask, mask, cv::MORPH_OPEN, kernel);
+    
+    // 找出四个角点
+    int tl=0, br=0, tr=0, bl=0;
+    for (int i = 1; i < 4; i++)
+    {
+        if (s[i] < s[tl]) tl = i;   // s 最小 -> 左上
+        if (s[i] > s[br]) br = i;   // s 最大 -> 右下
+        if (d[i] > d[tr]) tr = i;   // d 最大 -> 右上
+        if (d[i] < d[bl]) bl = i;   // d 最小 -> 左下
     }
+    
+    r[0]=in[tl]; r[1]=in[tr]; r[2]=in[br]; r[3]=in[bl];
+    return r;
+}
 
-    Params p;
-private:
-    cv::Mat kernel;
+
+
+
+
+
+
+
+/**
+ * @brief 旋转矩阵转欧拉角（ZYX 顺序）
+ * @param R 旋转矩阵 (3x3)
+ * @return 欧拉角，单位：度
+ *         [Roll, Pitch, Yaw] = [绕X轴旋转, 绕Y轴旋转, 绕Z轴旋转]
+ */
+Vec3d euler(const Mat& R)
+{
+    // 计算中间变量 sy = sqrt(r11^2 + r21^2)
+    double sy = sqrt(R.at<double>(0,0)*R.at<double>(0,0) +
+                     R.at<double>(1,0)*R.at<double>(1,0));
+    
+    // 判断是否奇异点（万向锁）
+    bool sg = sy < 1e-6;
+    
+    // 计算欧拉角
+    double x = sg ? atan2(-R.at<double>(1,2), R.at<double>(1,1))
+                  : atan2( R.at<double>(2,1), R.at<double>(2,2));
+    double y = atan2(-R.at<double>(2,0), sy);
+    double z = sg ? 0 : atan2(R.at<double>(1,0), R.at<double>(0,0));
+    
+    return Vec3d(x * 180/CV_PI, y * 180/CV_PI, z * 180/CV_PI);
+}
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * @brief 在图像上绘制带描边的文字（提高可读性）
+ * @param img 目标图像
+ * @param text 文字内容
+ * @param org 文字左下角位置
+ * @param scale 字体大小
+ * @param color 文字颜色
+ * @param thick 文字粗细
+ */
+void putLabel(Mat& img, const string& text, Point org,
+              double scale=0.65, Scalar color=Scalar(0,255,255), int thick=2)
+{
+    // 先绘制黑色描边
+    putText(img, text, org, FONT_HERSHEY_SIMPLEX, scale, Scalar(0,0,0), thick+2);
+    // 再绘制彩色文字
+    putText(img, text, org, FONT_HERSHEY_SIMPLEX, scale, color, thick);
+}
+
+
+
+
+
+
+
+
+
+
+// ================================================================
+//  核心：从彩色帧里提取箱子四角
+//  返回 false 表示本帧检测失败
+// ================================================================
+/**
+ * @brief 检测红色箱子的四个角点
+ * @param frame 输入图像（BGR）
+ * @param prevGray 上一帧灰度图（预留，当前未使用）
+ * @param corners 输出的四个角点（排序后）
+ * @param debugMask 调试用的红色区域掩码
+ * @return 检测是否成功
+ * 
+ * 检测流程：
+ * 1. HSV 颜色分割提取红色区域
+ * 2. 形态学处理（闭运算填洞，开运算去噪）
+ * 3. 找最大轮廓
+ * 4. 凸包 → 多边形逼近 → 提取四角点
+ * 5. 亚像素精化
+ */
+bool detectBoxCorners(const Mat& frame, const Mat& prevGray,
+                      vector<Point2f>& corners, Mat& debugMask)
+{
+    // ---- 1. HSV 红色分割 ----
+    // 转换到 HSV 颜色空间
+    Mat hsv;
+    cvtColor(frame, hsv, COLOR_BGR2HSV);
+    
+    // 红色在 HSV 中分布在两端（0° 附近和 180° 附近）
+    // 需要两个阈值范围，然后合并
+    Mat m1, m2, mask;
+    inRange(hsv, Scalar(0,  80, 60), Scalar(10,  255, 255), m1);      // 低红色 (0-10°)
+    inRange(hsv, Scalar(165, 80, 60), Scalar(180, 255, 255), m2);     // 高红色 (165-180°)
+    mask = m1 | m2;  // 合并两个区域
+    
+    // ---- 2. 形态学：先闭运算填洞，再开运算去噪 ----
+    Mat k5 = getStructuringElement(MORPH_RECT, Size(5,5));
+    Mat k3 = getStructuringElement(MORPH_RECT, Size(3,3));
+    morphologyEx(mask, mask, MORPH_CLOSE, k5, Point(-1,-1), 2);  // 闭运算：填充内部空洞
+    morphologyEx(mask, mask, MORPH_OPEN,  k3, Point(-1,-1), 1);  // 开运算：去除外部噪点
+    
+    debugMask = mask.clone();
+    
+    // ---- 3. 找轮廓，取最大面积 ----
+    vector<vector<Point>> contours;
+    findContours(mask, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+    
+    // 没有找到轮廓
+    if (contours.empty()) return false;
+    
+    // 找出面积最大的轮廓（假设最大的是箱子）
+    int best = 0;
+    double maxA = 0;
+    for (int i = 0; i < (int)contours.size(); i++)
+    {
+        double a = contourArea(contours[i]);
+        if (a > maxA) { maxA = a; best = i; }
+    }
+    
+    // 面积太小，可能是噪声
+    if (maxA < MIN_AREA) return false;
+    
+    // ---- 4. 凸包 → 多边形逼近 → 强制4点 ----
+    // 先计算凸包，确保轮廓是凸的
+    vector<Point> hull;
+    convexHull(contours[best], hull);
+    
+    // 多边形逼近：尝试不同精度，直到逼近结果 <= 5 点
+    vector<Point> poly;
+    double peri = arcLength(hull, true);
+    for (double eps = 0.02; eps <= 0.15; eps += 0.01)
+    {
+        approxPolyDP(hull, poly, eps * peri, true);
+        if ((int)poly.size() <= 5) break;
+    }
+    
+    // 用最小外接旋转矩形兜底，保证一定能得到 4 个点
+    RotatedRect rr = minAreaRect(hull);
+    Point2f rpts[4];
+    rr.points(rpts);
+    
+    // 如果逼近结果恰好是 4 点且是凸多边形，使用逼近结果（更精确）
+    // 否则使用旋转矩形的 4 个角（更稳定）
+    vector<Point2f> raw(4);
+    if ((int)poly.size() == 4 && isContourConvex(poly))
+    {
+        for (int i = 0; i < 4; i++) raw[i] = Point2f((float)poly[i].x, (float)poly[i].y);
+    }
+    else
+    {
+        for (int i = 0; i < 4; i++) raw[i] = rpts[i];
+    }
+    
+    // ---- 5. 排序 [左上 右上 右下 左下] ----
+    raw = sortCorners(raw);
+    
+    // ---- 6. 亚像素精化 ----
+    // 转换为灰度图
+    Mat gray;
+    cvtColor(frame, gray, COLOR_BGR2GRAY);
+    
+    // 确保角点在图像范围内
+    for (auto& p : raw)
+    {
+        p.x = clamp(p.x, 0.f, (float)(frame.cols - 1));
+        p.y = clamp(p.y, (float)0, (float)(frame.rows - 1));
+    }
+    
+    // 亚像素角点精化（提高精度到亚像素级）
+    TermCriteria tc(TermCriteria::EPS + TermCriteria::MAX_ITER, 30, 0.01);
+    cornerSubPix(gray, raw, Size(7, 7), Size(-1, -1), tc);
+    
+    corners = raw;
+    return true;
+}
+
+// ================================================================
+//  距离 / 位姿平滑（对 tvec 做滑动均值）
+// ================================================================
+/**
+ * @struct PoseSmootherVec3
+ * @brief 对位姿向量进行滑动平均平滑
+ * 
+ * 作用：减少位姿抖动，使输出更稳定
+ */
+struct PoseSmootherVec3
+{
+    deque<Vec3d> buf;   // 历史数据缓冲区
+    int maxN;           // 最大帧数
+    
+    explicit PoseSmootherVec3(int n) : maxN(n) {}
+    
+    /**
+     * @brief 添加新数据并返回平滑结果
+     * @param v 新的位姿向量
+     * @return 平滑后的位姿向量
+     */
+    Vec3d push(Vec3d v)
+    {
+        buf.push_back(v);
+        if ((int)buf.size() > maxN) buf.pop_front();  // 保持窗口大小
+        
+        // 计算均值
+        Vec3d sum(0,0,0);
+        for (auto& x : buf) sum += x;
+        return sum * (1.0 / buf.size());
+    }
 };
 
-// ============================================================
-// ROS2 节点类定义
-// ============================================================
-class VisionPositionPublisher : public rclcpp::Node {
-public:
-    VisionPositionPublisher() : Node("vision_position_publisher"), is_running_(false), show_visualization_(true) {
-        RCLCPP_INFO(this->get_logger(), "1. 创建TF buffer...");
-        tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-
-        RCLCPP_INFO(this->get_logger(), "2. 创建TF listener...");
-        tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-
-        RCLCPP_INFO(this->get_logger(), "3. 创建TF broadcaster...");
-        tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
-
-        RCLCPP_INFO(this->get_logger(), "4. 创建静态TF broadcaster...");
-        static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
-
-        // ==================== HANDEYE CALIBRATION RESULT ====================
-        // 在这里填入手眼标定矩阵 (Camera in Flange Frame)
-        // 标定完成后替换为实际矩阵，格式：前3x3旋转，第4列前3行平移 (单位：米)
-        // 【注释】手眼标定：以下两行被注释以跳过标定。恢复方法：
-        //   1. 取消下面两行的注释
-        //   2. 填入标定结果矩阵替换 T_flange2cam_ 的 Identity()
-        //   3. 取消构造函数中 publishStaticHandEyeTransform() 的注释
-        // RCLCPP_INFO(this->get_logger(), "5. 初始化手眼矩阵...");
-        // T_flange2cam_ = Eigen::Matrix4d::Identity();
-        // 例如:
-        // T_flange2cam_ << 1.0, 0.0, 0.0, 0.05,
-        //                  0.0, 1.0, 0.0, 0.02,
-        //                  0.0, 0.0, 1.0, 0.10,
-        //                  0.0, 0.0, 0.0, 1.0;
-        // ====================================================================
-
-        // 发布相机的静态 TF，方便在 RViz 里查看
-        // 【注释】手眼标定：以下代码需要手眼标定矩阵 T_flange2cam_ 正确赋值后才能启用。
-        // 要恢复：取消下行注释，并确保 T_flange2cam_ 填入标定结果。
-        // publishStaticHandEyeTransform();
-
-        // 启动视觉处理线程，避免阻塞 ROS 的 executor
-        is_running_ = true;
-        vision_thread_ = std::thread(&VisionPositionPublisher::visionLoop, this);
-        RCLCPP_INFO(this->get_logger(), "Vision Position Publisher node initialized and started.");
-    }
-
-    ~VisionPositionPublisher() {
-        is_running_ = false;
-        if (vision_thread_.joinable()) {
-            vision_thread_.join();
-        }
-    }
-
-private:
-    /* ========== 手眼标定发布函数（当前已注释，未使用） ==========
-    // 恢复方法：
-    //   1. 取消整个函数体的注释
-    //   2. 确保 T_flange2cam_ 填入标定结果（见构造函数中的注释）
-    //   3. 取消构造函数中 publishStaticHandEyeTransform() 的注释
-    void publishStaticHandEyeTransform() {
-        geometry_msgs::msg::TransformStamped static_tf;
-        static_tf.header.stamp = this->now();
-        static_tf.header.frame_id = "tool0";
-        static_tf.child_frame_id = "camera_link";
-
-        Eigen::Affine3d affine_flange2cam(T_flange2cam_);
-        static_tf.transform = tf2::eigenToTransform(affine_flange2cam).transform;
-
-        static_tf_broadcaster_->sendTransform(static_tf);
-    }
-    ================================================================ */
-
-    void visionLoop() {
-        // ============================================================
-        // Step A: 启动相机 (带重试)
-        // ============================================================
-        rs2::pipeline pipe;
-        rs2::config cfg;
-        cfg.enable_stream(RS2_STREAM_COLOR, 1280, 720, RS2_FORMAT_BGR8, 30);
-        cfg.enable_stream(RS2_STREAM_DEPTH, 1280, 720, RS2_FORMAT_Z16, 30);
-        rs2::align align_to_color(RS2_STREAM_COLOR);
-        rs2::pipeline_profile profile;
-
-        RCLCPP_INFO(this->get_logger(), "[1/5] Opening RealSense pipeline...");
-        bool camera_started = false;
-        for (int retry = 0; retry < 30 && is_running_ && rclcpp::ok(); ++retry) {
-            try {
-                profile = pipe.start(cfg);
-                camera_started = true;
-                break;
-            } catch (const std::exception& e) {
-                RCLCPP_WARN(this->get_logger(), "Camera start 失败(重试 %d/30): %s", retry + 1, e.what());
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            }
-        }
-        if (!camera_started) {
-            RCLCPP_FATAL(this->get_logger(), "[FAIL] 无法启动 RealSense 相机，退出视觉线程");
-            return;
-        }
-        RCLCPP_INFO(this->get_logger(), "[2/5] Camera started");
-
-        auto stream_profile = profile.get_stream(RS2_STREAM_COLOR).as<rs2::video_stream_profile>();
-        rs2_intrinsics intrin = stream_profile.get_intrinsics();
-
-        RedSegmentation detector;
-        cv::Mat color_image, mask_image;
-
-        const int   MAX_TARGETS    = 10;
-        const int   MAX_LOST_FRAMES = 10;
-        const float MATCH_DIST_THR = 80.0f;
-
-        struct TrackedTarget {
-            KalmanFilter2D kf;
-            int   lost_frames = 0;
-            bool  active      = false;
-        };
-        std::vector<TrackedTarget> trackers(MAX_TARGETS);
-
-        RCLCPP_INFO(this->get_logger(), "[3/5] Entering vision loop");
-
-        while (is_running_ && rclcpp::ok()) {
-            try {
-                // ========================================================
-                // Step B: 等待帧
-                // ========================================================
-                rs2::frameset frames;
-                try {
-                    frames = pipe.wait_for_frames(5000);
-                } catch (const std::exception&) {
-                    continue;
-                }
-
-                frames = align_to_color.process(frames);
-                rs2::video_frame color_frame = frames.get_color_frame();
-                rs2::depth_frame depth_frame = frames.get_depth_frame();
-                if (!color_frame || !depth_frame) continue;
-
-                color_image = cv::Mat(cv::Size(1280, 720), CV_8UC3, (void*)color_frame.get_data(), cv::Mat::AUTO_STEP);
-                detector.process(color_image, mask_image);
-
-                std::vector<std::vector<cv::Point>> contours;
-                cv::findContours(mask_image, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-                std::vector<cv::RotatedRect> valid_sticks;
-                int rightmost_idx = -1;
-                float max_x = -1.0f;
-
-                for (const auto& cnt : contours) {
-                    cv::RotatedRect rect = cv::minAreaRect(cnt);
-                    float w = rect.size.width;
-                    float h = rect.size.height;
-
-                    if (std::max(w, h) < 50.0f) continue;
-                    if (w * h < 3000.0f) continue;
-
-                    float aspect_ratio = std::max(w, h) / std::max(std::min(w, h), 1.0f);
-                    if (aspect_ratio < detector.p.min_aspect_ratio) continue;
-
-                    float long_axis_angle = (w < h) ? rect.angle : rect.angle + 90.0f;
-                    if (long_axis_angle > 90.0f) long_axis_angle -= 180.0f;
-                    if (long_axis_angle < -90.0f) long_axis_angle += 180.0f;
-                    if (std::abs(long_axis_angle) > detector.p.max_vertical_deviation) continue;
-
-                    cv::Size rot_size(static_cast<int>(std::min(w, h)), static_cast<int>(std::max(w, h)));
-                    if (rot_size.width <= 0 || rot_size.height <= 0) continue;
-
-                    float rot_angle = long_axis_angle;
-                    cv::Mat rot_mat = cv::getRotationMatrix2D(rect.center, rot_angle, 1.0);
-                    rot_mat.at<double>(0, 2) += (rot_size.width / 2.0 - rect.center.x);
-                    rot_mat.at<double>(1, 2) += (rot_size.height / 2.0 - rect.center.y);
-
-                    cv::Mat rotated_roi;
-                    cv::warpAffine(mask_image, rotated_roi, rot_mat, rot_size, cv::INTER_NEAREST);
-
-                    int white_pixels = cv::countNonZero(rotated_roi);
-                    double rot_rect_area = rotated_roi.cols * rotated_roi.rows;
-                    if (white_pixels / rot_rect_area < detector.p.min_compactness) continue;
-
-                    int filled_rows = 0;
-                    for (int r = 0; r < rotated_roi.rows; ++r) {
-                        if (cv::countNonZero(rotated_roi.row(r)) > 0) filled_rows++;
-                    }
-                    if ((float)filled_rows / rotated_roi.rows < detector.p.min_vertical_fill_ratio) continue;
-
-                    valid_sticks.push_back(rect);
-                }
-
-            int cur_count = (int)valid_sticks.size();
-
-            for (auto& t : trackers) {
-                if (t.active) t.kf.kf.predict();
-            }
-
-            std::vector<int> det_to_tracker(cur_count, -1);
-            std::vector<bool> tracker_matched(MAX_TARGETS, false);
-
-            for (int d = 0; d < cur_count; ++d) {
-                cv::Point2f det_pt = valid_sticks[d].center;
-                float best_dist = MATCH_DIST_THR;
-                int   best_t    = -1;
-                for (int t = 0; t < MAX_TARGETS; ++t) {
-                    if (!trackers[t].active) continue;
-                    if (tracker_matched[t]) continue;
-                    float px = trackers[t].kf.kf.statePre.at<float>(0);
-                    float py = trackers[t].kf.kf.statePre.at<float>(1);
-                    float dist = std::hypot(det_pt.x - px, det_pt.y - py);
-                    if (dist < best_dist) {
-                        best_dist = dist;
-                        best_t    = t;
-                    }
-                }
-                if (best_t >= 0) {
-                    det_to_tracker[d] = best_t;
-                    tracker_matched[best_t] = true;
-                }
-            }
-
-            for (int d = 0; d < cur_count; ++d) {
-                int t = det_to_tracker[d];
-                if (t >= 0) {
-                    cv::Mat meas = (cv::Mat_<float>(2, 1) << valid_sticks[d].center.x, valid_sticks[d].center.y);
-                    cv::Mat est = trackers[t].kf.kf.correct(meas);
-                    trackers[t].kf.initialized = true;
-                    trackers[t].lost_frames = 0;
-                    valid_sticks[d].center.x = est.at<float>(0);
-                    valid_sticks[d].center.y = est.at<float>(1);
-                } else {
-                    for (int t2 = 0; t2 < MAX_TARGETS; ++t2) {
-                        if (!trackers[t2].active) {
-                            trackers[t2].kf.reset();
-                            trackers[t2].kf.initialize(valid_sticks[d].center);
-                            trackers[t2].active      = true;
-                            trackers[t2].lost_frames = 0;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            for (int t = 0; t < MAX_TARGETS; ++t) {
-                if (!trackers[t].active) continue;
-                if (tracker_matched[t]) continue;
-                trackers[t].lost_frames++;
-                if (trackers[t].lost_frames > MAX_LOST_FRAMES) {
-                    trackers[t].kf.reset();
-                    trackers[t].active = false;
-                }
-            }
-
-            for (auto& s : valid_sticks) {
-                s.center.x = std::max(0.0f, std::min(s.center.x, (float)(color_image.cols - 1)));
-                s.center.y = std::max(0.0f, std::min(s.center.y, (float)(color_image.rows - 1)));
-            }
-
-            rightmost_idx = -1;
-            max_x = -1.0f;
-            for (int i = 0; i < (int)valid_sticks.size(); ++i) {
-                if (valid_sticks[i].center.x > max_x) {
-                    max_x = valid_sticks[i].center.x;
-                    rightmost_idx = i;
-                }
-            }
-
-            // -------------------------------------------------------------
-            // 核心 ROS2 TF 发布逻辑
-            // -------------------------------------------------------------
-            bool target_detected_this_frame = false;
-            Eigen::Vector3d current_target_base;
-
-            if (rightmost_idx != -1) {
-                int cx = std::max(0, std::min((int)valid_sticks[rightmost_idx].center.x, depth_frame.get_width()  - 1));
-                int cy = std::max(0, std::min((int)valid_sticks[rightmost_idx].center.y, depth_frame.get_height() - 1));
-
-                const int DEPTH_PATCH = 10;
-                std::vector<float> depth_samples;
-                for (int dy = -DEPTH_PATCH; dy <= DEPTH_PATCH; ++dy) {
-                    for (int dx = -DEPTH_PATCH; dx <= DEPTH_PATCH; ++dx) {
-                        int sx = std::max(0, std::min(cx + dx, depth_frame.get_width()  - 1));
-                        int sy = std::max(0, std::min(cy + dy, depth_frame.get_height() - 1));
-                        float d = depth_frame.get_distance(sx, sy);
-                        if (d > 0.01f) depth_samples.push_back(d);
-                    }
-                }
-
-                float dist_m = 0.0f;
-                if (!depth_samples.empty()) {
-                    std::nth_element(depth_samples.begin(),
-                                     depth_samples.begin() + depth_samples.size() / 2,
-                                     depth_samples.end());
-                    dist_m = depth_samples[depth_samples.size() / 2];
-                }
-
-                if (dist_m > 0.01f) {
-                    // 增加距离筛选：小于30厘米或大于6米的目标不处理
-                    const float MIN_DISTANCE = 0.3f;  // 30厘米
-                    const float MAX_DISTANCE = 6.0f;  // 6米
-                    
-                    if (dist_m < MIN_DISTANCE || dist_m > MAX_DISTANCE) {
-                        RCLCPP_WARN(this->get_logger(), "目标距离 %.3f 米超出范围 (%.1f-%.1f 米)，跳过处理",
-                                   dist_m, MIN_DISTANCE, MAX_DISTANCE);
-                    } else {
-                        float p3[3], pix[2] = {(float)cx, (float)cy};
-                        rs2_deproject_pixel_to_point(p3, &intrin, pix, dist_m);
-
-                        // Step 1: 视觉检测 → T_cam2target (相机坐标系下的目标位置)
-                        Eigen::Vector4d P_cam(p3[0], p3[1], p3[2], 1.0);
-
-                        // 【测试模式】总是打印当前检测到的相机坐标系坐标
-                        RCLCPP_INFO(this->get_logger(), "检测到目标 (camera_frame): (%.3f, %.3f, %.3f) 米, 距离: %.3f 米",
-                                    p3[0], p3[1], p3[2], dist_m);
-
-                        // 【测试模式】发布 camera_link → target_camera 变换（无需手眼标定即可在 RViz 查看）
-                        {
-                            geometry_msgs::msg::TransformStamped cam_tf;
-                            cam_tf.header.stamp = this->now();
-                            cam_tf.header.frame_id = "camera_link";
-                            cam_tf.child_frame_id = "target_camera";
-                            cam_tf.transform.translation.x = p3[0];
-                            cam_tf.transform.translation.y = p3[1];
-                            cam_tf.transform.translation.z = p3[2];
-                            cam_tf.transform.rotation.w = 1.0;
-                            tf_broadcaster_->sendTransform(cam_tf);
-                        }
-
-                        // Step 2: 查 TF → T_base2flange (机械臂基座到末端法兰)
-                        geometry_msgs::msg::TransformStamped tf_base2flange;
-                        try {
-                            tf_base2flange = tf_buffer_->lookupTransform("base_link", "tool0", tf2::TimePointZero);
-                            Eigen::Affine3d affine_base2flange = tf2::transformToEigen(tf_base2flange.transform);
-                            Eigen::Matrix4d T_base2flange = affine_base2flange.matrix();
-
-                            // Step 3: 手眼变换 → T_base2target = T_base2flange × T_flange2cam × T_cam2target
-                            Eigen::Vector4d P_base = T_base2flange * T_flange2cam_ * P_cam;
-
-                            current_target_base = Eigen::Vector3d(P_base.x(), P_base.y(), P_base.z());
-                            last_target_base_ = current_target_base;
-                            target_detected_this_frame = true;
-                        } catch (const tf2::TransformException& ex) {
-                            RCLCPP_WARN(this->get_logger(), "TF查询失败(无机器人连接), 仅发布 camera_frame 坐标: %s", ex.what());
-                        }
-                    }
-                }
-            }
-
-            if (!target_detected_this_frame) {
-                RCLCPP_DEBUG(this->get_logger(), "Target not detected, skipping TF publish (using old data if available)");
-            }
-
-            // Step 4: 发布 TF → base_link → target_position
-            if (last_target_base_.has_value()) {
-                geometry_msgs::msg::TransformStamped target_tf;
-                target_tf.header.stamp = this->now();
-                target_tf.header.frame_id = "base_link";
-                target_tf.child_frame_id = "target_position";
-
-                // 只发布位置
-                target_tf.transform.translation.x = last_target_base_->x();
-                target_tf.transform.translation.y = last_target_base_->y();
-                target_tf.transform.translation.z = last_target_base_->z();
-
-                // 姿态给单位四元数（无旋转）
-                target_tf.transform.rotation.w = 1.0;
-                target_tf.transform.rotation.x = 0.0;
-                target_tf.transform.rotation.y = 0.0;
-                target_tf.transform.rotation.z = 0.0;
-
-                tf_broadcaster_->sendTransform(target_tf);
-            }
-
-            // ============================================================
-            // 可视化绘制
-            // ============================================================
-            // 绘制通过筛选的目标 (亮蓝色旋转矩形)
-            for (int i = 0; i < (int)valid_sticks.size(); ++i) {
-                cv::Point2f vertices[4];
-                valid_sticks[i].points(vertices);
-                for (int j = 0; j < 4; j++) {
-                    cv::line(color_image, vertices[j], vertices[(j + 1) % 4], cv::Scalar(255, 255, 0), 2, cv::LINE_AA);
-                }
-
-                // 绘制中心实心圆：蓝色 (BGR: 255, 0, 0)
-                int radius = (i == rightmost_idx) ? 8 : 4;
-                cv::circle(color_image, valid_sticks[i].center, radius, cv::Scalar(255, 0, 0), -1, cv::LINE_AA);
-
-                // 最右侧杆：读取中心点深度，反投影为相机坐标系 XYZ，显示在实心圆右侧
-                if (i == rightmost_idx) {
-                    int cx = std::max(0, std::min((int)valid_sticks[i].center.x, depth_frame.get_width()  - 1));
-                    int cy = std::max(0, std::min((int)valid_sticks[i].center.y, depth_frame.get_height() - 1));
-
-                    const int DEPTH_PATCH = 10;
-                    std::vector<float> depth_samples;
-                    for (int dy = -DEPTH_PATCH; dy <= DEPTH_PATCH; ++dy) {
-                        for (int dx = -DEPTH_PATCH; dx <= DEPTH_PATCH; ++dx) {
-                            int sx = std::max(0, std::min(cx + dx, depth_frame.get_width()  - 1));
-                            int sy = std::max(0, std::min(cy + dy, depth_frame.get_height() - 1));
-                            float d = depth_frame.get_distance(sx, sy);
-                            if (d > 0.01f) depth_samples.push_back(d);
-                        }
-                    }
-
-                    float dist_m = 0.0f;
-                    if (!depth_samples.empty()) {
-                        std::nth_element(depth_samples.begin(),
-                                         depth_samples.begin() + depth_samples.size() / 2,
-                                         depth_samples.end());
-                        dist_m = depth_samples[depth_samples.size() / 2];
-                    }
-
-                    if (dist_m > 0.01f) {
-                        // 增加距离筛选：小于30厘米或大于6米的目标不显示深度信息
-                        const float MIN_DISTANCE = 0.3f;  // 30厘米
-                        const float MAX_DISTANCE = 6.0f;  // 6米
-                        
-                        if (dist_m < MIN_DISTANCE || dist_m > MAX_DISTANCE) {
-                            std::ostringstream oss_warning;
-                            oss_warning << std::fixed << std::setprecision(2) << "Z: " << dist_m << "m (out of range)";
-                            cv::putText(color_image, oss_warning.str(),
-                                        cv::Point(cx + 12, cy),
-                                        cv::FONT_HERSHEY_SIMPLEX, 0.6,
-                                        cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
-                        } else {
-                            float p3[3], pix[2] = {(float)cx, (float)cy};
-                            rs2_deproject_pixel_to_point(p3, &intrin, pix, dist_m);
-
-                            std::ostringstream oss_dist, oss_xyz;
-                            oss_dist << std::fixed << std::setprecision(2) << "Z: " << dist_m << "m";
-                            oss_xyz  << std::fixed << std::setprecision(2)
-                                     << "(" << p3[0] << ", " << p3[1] << ", " << p3[2] << ")";
-
-                            cv::putText(color_image, oss_dist.str(),
-                                        cv::Point(cx + 12, cy),
-                                        cv::FONT_HERSHEY_SIMPLEX, 0.7,
-                                        cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
-                            cv::putText(color_image, oss_xyz.str(),
-                                        cv::Point(cx + 12, cy + 24),
-                                        cv::FONT_HERSHEY_SIMPLEX, 0.7,
-                                        cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
-
-                            RCLCPP_INFO(this->get_logger(), "最右侧杆坐标: (%.3f, %.3f, %.3f) 米", p3[0], p3[1], p3[2]);
-                        }
-                    } else {
-                        cv::putText(color_image, "depth invalid",
-                                    cv::Point(cx + 12, cy),
-                                    cv::FONT_HERSHEY_SIMPLEX, 0.6,
-                                    cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
-                    }
-                }
-            }
-
-            if (show_visualization_) {
-                cv::imshow("Original BGR", color_image);
-                cv::imshow("Red Segmentation Mask", mask_image);
-                cv::waitKey(1);
-            }
-        } catch (const rs2::error& e) {
-            RCLCPP_ERROR(this->get_logger(), "[VISION] RealSense error: %s  (func=%s, args=%s)",
-                         e.what(), e.get_failed_function().c_str(), e.get_failed_args().c_str());
-            break;
-        } catch (const std::bad_array_new_length& e) {
-            RCLCPP_ERROR(this->get_logger(), "[VISION] bad_array_new_length: %s — 可能分配了大小为0的数组", e.what());
-            break;
-        } catch (const std::exception& e) {
-            RCLCPP_ERROR(this->get_logger(), "[VISION] Exception: %s", e.what());
-            break;
-        }
-        }
-    }
-
-    std::atomic<bool> is_running_;
-    bool show_visualization_;
-    std::thread vision_thread_;
-    Eigen::Matrix4d T_flange2cam_;
-    std::optional<Eigen::Vector3d> last_target_base_;
-
-    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
-    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
-};
-
-int main(int argc, char** argv) {
+// ================================================================
+//  main
+// ================================================================
+/**
+ * @brief 主函数
+ * 
+ * 流程：
+ * 1. 初始化 ROS2 节点和 TF 广播器
+ * 2. 打开 USB 摄像头
+ * 3. 计算去畸变映射
+ * 4. 循环处理每一帧：
+ *    a. 去畸变
+ *    b. 检测箱子角点
+ *    c. 卡尔曼滤波平滑角点
+ *    d. solvePnP 计算位姿
+ *    e. 发布 TF 变换
+ *    f. 可视化显示
+ */
+int main(int argc, char** argv)
+{
+    // ========== 1. ROS2 初始化 ==========
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<VisionPositionPublisher>();
-    rclcpp::spin(node);
+    auto node = rclcpp::Node::make_shared("vision_node");
+    auto tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(node);
+
+    // ---------- 启动 USB 摄像头 ----------
+    VideoCapture cap;
+    const int camera_index = 4;  // 摄像头设备索引
+    
+    // 尝试多种后端打开摄像头（提高兼容性）
+    const std::array<int, 3> backends = {CAP_V4L2, CAP_ANY, CAP_GSTREAMER};
+    bool opened = false;
+    for (int backend : backends) {
+        cap.release();
+        if (!cap.open(camera_index, backend)) {
+            cerr << "后端 " << backend << " 打开摄像头索引 " << camera_index
+                 << " 失败\n";
+            continue;
+        }
+
+        // 获取并显示后端名称
+        std::string backend_name = "unknown";
+        try {
+            backend_name = cap.getBackendName();
+        } catch (...) {
+            backend_name = "unavailable";
+        }
+        cout << "摄像头打开成功，索引=" << camera_index
+             << "，后端=" << backend_name << "\n";
+        opened = true;
+        break;
+    }
+
+    if (!opened || !cap.isOpened()) {
+        cerr << "无法打开摄像头，请检查设备索引和占用情况\n";
+        rclcpp::shutdown();
+        return -1;
+    }
+    
+    // 设置摄像头参数
+    cap.set(CAP_PROP_FRAME_WIDTH,  1280);   // 分辨率宽度
+    cap.set(CAP_PROP_FRAME_HEIGHT, 720);    // 分辨率高度
+    cap.set(CAP_PROP_FPS, 60);              // 帧率
+    
+    // 显示相机参数
+    cout << "K:\n" << K << "\nD:\n" << D << "\n";
+    
+    // ========== 2. 计算去畸变映射 ==========
+    Mat frame_tmp;
+    cap >> frame_tmp;
+    if (frame_tmp.empty()) {
+        cerr << "摄像头已打开，但读取首帧失败\n";
+        cap.release();
+        rclcpp::shutdown();
+        return -1;
+    }
+    Size imgSize = frame_tmp.size();
+    
+    // 计算去畸变后的新相机矩阵
+    Mat newK = getOptimalNewCameraMatrix(K, D, imgSize, 0.0, imgSize);
+    
+    // 预计算去畸变映射表（提高实时性能）
+    Mat mapX, mapY;
+    initUndistortRectifyMap(K, D, Mat(), newK, imgSize, CV_32FC1, mapX, mapY);
+    
+    // ========== 3. 初始化滤波器 ==========
+    // 卡尔曼滤波器：4 个角点各一个
+    array<CornerKF, 4> kfs;
+    
+    // 位姿平滑器
+    PoseSmootherVec3 tvecSmoother(SMOOTH_N);
+    
+    // 上一帧灰度图（预留，当前未使用）
+    Mat prevGray;
+    bool hasPrev = false;
+    
+    // 零畸变系数（用于去畸变后的图像）
+    Mat zeroDist = Mat::zeros(1, 5, CV_64F);
+    
+    // ========== 4. 主循环 ==========
+    while (rclcpp::ok())
+    {
+        rclcpp::spin_some(node);
+
+        // ----- 取帧 -----
+        Mat frame;
+        cap >> frame;
+        if (frame.empty()) break;
+        
+        // 去畸变（使用预计算的映射表，速度快）
+        Mat undistorted;
+        remap(frame, undistorted, mapX, mapY, INTER_LINEAR);
+        
+        // 准备显示图像和调试数据
+        Mat show = undistorted.clone();
+        Mat debugMask;
+        vector<Point2f> rawCorners;
+        
+        // ----- 检测箱子角点 -----
+        bool detected = detectBoxCorners(undistorted, prevGray, rawCorners, debugMask);
+        
+        // ----- 卡尔曼平滑角点 -----
+        vector<Point2f> smoothCorners(4);
+        if (detected)
+        {
+            // 检测成功：使用测量值更新卡尔曼滤波器
+            for (int i = 0; i < 4; i++)
+                smoothCorners[i] = kfs[i].update(rawCorners[i]);
+        }
+        else
+        {
+            // 检测失败：使用卡尔曼滤波器预测
+            for (int i = 0; i < 4; i++)
+            {
+                if (kfs[i].initialized)
+                    smoothCorners[i] = kfs[i].predictOnly();
+                else
+                    smoothCorners[i] = Point2f(0,0);
+            }
+        }
+        
+        bool anyInited = kfs[0].initialized;
+        
+        // ----- 画角点框 -----
+        if (anyInited)
+        {
+            // 绘制箱子边框和角点
+            for (int i = 0; i < 4; i++)
+            {
+                Point2f a = smoothCorners[i];
+                Point2f b = smoothCorners[(i+1)%4];
+                
+                // 绿色边框
+                line(show, a, b, Scalar(0, 220, 0), 3, LINE_AA);
+                
+                // 角点圆（红色）
+                circle(show, a, 7, Scalar(0, 0, 255), -1, LINE_AA);
+                
+                // 角点编号
+                putLabel(show, to_string(i), a + Point2f(8, -8),
+                        0.65, Scalar(255, 255, 0));
+            }
+            
+            // ----- solvePnP 计算位姿 -----
+            Mat rvec, tvec;
+            bool pnp_ok = solvePnP(OBJ_PTS, smoothCorners, newK, zeroDist,
+                                   rvec, tvec, false, SOLVEPNP_IPPE);
+            
+            if (pnp_ok)
+            {
+                // ---- tvec 平滑 ----
+                Vec3d tv(tvec.at<double>(0),
+                        tvec.at<double>(1),
+                        tvec.at<double>(2));
+                Vec3d tvSmooth = tvecSmoother.push(tv);
+                
+                double X    = tvSmooth[0];
+                double Y    = tvSmooth[1];
+                double Z    = tvSmooth[2];
+                double dist = sqrt(X*X + Y*Y + Z*Z);  // 计算距离
+                
+                // ---- 旋转矩阵 / 欧拉角 ----
+                Mat R;
+                Rodrigues(rvec, R);  // 旋转向量转旋转矩阵
+                Vec3d eu = euler(R);  // 旋转矩阵转欧拉角
+
+                // ---- 发布 TF 变换 ----
+                geometry_msgs::msg::TransformStamped transformStamped;
+                transformStamped.header.stamp = node->get_clock()->now();
+                transformStamped.header.frame_id = CAMERA_FRAME_ID;
+                transformStamped.child_frame_id = OBJECT_FRAME_ID;
+                
+                // 平移部分（mm -> m）
+                transformStamped.transform.translation.x = X / 1000.0;
+                transformStamped.transform.translation.y = Y / 1000.0;
+                transformStamped.transform.translation.z = Z / 1000.0;
+
+                // 旋转部分（旋转矩阵 -> 四元数）
+                tf2::Matrix3x3 tf_rot(
+                    R.at<double>(0,0), R.at<double>(0,1), R.at<double>(0,2),
+                    R.at<double>(1,0), R.at<double>(1,1), R.at<double>(1,2),
+                    R.at<double>(2,0), R.at<double>(2,1), R.at<double>(2,2));
+                tf2::Quaternion q;
+                tf_rot.getRotation(q);
+                transformStamped.transform.rotation.x = q.x();
+                transformStamped.transform.rotation.y = q.y();
+                transformStamped.transform.rotation.z = q.z();
+                transformStamped.transform.rotation.w = q.w();
+                
+                tf_broadcaster->sendTransform(transformStamped);
+                
+                // ---- 投影坐标轴（可视化物体坐标系） ----
+                Mat tvecSmoothed = (Mat_<double>(3,1) << X, Y, Z);
+                
+                // 物体坐标系的三个坐标轴端点
+                vector<Point3f> axisPts = {
+                    {0,    0,    0},   // 原点
+                    {100,  0,    0},   // X 轴端点（红色）
+                    {0,    100,  0},   // Y 轴端点（绿色）
+                    {0,    0,    100}  // Z 轴端点（蓝色，朝向相机方向）
+                };
+                vector<Point2f> axisImg;
+                projectPoints(axisPts, rvec, tvecSmoothed, newK, zeroDist, axisImg);
+                
+                // 画坐标轴箭头
+                arrowedLine(show, axisImg[0], axisImg[1], Scalar(0,   0,   255), 3, LINE_AA, 0, 0.2);  // X-红
+                arrowedLine(show, axisImg[0], axisImg[2], Scalar(0,   255, 0  ), 3, LINE_AA, 0, 0.2);  // Y-绿
+                arrowedLine(show, axisImg[0], axisImg[3], Scalar(255, 0,   0  ), 3, LINE_AA, 0, 0.2);  // Z-蓝
+                
+                // 坐标轴标签
+                putLabel(show, "X", axisImg[1] + Point2f(5, 0),  0.6, Scalar(0,   0,   255));
+                putLabel(show, "Y", axisImg[2] + Point2f(5, 0),  0.6, Scalar(0,   255, 0  ));
+                putLabel(show, "Z", axisImg[3] + Point2f(5, 0),  0.6, Scalar(255, 100, 0  ));
+                
+                // ---- 投影箱子中心点 ----
+                vector<Point2f> centerImg;
+                projectPoints(vector<Point3f>{{0,0,0}},
+                             rvec, tvecSmoothed, newK, zeroDist, centerImg);
+                if (!centerImg.empty())
+                {
+                    // 十字准星标记中心点
+                    int cx = (int)centerImg[0].x;
+                    int cy = (int)centerImg[0].y;
+                    line(show, Point(cx-14, cy),   Point(cx+14, cy),   Scalar(0,255,255), 2, LINE_AA);
+                    line(show, Point(cx, cy-14),   Point(cx, cy+14),   Scalar(0,255,255), 2, LINE_AA);
+                    circle(show, centerImg[0], 5, Scalar(0,255,255), -1, LINE_AA);
+                }
+                
+                // ---- 信息面板（左上角半透明背景） ----
+                {
+                    // 画半透明黑底
+                    Mat overlay = show.clone();
+                    rectangle(overlay, Point(10, 10), Point(500, 185), Scalar(0,0,0), FILLED);
+                    addWeighted(overlay, 0.45, show, 0.55, 0, show);
+                    
+                    int bx = 20, by = 35;
+                    int dy = 30;
+                    char buf[256];
+                    
+                    // 距离（最重要，大字）
+                    sprintf(buf, "Distance : %.1f mm", dist);
+                    putLabel(show, buf, Point(bx, by),
+                            0.78, Scalar(0, 255, 100), 2);
+                    
+                    // XYZ 坐标
+                    sprintf(buf, "X=%.1f  Y=%.1f  Z=%.1f  (mm)", X, Y, Z);
+                    putLabel(show, buf, Point(bx, by + dy),
+                            0.62, Scalar(0, 220, 255));
+                    
+                    // 欧拉角
+                    sprintf(buf, "Roll=%.1f  Pitch=%.1f  Yaw=%.1f  (deg)",
+                           eu[0], eu[1], eu[2]);
+                    putLabel(show, buf, Point(bx, by + dy*2),
+                            0.62, Scalar(255, 200, 0));
+                    
+                    // 检测状态
+                    string status = detected ? "[ DETECT: OK ]" : "[ DETECT: LOST - KF predict ]";
+                    Scalar  scol  = detected ? Scalar(0,255,0) : Scalar(0,100,255);
+                    putLabel(show, status, Point(bx, by + dy*3),
+                            0.62, scol);
+                    
+                    // 角点像素坐标
+                    sprintf(buf, "Corners(px): (%.0f,%.0f) (%.0f,%.0f) (%.0f,%.0f) (%.0f,%.0f)",
+                           smoothCorners[0].x, smoothCorners[0].y,
+                           smoothCorners[1].x, smoothCorners[1].y,
+                           smoothCorners[2].x, smoothCorners[2].y,
+                           smoothCorners[3].x, smoothCorners[3].y);
+                    putLabel(show, buf, Point(bx, by + dy*4),
+                            0.52, Scalar(180, 180, 180));
+                    
+                    // 控制台输出
+                    printf("\rDist=%.1fmm  XYZ=[%.1f, %.1f, %.1f]mm  "
+                          "RPY=[%.1f, %.1f, %.1f]deg   ",
+                          dist, X, Y, Z, eu[0], eu[1], eu[2]);
+                    fflush(stdout);
+                }
+            }
+        }
+        
+        // ---- 更新 prevGray ----
+        cvtColor(undistorted, prevGray, COLOR_BGR2GRAY);
+        hasPrev = true;
+        
+        // ---- 显示 ----
+        // 把 mask 缩小显示在右下角，不遮挡主画面
+        {
+            Mat maskBGR, maskSmall;
+            cvtColor(debugMask, maskBGR, COLOR_GRAY2BGR);
+            resize(maskBGR, maskSmall, Size(320, 180));
+            int ox = show.cols - 325;
+            int oy = show.rows - 185;
+            maskSmall.copyTo(show(Rect(ox, oy, maskSmall.cols, maskSmall.rows)));
+            putLabel(show, "RedMask", Point(ox+5, oy+18), 0.55, Scalar(200,200,200));
+        }
+        
+        imshow("Box PnP", show);
+        
+        // 按键处理
+        char key = (char)waitKey(1);
+        if (key == 27) break;  // ESC 退出
+        
+        // 按 r：重置卡尔曼滤波器
+        if (key == 'r' || key == 'R')
+        {
+            for (auto& kf : kfs) kf.initialized = false;
+            tvecSmoother.buf.clear();
+            cout << "\n[INFO] Kalman reset.\n";
+        }
+    }
+    
+    // ========== 5. 清理资源 ==========
+    cap.release();
+    destroyAllWindows();
     rclcpp::shutdown();
+    cout << "\n[INFO] Exit.\n";
     return 0;
 }
