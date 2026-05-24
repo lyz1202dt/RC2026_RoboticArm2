@@ -68,7 +68,9 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
 
     detect_pub = this->create_publisher<robot_interfaces::msg::Vis>("start_detect", 10);
 
-    arm_state_pub_ = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_state", 10);
+    arm_state_pub_1 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_state", 10);
+
+    arm_state_pub_2 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_search_state", 10);
 
     arm_if_catch = this->create_subscription<robot_interfaces::msg::Vis>(
         "detect_result", 10, std::bind(&ArmTaskNode::if_catch_callback, this, std::placeholders::_1));
@@ -203,11 +205,8 @@ void ArmTaskNode::task_execution_thread() {
 
 void ArmTaskNode::execute_task_state_machine() {
 
+    current_mode = arm_task_mode_.load();
 
-
-
-    // {
-    //     std::lock_guard<std::mutex> lock(arm_cmd_mutex_);
 
     // 已经在运行
     if (task_running_) {
@@ -215,12 +214,12 @@ void ArmTaskNode::execute_task_state_machine() {
     }
 
     // 没任务
-    if (arm_up_cmd_ == 0) {
+    if (current_mode == 0) {
         return;
     }
 
-    //     // 进入BUSY状态
-    //     task_running_ = true;
+    // 进入BUSY状态
+    task_running_ = true;
 
     //     // 原子取走任务
     //     current_mode = arm_up_cmd_;
@@ -245,8 +244,8 @@ void ArmTaskNode::execute_task_state_machine() {
             RCLCPP_INFO(this->get_logger(), "开始第二层放置任务");
             execute_place_flow_second();
         } else if (current_mode == 4) {
-            RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
-            execute_place_place_rad();
+            RCLCPP_INFO(this->get_logger(), "抓取过程未看到物块，抬高机械臂寻找");
+            execute_lift_search();
         } else if (current_mode == 5) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "巡视扫描物块");
@@ -261,11 +260,13 @@ void ArmTaskNode::execute_task_state_machine() {
 
         // Reset mode to standby after completion
         current_mode = 0;
+        arm_task_mode_ = 0;
         this->set_parameter(rclcpp::Parameter("arm_task", 0));
 
     } catch (const std::exception& e) {
         RCLCPP_ERROR(this->get_logger(), "Task execution failed: %s", e.what());
         current_mode = 0;
+        arm_task_mode_ = 0;
         this->set_parameter(rclcpp::Parameter("arm_task", 0));
     }
 
@@ -292,17 +293,13 @@ void ArmTaskNode::execute_grasp_flow() {
 
     if (retry_count >= 10) {
 
-        RCLCPP_WARN(this->get_logger(), "未检测到目标，进入巡视模式");
+        RCLCPP_WARN(this->get_logger(), "未检测到目标，抓取失败");
 
-        if (!search_for_object(object_pose)) {
+        robot_interfaces::msg::Armmode state_msg;
+        state_msg.mode = -1;
+        arm_state_pub_1->publish(state_msg);
 
-            RCLCPP_ERROR(this->get_logger(), "巡视后仍未发现目标");
-
-            execute_joint_space_trajectory(home_position_, trajectory_duration_);
-            std::this_thread::sleep_for(2000ms);
-
-            return;
-        }
+        return;
     }
 
     RCLCPP_INFO(
@@ -336,7 +333,7 @@ void ArmTaskNode::execute_grasp_flow() {
     robot_interfaces::msg::Armmode msg;
     msg.mode = 1;
     air_pub_->publish(msg);
-    
+
 
     robot_interfaces::msg::Vis detect_msg;
     detect_msg.x = 1;
@@ -499,7 +496,57 @@ void ArmTaskNode::execute_place_flow_second() {
     RCLCPP_INFO(this->get_logger(), "放块任务结束");
 }
 
-void ArmTaskNode::execute_look_for() { execute_joint_space_trajectory(look_for_position_, trajectory_duration_); }
+void ArmTaskNode::execute_look_for() {
+
+    execute_joint_space_trajectory(look_for_position_, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+
+    
+    
+    }
+
+
+void ArmTaskNode::execute_lift_search()
+{
+    RCLCPP_INFO(this->get_logger(), "开始搜索任务");
+
+    geometry_msgs::msg::PoseStamped object_pose;
+
+    robot_interfaces::msg::Armmode state2_msg;
+   
+
+    if (search_for_object(object_pose)) {
+
+        RCLCPP_INFO(
+            this->get_logger(),
+            "找到目标: [%.3f %.3f %.3f]",
+            object_pose.pose.position.x,
+            object_pose.pose.position.y,
+            object_pose.pose.position.z
+        );
+
+        state2_msg.mode = 1;
+        state2_msg.x = object_pose.pose.position.x;
+        state2_msg.y = object_pose.pose.position.y;
+        state2_msg.z = object_pose.pose.position.z;
+        arm_state_pub_2->publish(state2_msg);
+
+
+    } else {
+
+        RCLCPP_WARN(this->get_logger(), "搜索失败");
+
+        state2_msg.mode = -1;
+        arm_state_pub_2->publish(state2_msg);
+    }
+
+    execute_joint_space_trajectory(home_position_, trajectory_duration_);
+     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    current_mode = 0;
+}
+
+
 
 void ArmTaskNode::execute_move_to_position(int position_index) {
     if (arm_positions_.find(position_index) == arm_positions_.end()) {
@@ -805,16 +852,6 @@ void ArmTaskNode::vision_callback(const robot_interfaces::msg::Vis& msg) {
     tf_msg.header.frame_id = camera_frame_;
     tf_msg.child_frame_id  = object_frame_;
 
-    // tf_msg.transform.translation.x = 0.40;
-    // tf_msg.transform.translation.y = msg.y;
-    // tf_msg.transform.translation.z = -msg.x;
-
-    // tf_msg.transform.rotation.x = 0.0;
-    // tf_msg.transform.rotation.y = 0.0;
-    // tf_msg.transform.rotation.z = 0.0;
-    // tf_msg.transform.rotation.w = 1.0;
-
-
     tf_msg.transform.translation.x = msg.x;
     tf_msg.transform.translation.y = msg.y;
     tf_msg.transform.translation.z = msg.z;
@@ -879,7 +916,7 @@ bool ArmTaskNode::wait_for_catch_result() {
             RCLCPP_INFO(this->get_logger(), "抓取成功");
             robot_interfaces::msg::Armmode msg;
             msg.mode = 1;
-            arm_state_pub_->publish(msg);
+            arm_state_pub_1->publish(msg);
             return true;
         }
 
@@ -887,7 +924,7 @@ bool ArmTaskNode::wait_for_catch_result() {
             RCLCPP_ERROR(this->get_logger(), "抓取失败");
             robot_interfaces::msg::Armmode msg;
             msg.mode = -1;
-            arm_state_pub_->publish(msg);
+            arm_state_pub_1->publish(msg);
             return false;
         }
 
@@ -934,7 +971,7 @@ bool ArmTaskNode::search_for_object(geometry_msgs::msg::PoseStamped& object_pose
                 RCLCPP_INFO(this->get_logger(), "巡视发现目标");
 
                 // 等待视觉稳定
-                std::this_thread::sleep_for(1s);
+                std::this_thread::sleep_for(1800ms);
 
                 // 再读取一次稳定值
                 if (get_object_pose_in_base_frame(object_pose)) {
@@ -967,7 +1004,7 @@ void ArmTaskNode::arm_cmd_callback(const robot_interfaces::msg::Armmode& msg) {
 
 
 
-    current_mode = msg.mode;
+    //current_mode = msg.mode;
 
 
 

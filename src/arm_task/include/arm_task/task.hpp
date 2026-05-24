@@ -47,6 +47,7 @@ private:
     void execute_place_place_rad();
     void execute_place_flow_rad();
     void execute_look_for();
+    void execute_lift_search();
 
 
     // Arm control operations (private methods)
@@ -79,7 +80,8 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr air_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Vis>::SharedPtr detect_pub;
-    rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_;
+    rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_1;
+    rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_2;
 
     // Subscribers
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr place_target_sub_;
