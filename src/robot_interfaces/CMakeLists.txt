@@ -18,6 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Joint.msg"
   "msg/Arm.msg"
   "srv/ForwardKinematics.srv"
+  "srv/GetCurrentEndPose.srv"
 
   "action/ArmTask.action"
     DEPENDENCIES builtin_interfaces action_msgs std_msgs geometry_msgs

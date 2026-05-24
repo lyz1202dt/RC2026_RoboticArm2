@@ -8,6 +8,7 @@
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <robot_interfaces/msg/arm.hpp>
 #include <robot_interfaces/srv/forward_kinematics.hpp>
+#include <robot_interfaces/srv/get_current_end_pose.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
@@ -54,6 +55,9 @@ private:
     void on_forward_kinematics_request(
         const std::shared_ptr<robot_interfaces::srv::ForwardKinematics::Request> request,
         std::shared_ptr<robot_interfaces::srv::ForwardKinematics::Response> response);
+    void on_get_current_end_pose_request(
+        const std::shared_ptr<robot_interfaces::srv::GetCurrentEndPose::Request> request,
+        std::shared_ptr<robot_interfaces::srv::GetCurrentEndPose::Response> response);
     rcl_interfaces::msg::SetParametersResult on_parameters_changed(const std::vector<rclcpp::Parameter>& params);
 
     static MotionMode parse_motion_mode(int mode_value);
@@ -97,6 +101,7 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr rviz_joint_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
     rclcpp::Service<robot_interfaces::srv::ForwardKinematics>::SharedPtr forward_kinematics_service_;
+    rclcpp::Service<robot_interfaces::srv::GetCurrentEndPose>::SharedPtr current_end_pose_service_;
     rclcpp::TimerBase::SharedPtr control_timer_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
 };

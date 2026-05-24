@@ -7,6 +7,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
 #include <robot_interfaces/srv/forward_kinematics.hpp>
+#include <robot_interfaces/srv/get_current_end_pose.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -47,7 +48,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
-    node_->declare_parameter<double>("grasp_height", 1.0);
+    node_->declare_parameter<double>("grasp_height", 0.7);
     node_->declare_parameter<double>("grasp_right_run", 0.10);
     node_->declare_parameter<double>("grasp_down_run", 0.15);
     node_->declare_parameter<double>("grasp_right_run_qian", 0.00);
@@ -96,6 +97,10 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     const std::string forward_kinematics_service_name = "/" + arm_calc_node_name_ + "/forward_kinematics";
     arm_calc_fk_client_ = node_->create_client<robot_interfaces::srv::ForwardKinematics>(forward_kinematics_service_name);
     RCLCPP_INFO(node_->get_logger(), "Using arm_calc FK service target: %s", forward_kinematics_service_name.c_str());
+
+    const std::string current_end_pose_service_name = "/" + arm_calc_node_name_ + "/get_current_end_pose";
+    current_end_pose_client_ = node_->create_client<robot_interfaces::srv::GetCurrentEndPose>(current_end_pose_service_name);
+    RCLCPP_INFO(node_->get_logger(), "Using arm_calc current_end_pose service target: %s", current_end_pose_service_name.c_str());
 
     // Create parameter client for driver node
     driver_param_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node_, driver_node_name_);
@@ -781,12 +786,12 @@ void Robot::visual_servo_publish_thread() {
             }
         }
 
-        tf2::Quaternion q;
-        q.setRPY(0.0, 1.57, 0.0);
-        pose_to_publish.pose.orientation.w = q.w();
-        pose_to_publish.pose.orientation.x = q.x();
-        pose_to_publish.pose.orientation.y = q.y();
-        pose_to_publish.pose.orientation.z = q.z();
+        // tf2::Quaternion q;
+        // q.setRPY(0.0, 1.57, 0.0);
+        // pose_to_publish.pose.orientation.w = q.w();
+        // pose_to_publish.pose.orientation.x = q.x();
+        // pose_to_publish.pose.orientation.y = q.y();
+        // pose_to_publish.pose.orientation.z = q.z();
 
         if (has_pose) {
             visual_target_pub_->publish(pose_to_publish);
@@ -907,6 +912,39 @@ bool Robot::get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose) 
         return true;
     } catch (const tf2::TransformException& ex) {
         RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿失败: %s", ex.what());
+        return false;
+    }
+}
+
+bool Robot::get_current_end_pose_from_arm_calc(geometry_msgs::msg::PoseStamped& current_pose) {
+    if (!current_end_pose_client_) {
+        RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿服务客户端未初始化");
+        return false;
+    }
+
+    if (!current_end_pose_client_->wait_for_service(std::chrono::milliseconds(500))) {
+        RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿服务不可用");
+        return false;
+    }
+
+    auto request = std::make_shared<robot_interfaces::srv::GetCurrentEndPose::Request>();
+    auto future = current_end_pose_client_->async_send_request(request);
+
+    if (future.wait_for(std::chrono::milliseconds(500)) != std::future_status::ready) {
+        RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿超时");
+        return false;
+    }
+
+    try {
+        const auto response = future.get();
+        if (!response->success) {
+            RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿失败: %s", response->message.c_str());
+            return false;
+        }
+        current_pose = response->pose;
+        return true;
+    } catch (const std::exception& ex) {
+        RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿异常: %s", ex.what());
         return false;
     }
 }

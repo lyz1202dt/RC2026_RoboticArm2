@@ -11,6 +11,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
 #include <robot_interfaces/srv/forward_kinematics.hpp>
+#include <robot_interfaces/srv/get_current_end_pose.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
 // Joint state messages
@@ -207,6 +208,7 @@ public:
     rclcpp::AsyncParametersClient::SharedPtr arm_calc_param_client_;
     rclcpp::AsyncParametersClient::SharedPtr driver_param_client_;
     rclcpp::Client<robot_interfaces::srv::ForwardKinematics>::SharedPtr arm_calc_fk_client_;
+    rclcpp::Client<robot_interfaces::srv::GetCurrentEndPose>::SharedPtr current_end_pose_client_;
 
     mutable std::mutex action_state_mutex_;
     bool task_executing_{false};
@@ -229,6 +231,9 @@ public:
     double calculate_duration(const std::vector<double>& target_joints);            // 关节坐标
     double calculate_duration(const std::string& named_position);                   // 固定位置名
 
+    // 从 arm_calc 获取当前末端位姿的接口，内部调用 service
+    bool get_current_end_pose_from_arm_calc(geometry_msgs::msg::PoseStamped& current_pose);
+
     // 参数：速度相关
     double max_linear_velocity_{0.1};      // 最大线速度 m/s
     double max_angular_velocity_{0.5};     // 最大角速度 rad/s
@@ -240,6 +245,7 @@ public:
 private:
     // 获取当前末端执行器的笛卡尔位姿
     bool get_current_end_pose(geometry_msgs::msg::PoseStamped& current_pose);
+    // 通过 service 从 arm_ctrl 获取当前末端位姿
     // 视觉视线发布线程入口
     void visual_servo_publish_thread();
     void load_arm_positions_from_yaml();

@@ -90,6 +90,11 @@ void ArmCtrlNode::create_interfaces() {
         forward_kinematics_service_name,
         std::bind(&ArmCtrlNode::on_forward_kinematics_request, this, std::placeholders::_1, std::placeholders::_2));
 
+    const std::string current_end_pose_service_name = "/" + std::string(this->get_name()) + "/get_current_end_pose";
+    current_end_pose_service_ = this->create_service<robot_interfaces::srv::GetCurrentEndPose>(
+        current_end_pose_service_name,
+        std::bind(&ArmCtrlNode::on_get_current_end_pose_request, this, std::placeholders::_1, std::placeholders::_2));
+
     control_timer_ = this->create_wall_timer(
         std::chrono::duration<double>(control_period_sec_), std::bind(&ArmCtrlNode::publish_control_loop, this));
 }
@@ -119,6 +124,37 @@ void ArmCtrlNode::on_forward_kinematics_request(
     }
 
     const CartesianPose pose = arm_calc_->end_pose(joints);
+    response->pose.header.frame_id = base_link_;
+    response->pose.header.stamp = this->now();
+    response->pose.pose.position.x = pose.position.x();
+    response->pose.pose.position.y = pose.position.y();
+    response->pose.pose.position.z = pose.position.z();
+    response->pose.pose.orientation.w = pose.orientation.w();
+    response->pose.pose.orientation.x = pose.orientation.x();
+    response->pose.pose.orientation.y = pose.orientation.y();
+    response->pose.pose.orientation.z = pose.orientation.z();
+    response->success = true;
+    response->message = "ok";
+}
+
+void ArmCtrlNode::on_get_current_end_pose_request(
+    const std::shared_ptr<robot_interfaces::srv::GetCurrentEndPose::Request> /*request*/,
+    std::shared_ptr<robot_interfaces::srv::GetCurrentEndPose::Response> response) {
+    if (!arm_calc_) {
+        response->success = false;
+        response->message = "arm_calc solver is not initialized";
+        RCLCPP_ERROR(this->get_logger(), "Get current end pose request failed: arm_calc solver is not initialized");
+        return;
+    }
+
+    if (!has_joint_state_) {
+        response->success = false;
+        response->message = "no joint state received yet";
+        RCLCPP_WARN(this->get_logger(), "Get current end pose request failed: no joint state received yet");
+        return;
+    }
+
+    const CartesianPose pose = arm_calc_->end_pose(current_joint_state_.position);
     response->pose.header.frame_id = base_link_;
     response->pose.header.stamp = this->now();
     response->pose.pose.position.x = pose.position.x();
