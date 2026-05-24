@@ -31,6 +31,7 @@ private:
     void vision_callback(const robot_interfaces::msg::Vis& msg);
     void if_catch_callback(const robot_interfaces::msg::Vis& msg);
     void arm_cmd_callback(const robot_interfaces::msg::Armmode& msg);
+    void scan_finish_callback(const robot_interfaces::msg::Vis& msg);
     bool search_for_object(geometry_msgs::msg::PoseStamped& object_pose);
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -80,12 +81,14 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr air_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Vis>::SharedPtr detect_pub;
+    rclcpp::Publisher<robot_interfaces::msg::Vis>::SharedPtr scan_pub;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_1;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_2;
 
     // Subscribers
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr place_target_sub_;
     rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr vision_sub_;
+    rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr scan_finish_sub_;
     rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr arm_if_catch;
     rclcpp::Subscription<robot_interfaces::msg::Armmode>::SharedPtr arm_cmd_sub_;
 

@@ -68,6 +68,11 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
 
     detect_pub = this->create_publisher<robot_interfaces::msg::Vis>("start_detect", 10);
 
+    scan_pub = this->create_publisher<robot_interfaces::msg::Vis>("start_scan", 10);
+
+    scan_finish_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
+        "scan_finish", 10, std::bind(&ArmTaskNode::scan_result_callback, this, std::placeholders::_1));
+
     arm_state_pub_1 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_state", 10);
 
     arm_state_pub_2 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_search_state", 10);
@@ -344,18 +349,23 @@ void ArmTaskNode::execute_grasp_flow() {
     // 发请求
     detect_pub->publish(detect_msg);
 
+    // 6. Move back to ready position
+    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
+    execute_joint_space_trajectory(home_position_, trajectory_duration_);
+    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+
+
+    detect_msg.x = 10;
+    detect_pub->publish(detect_msg);
+
     // 阻塞等待
     if (!wait_for_catch_result()) {
         return;
     }
 
-    detect_msg.x = 0;
-    detect_pub->publish(detect_msg);
 
-    // 6. Move back to ready position
-    RCLCPP_INFO(this->get_logger(), "移动到准备位置");
-    execute_joint_space_trajectory(home_position_, trajectory_duration_);
-    std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+    
 
     RCLCPP_INFO(this->get_logger(), "抓取流程完成");
 }
