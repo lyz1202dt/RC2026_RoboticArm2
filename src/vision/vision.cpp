@@ -451,7 +451,7 @@ private:
                 geometry_msgs::msg::TransformStamped target_tf;
                 target_tf.header.stamp = this->now();
                 target_tf.header.frame_id = "base_link";
-                target_tf.child_frame_id = "target_position";
+                target_tf.child_frame_id = "target_object";
 
                 // 只发布位置
                 target_tf.transform.translation.x = last_target_base_->x();

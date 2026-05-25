@@ -65,16 +65,65 @@ std::string CatchKFS::process(const std::string last_task_name) {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到准备抓杆位置");
     }
     
-    // TODO:
-    // 1.获取当前末端的位姿（get_current_end_pose_from_arm_calc）。
-    // 2.打开夹爪并开始视觉伺服
-    //   - 2.1 从tf读取目标位置，姿态复用当前末端姿态，构造目标位姿
-    //   - 2.2 设置目标位置高度为一个固定值（比如0.7米）。
-    //   - 2.3 执行视觉伺服，等待收敛
-    // 3.视觉伺服收敛成功后，关闭夹爪。
-    // 要求：
-    // 1.全程使用现有函数和api，不要自己另造函数
-    // 2.不要修改其他文件
+    // 1. 获取当前末端位姿
+    geometry_msgs::msg::PoseStamped current_end_pose;
+    if (!robot->get_current_end_pose_from_arm_calc(current_end_pose)) {
+        return fail_task("获取当前末端位姿失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功获取当前末端位姿");
+        RCLCPP_INFO(robot->node_->get_logger(), "当前末端位置: (%.3f, %.3f, %.3f)； 当前末端姿态: (%.3f, %.3f, %.3f, %.3f)", 
+        current_end_pose.pose.position.x, current_end_pose.pose.position.y, current_end_pose.pose.position.z, 
+        current_end_pose.pose.orientation.x, current_end_pose.pose.orientation.y, current_end_pose.pose.orientation.z, 
+        current_end_pose.pose.orientation.w);
+    }
+
+    // 2.1 从 TF 读取目标位置，姿态复用当前末端
+    geometry_msgs::msg::PoseStamped target_pose;
+    try {
+        auto tf = robot->tf_buffer_->lookupTransform(
+            robot->base_frame_, robot->object_frame_,
+            tf2::TimePointZero, std::chrono::milliseconds(500));
+        target_pose.header.frame_id = robot->base_frame_;
+        target_pose.header.stamp = robot->node_->now();
+        target_pose.pose.position.x = tf.transform.translation.x;
+        target_pose.pose.position.y = tf.transform.translation.y;
+        target_pose.pose.position.z = tf.transform.translation.z;
+        target_pose.pose.orientation = current_end_pose.pose.orientation;
+
+        RCLCPP_INFO(robot->node_->get_logger(), "目标位置: (%.3f, %.3f, %.3f)； 目标姿态: (%.3f, %.3f, %.3f, %.3f)", 
+        target_pose.pose.position.x, target_pose.pose.position.y, target_pose.pose.position.z, 
+        target_pose.pose.orientation.x, target_pose.pose.orientation.y, target_pose.pose.orientation.z, 
+        target_pose.pose.orientation.w
+        );
+    } catch (const tf2::TransformException& ex) {
+        return fail_task("获取目标位置TF失败");
+    }
+
+    // 2.2 设置目标高度为 grasp_height 参数
+    double grasp_height = 0.7;
+    robot->node_->get_parameter("grasp_height", grasp_height);
+    target_pose.pose.position.z = grasp_height;
+
+    // 2.3 启动视觉伺服，等待收敛
+    if (!robot->start_visual_servo(target_pose)) {
+        return fail_task("启动视觉伺服失败");
+    }
+    while (rclcpp::ok() && robot->is_visual_servo_active()) {
+        if (robot->is_visual_servo_converged(0.03)) {
+            RCLCPP_INFO(robot->node_->get_logger(), "视觉伺服已收敛");
+            break;
+        }
+        std::this_thread::sleep_for(50ms);
+    }
+    if (!robot->is_visual_servo_active()) {
+        return fail_task("视觉伺服被外部取消");
+    }
+    robot->stop_visual_servo();
+
+    // 3. 关闭夹爪
+    if (!robot->set_air_pump(0)) {
+        return fail_task("关闭夹爪失败");
+    }
 
 
 

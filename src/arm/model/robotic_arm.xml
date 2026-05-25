@@ -37,7 +37,7 @@
                 <geom type="mesh" rgba="0.294118 0.294118 0.294118 1" mesh="Link5" />
                 <body name="Link6" pos="0.079534 -0.016991 -0.02705" euler="0 0 -0.37724">
                   <inertial pos="0.0249585485881318 -0.00299760440707666 -0.0193327334549921" mass="0.232464424402596" fullinertia="4.27085195830229e-05 0.000113842365448013 9.08067982933583e-05 -8.34217663831313e-07 -9.96151543026905e-07 1.76624913597618e-09" />
-                  <joint name="joint6" pos="0 0 0" axis="0 0 1" range="0 0.0" actuatorfrcrange="-50 50" />
+                  <!-- <joint name="joint6" pos="0 0 0" axis="1 0 0" range="0 0.0" actuatorfrcrange="0 0" /> -->
                   <geom type="mesh" rgba="0.250980 1 0.984314 1" mesh="Link6" />
                   <site name="ee_site" pos="0 0 0.02" size="0.01" />
                 </body>
@@ -62,7 +62,7 @@
     <motor name="motor3" joint="joint3" gear="1" ctrllimited="true" ctrlrange="-50 50" />
     <motor name="motor4" joint="joint4" gear="1" ctrllimited="true" ctrlrange="-50 50" />
     <motor name="motor5" joint="joint5" gear="1" ctrllimited="true" ctrlrange="-50 50" />
-    <motor name="motor6" joint="joint6" gear="1" ctrllimited="true" ctrlrange="-50 50" />
+      <!-- <motor name="motor6" joint="joint6" gear="1" ctrllimited="true" ctrlrange="-50 50" /> -->
   </actuator>
   <sensor>
     <actuatorpos name="motor1_p" actuator="motor1" />
@@ -70,19 +70,19 @@
     <actuatorpos name="motor3_p" actuator="motor3" />
     <actuatorpos name="motor4_p" actuator="motor4" />
     <actuatorpos name="motor5_p" actuator="motor5" />
-    <actuatorpos name="motor6_p" actuator="motor6" />
+    <!-- <actuatorpos name="motor6_p" actuator="motor6" /> -->
     <actuatorvel name="motor1_v" actuator="motor1" />
     <actuatorvel name="motor2_v" actuator="motor2" />
     <actuatorvel name="motor3_v" actuator="motor3" />
     <actuatorvel name="motor4_v" actuator="motor4" />
     <actuatorvel name="motor5_v" actuator="motor5" />
-    <actuatorvel name="motor6_v" actuator="motor6" />
+    <!-- <actuatorvel name="motor6_v" actuator="motor6" /> -->
     <actuatorfrc name="motor1_f" actuator="motor1" noise="1e-3" />
     <actuatorfrc name="motor2_f" actuator="motor2" noise="1e-3" />
     <actuatorfrc name="motor3_f" actuator="motor3" noise="1e-3" />
     <actuatorfrc name="motor4_f" actuator="motor4" noise="1e-3" />
     <actuatorfrc name="motor5_f" actuator="motor5" noise="1e-3" />
-    <actuatorfrc name="motor6_f" actuator="motor6" noise="1e-3" />
+    <!-- <actuatorfrc name="motor6_f" actuator="motor6" noise="1e-3" /> -->
     <framepos name="ee_pos" objtype="site" objname="ee_site" />
     <framequat name="ee_quat" objtype="site" objname="ee_site" />
   </sensor>

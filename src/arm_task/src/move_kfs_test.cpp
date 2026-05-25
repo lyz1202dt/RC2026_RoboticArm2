@@ -14,23 +14,17 @@
 
 // 移动任务测试节点
 //
-// 本文件实现了一个 ROS2 测试客户端节点，用于测试机械臂的关节空间移动任务功能。
-// 该节点直接向动作服务器发送包含运动时长和 6 个关节角的请求，不依赖 TF。
+// 本文件实现了一个 ROS2 测试客户端节点，用于测试机械臂的移动任务功能。
+// 支持关节空间移动(mode=0)和笛卡尔空间移动(mode=1)两种模式。
 //
-// 主要功能：
-//   - 读取目标运动时长与 6 个关节角参数
-//   - 向 robotic_task 动作服务器发送移动任务请求
-//   - 监控任务执行过程并输出反馈信息
-//   - 输出最终执行结果（成功/失败/取消）
+// data 格式:
+//   mode=0 (关节空间): [0, j1, j2, j3, j4, j5, j6, duration, (pump)]
+//   mode=1 (笛卡尔空间-仅位置): [1, x, y, z, duration, (pump)]
+//   mode=1 (笛卡尔空间-位置+姿态): [1, x, y, z, roll, pitch, yaw, duration, (pump)]
 //
 // 使用方法：
 //   1. 确保 robotic_task 动作服务器已启动
 //   2. 启动本节点：ros2 run arm_task move_kfs_test
-//
-// 典型用例：
-//   - 验证关节空间移动任务功能是否正常工作
-//   - 调试移动任务执行流程
-//   - 在仿真或实际环境中进行端到端测试
 
 #include <chrono>
 #include <array>
@@ -67,6 +61,30 @@ public:
     }
 
 private:
+    static bool read_or_default(const std::string& prompt, double default_value, double& output_value) {
+        std::cout << prompt << " (默认 " << default_value << ", 直接回车使用默认): " << std::flush;
+
+        std::string line;
+        if (!std::getline(std::cin, line)) {
+            return false;
+        }
+
+        if (line.empty()) {
+            output_value = default_value;
+            return true;
+        }
+
+        std::istringstream iss(line);
+        double parsed_value = 0.0;
+        char extra = '\0';
+        if (!(iss >> parsed_value) || (iss >> extra)) {
+            return false;
+        }
+
+        output_value = parsed_value;
+        return true;
+    }
+
     void run_once() {
         if (request_started_) {
             return;
@@ -105,127 +123,180 @@ private:
             default_joints = current_joint_rads_;
         }
 
-        double move_duration = 3.0;
-        double joint_1 = default_joints[0];
-        double joint_2 = default_joints[1];
-        double joint_3 = default_joints[2];
-        double joint_4 = default_joints[3];
-        double joint_5 = default_joints[4];
-        double joint_6 = default_joints[5];
-
-        if (has_joint_state_) {
-            RCLCPP_INFO(
-                this->get_logger(),
-                "默认关节角使用当前状态: joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f)",
-                joint_1, joint_2, joint_3, joint_4, joint_5, joint_6);
-        } else {
-            RCLCPP_INFO(this->get_logger(), "默认关节角使用回退值: joints=(0.000, 0.000, 0.000, 0.000, 0.000, 0.000)");
-        }
-
-        auto read_or_default = [](const std::string& prompt, double default_value, double& output_value) -> bool {
-            std::cout << prompt << " (默认 " << default_value << ", 直接回车使用默认): " << std::flush;
-
-            std::string line;
-            if (!std::getline(std::cin, line)) {
-                return false;
-            }
-
-            if (line.empty()) {
-                output_value = default_value;
-                return true;
-            }
-
-            std::istringstream iss(line);
-            double parsed_value = 0.0;
-            char extra = '\0';
-            if (!(iss >> parsed_value) || (iss >> extra)) {
-                return false;
-            }
-
-            output_value = parsed_value;
-            return true;
-        };
-
-        if (!read_or_default("请输入关节1角度(弧度)", joint_1, joint_1)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节1角度失败，输入必须是数字或空行");
+        // ---- 选择模式 ----
+        double mode = 0.0;
+        std::cout << "\n========== 移动任务模式选择 ==========\n";
+        std::cout << "  0 - 关节空间移动\n";
+        std::cout << "  1 - 笛卡尔空间移动\n";
+        std::cout << "========================================\n";
+        if (!read_or_default("请选择模式(0/1)", 0.0, mode)) {
+            RCLCPP_ERROR(this->get_logger(), "读取模式失败，输入必须是 0 或 1");
             rclcpp::shutdown();
             return;
         }
-
-        if (!read_or_default("请输入关节2角度(弧度)", joint_2, joint_2)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节2角度失败，输入必须是数字或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        if (!read_or_default("请输入关节3角度(弧度)", joint_3, joint_3)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节3角度失败，输入必须是数字或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        if (!read_or_default("请输入关节4角度(弧度)", joint_4, joint_4)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节4角度失败，输入必须是数字或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        if (!read_or_default("请输入关节5角度(弧度)", joint_5, joint_5)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节5角度失败，输入必须是数字或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        if (!read_or_default("请输入关节6角度(弧度)", joint_6, joint_6)) {
-            RCLCPP_ERROR(this->get_logger(), "读取关节6角度失败，输入必须是数字或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
-            RCLCPP_ERROR(this->get_logger(), "读取移动时长失败，输入必须是数字或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        double pump_switch = 0.0; // 0: off, 1: on (default off)
-        if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
-            RCLCPP_ERROR(this->get_logger(), "读取气泵开关失败，输入必须是 0 或 1 或 3 或空行");
-            rclcpp::shutdown();
-            return;
-        }
-
-        if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 3.0 || pump_switch == 2.0)) {
-            RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 3(自动) 或 2(半自动)");
+        int imode = static_cast<int>(mode);
+        if (imode != 0 && imode != 1) {
+            RCLCPP_ERROR(this->get_logger(), "模式只能为 0(关节空间) 或 1(笛卡尔空间)");
             rclcpp::shutdown();
             return;
         }
 
         ArmTask::Goal goal_msg;
         goal_msg.task_id = kMoveTaskId;
-        goal_msg.data = {
-            joint_1,
-            joint_2,
-            joint_3,
-            joint_4,
-            joint_5,
-            joint_6,
-            move_duration,
-            pump_switch,
-        };
 
-        RCLCPP_INFO(
-            this->get_logger(),
-            "发送移动请求: task_id=%d, duration=%.3f, joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f), pump=%d",
-            goal_msg.task_id,
-            goal_msg.data[6],
-            goal_msg.data[0],
-            goal_msg.data[1],
-            goal_msg.data[2],
-            goal_msg.data[3],
-            goal_msg.data[4],
-            goal_msg.data[5],
-            static_cast<int>(goal_msg.data[7]));
+        if (imode == 0) {
+            // ---- 关节空间模式 ----
+            double joint_1 = default_joints[0];
+            double joint_2 = default_joints[1];
+            double joint_3 = default_joints[2];
+            double joint_4 = default_joints[3];
+            double joint_5 = default_joints[4];
+            double joint_6 = default_joints[5];
+
+            if (has_joint_state_) {
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "默认关节角使用当前状态: joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f)",
+                    joint_1, joint_2, joint_3, joint_4, joint_5, joint_6);
+            } else {
+                RCLCPP_INFO(this->get_logger(), "默认关节角使用回退值: joints=(0.000, 0.000, 0.000, 0.000, 0.000, 0.000)");
+            }
+
+            if (!read_or_default("请输入关节1角度(弧度)", joint_1, joint_1) ||
+                !read_or_default("请输入关节2角度(弧度)", joint_2, joint_2) ||
+                !read_or_default("请输入关节3角度(弧度)", joint_3, joint_3) ||
+                !read_or_default("请输入关节4角度(弧度)", joint_4, joint_4) ||
+                !read_or_default("请输入关节5角度(弧度)", joint_5, joint_5) ||
+                !read_or_default("请输入关节6角度(弧度)", joint_6, joint_6)) {
+                RCLCPP_ERROR(this->get_logger(), "读取关节角度失败，输入必须是数字或空行");
+                rclcpp::shutdown();
+                return;
+            }
+
+            double move_duration = 3.0;
+            if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
+                RCLCPP_ERROR(this->get_logger(), "读取移动时长失败");
+                rclcpp::shutdown();
+                return;
+            }
+
+            double pump_switch = 0.0;
+            if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
+                RCLCPP_ERROR(this->get_logger(), "读取气泵开关失败");
+                rclcpp::shutdown();
+                return;
+            }
+            if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 2.0 || pump_switch == 3.0)) {
+                RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 2(半自动) 或 3(自动)");
+                rclcpp::shutdown();
+                return;
+            }
+
+            // [0, j1, j2, j3, j4, j5, j6, duration, pump]
+            goal_msg.data = {
+                0.0, joint_1, joint_2, joint_3, joint_4, joint_5, joint_6,
+                move_duration, pump_switch,
+            };
+
+            RCLCPP_INFO(
+                this->get_logger(),
+                "发送关节空间移动请求: mode=0, joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f), duration=%.3f, pump=%d",
+                joint_1, joint_2, joint_3, joint_4, joint_5, joint_6,
+                move_duration, static_cast<int>(pump_switch));
+
+        } else {
+            // ---- 笛卡尔空间模式 ----
+            double x = 0.0, y = 0.0, z = 0.0;
+
+            if (!read_or_default("请输入目标位置X(米)", 0.0, x) ||
+                !read_or_default("请输入目标位置Y(米)", 0.0, y) ||
+                !read_or_default("请输入目标位置Z(米)", 0.0, z)) {
+                RCLCPP_ERROR(this->get_logger(), "读取目标位置失败");
+                rclcpp::shutdown();
+                return;
+            }
+
+            // 询问是否输入姿态欧拉角
+            double input_ori = 0.0;
+            std::cout << "\n是否输入目标姿态欧拉角？\n";
+            std::cout << "  0 - 不输入，使用当前末端姿态\n";
+            std::cout << "  1 - 手动输入欧拉角(roll, pitch, yaw，单位：弧度)\n";
+            if (!read_or_default("请选择(0/1)", 0.0, input_ori)) {
+                RCLCPP_ERROR(this->get_logger(), "读取姿态选项失败");
+                rclcpp::shutdown();
+                return;
+            }
+
+            if (static_cast<int>(input_ori) == 1) {
+                double roll = 0.0, pitch = 0.0, yaw = 0.0;
+                if (!read_or_default("请输入roll(弧度)", 0.0, roll) ||
+                    !read_or_default("请输入pitch(弧度)", 0.0, pitch) ||
+                    !read_or_default("请输入yaw(弧度)", 0.0, yaw)) {
+                    RCLCPP_ERROR(this->get_logger(), "读取欧拉角失败");
+                    rclcpp::shutdown();
+                    return;
+                }
+
+                double move_duration = 3.0;
+                if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
+                    rclcpp::shutdown();
+                    return;
+                }
+
+                double pump_switch = 0.0;
+                if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
+                    rclcpp::shutdown();
+                    return;
+                }
+                if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 2.0 || pump_switch == 3.0)) {
+                    RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 2(半自动) 或 3(自动)");
+                    rclcpp::shutdown();
+                    return;
+                }
+
+                // [1, x, y, z, roll, pitch, yaw, duration, pump]
+                goal_msg.data = {
+                    1.0, x, y, z, roll, pitch, yaw,
+                    move_duration, pump_switch,
+                };
+
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "发送笛卡尔空间移动请求(含姿态): mode=1, pos=(%.3f, %.3f, %.3f), rpy=(roll=%.3f, pitch=%.3f, yaw=%.3f), duration=%.3f, pump=%d",
+                    x, y, z, roll, pitch, yaw,
+                    move_duration, static_cast<int>(pump_switch));
+
+            } else {
+                double move_duration = 3.0;
+                if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
+                    rclcpp::shutdown();
+                    return;
+                }
+
+                double pump_switch = 0.0;
+                if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
+                    rclcpp::shutdown();
+                    return;
+                }
+                if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 2.0 || pump_switch == 3.0)) {
+                    RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 2(半自动) 或 3(自动)");
+                    rclcpp::shutdown();
+                    return;
+                }
+
+                // [1, x, y, z, duration, pump]
+                goal_msg.data = {
+                    1.0, x, y, z,
+                    move_duration, pump_switch,
+                };
+
+                RCLCPP_INFO(
+                    this->get_logger(),
+                    "发送笛卡尔空间移动请求(使用当前姿态): mode=1, pos=(%.3f, %.3f, %.3f), duration=%.3f, pump=%d",
+                    x, y, z,
+                    move_duration, static_cast<int>(pump_switch));
+            }
+        }
 
         rclcpp_action::Client<ArmTask>::SendGoalOptions send_goal_options;
         send_goal_options.goal_response_callback =

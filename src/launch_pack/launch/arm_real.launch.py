@@ -45,7 +45,8 @@ def generate_launch_description():
         arguments=["-d", rviz_path],
     )
 
-    vision=Node(package="vision",
+    vision=Node(
+        package="vision",
         executable="vision_node",
         output="screen",
     )

@@ -727,10 +727,11 @@ void Robot::visual_servo_publish_thread() {
 
         if (!camera_data_locked) {
             try {
+
                 auto target_in_base = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
                 pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
                 pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
-                pose_to_publish.pose.position.z = target_in_base.transform.translation.z;
+                pose_to_publish.pose.position.z = node_->get_parameter("grasp_height").as_double();
                 pose_to_publish.header.frame_id = base_frame_;
                 pose_to_publish.header.stamp = node_->now();
                 has_pose = true;
@@ -786,12 +787,17 @@ void Robot::visual_servo_publish_thread() {
             }
         }
 
-        // tf2::Quaternion q;
-        // q.setRPY(0.0, 1.57, 0.0);
-        // pose_to_publish.pose.orientation.w = q.w();
-        // pose_to_publish.pose.orientation.x = q.x();
-        // pose_to_publish.pose.orientation.y = q.y();
-        // pose_to_publish.pose.orientation.z = q.z();
+        tf2::Quaternion q;
+        q.setRPY(0.0, 1.57, 0.0);
+        pose_to_publish.pose.orientation.w = q.w();
+        pose_to_publish.pose.orientation.x = q.x();
+        pose_to_publish.pose.orientation.y = q.y();
+        pose_to_publish.pose.orientation.z = q.z();
+        // pose_to_publish.pose.orientation.x = -0.008;
+        // pose_to_publish.pose.orientation.y = 0.104;
+        // pose_to_publish.pose.orientation.z = 0.066;
+        // pose_to_publish.pose.orientation.w = 0.992;
+
 
         if (has_pose) {
             visual_target_pub_->publish(pose_to_publish);
@@ -942,6 +948,7 @@ bool Robot::get_current_end_pose_from_arm_calc(geometry_msgs::msg::PoseStamped& 
             return false;
         }
         current_pose = response->pose;
+
         return true;
     } catch (const std::exception& ex) {
         RCLCPP_WARN(node_->get_logger(), "获取当前末端位姿异常: %s", ex.what());
