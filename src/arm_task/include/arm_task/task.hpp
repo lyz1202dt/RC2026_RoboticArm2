@@ -31,7 +31,7 @@ private:
     void vision_callback(const robot_interfaces::msg::Vis& msg);
     void if_catch_callback(const robot_interfaces::msg::Vis& msg);
     void arm_cmd_callback(const robot_interfaces::msg::Armmode& msg);
-    void scan_finish_callback(const robot_interfaces::msg::Vis& msg);
+    void scan_result_callback(const robot_interfaces::msg::Vis& msg);
     bool search_for_object(geometry_msgs::msg::PoseStamped& object_pose);
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -128,6 +128,8 @@ private:
     double visual_servo_kp_{0.1};
     double visual_servo_max_linear_acc_{0.1};
     int air_pump_pin_{0};              // Parameter service index for air pump control
+    int start_scan{0};
+    int scan_finished_{0}; // 0: not started, 1: finished
 
     int last_arm_up_cmd{0};
     std::atomic<int> catch_result_{0}; // 0等待 1成功 -1失败              // 0: unknown, 1: success, -1: failure

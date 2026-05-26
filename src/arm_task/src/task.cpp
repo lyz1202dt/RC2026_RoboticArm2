@@ -63,23 +63,31 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     visual_target_pub_      = this->create_publisher<geometry_msgs::msg::PoseStamped>("visual_target_pose", 10);
     joint_space_target_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
 
+    //视觉发布的物块坐标
     vision_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
         "pnp_move", 10, std::bind(&ArmTaskNode::vision_callback, this, std::placeholders::_1));
 
+    //通知视觉开始检测抓取过程是否一直吸住物块
     detect_pub = this->create_publisher<robot_interfaces::msg::Vis>("start_detect", 10);
 
+    //机械臂初始扫描场地的箱子，视觉将箱子位置发给四足去规划路径
     scan_pub = this->create_publisher<robot_interfaces::msg::Vis>("start_scan", 10);
 
+    //结束扫描，机械臂需要回到初始位置
     scan_finish_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
         "scan_finish", 10, std::bind(&ArmTaskNode::scan_result_callback, this, std::placeholders::_1));
 
+    //跟上层控制反馈当前机械臂状态，是否抓到物块了
     arm_state_pub_1 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_state", 10);
 
+    //跟上层控制反馈当前机械臂搜索状态，是否找到物块了
     arm_state_pub_2 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_search_state", 10);
 
+    //机械臂是否抓到物块的视觉反馈结果
     arm_if_catch = this->create_subscription<robot_interfaces::msg::Vis>(
         "detect_result", 10, std::bind(&ArmTaskNode::if_catch_callback, this, std::placeholders::_1));
 
+    //上层控制命令订阅，告诉机械臂执行哪个任务
     arm_cmd_sub_ = this->create_subscription<robot_interfaces::msg::Armmode>(
         "arm_cmd", 10, std::bind(&ArmTaskNode::arm_cmd_callback, this, std::placeholders::_1));
 
@@ -508,14 +516,24 @@ void ArmTaskNode::execute_place_flow_second() {
 
 void ArmTaskNode::execute_look_for() {
 
+
     execute_joint_space_trajectory(look_for_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
 
+    robot_interfaces::msg::Vis scan_msg;
+    scan_msg.x = 1;
+    scan_pub->publish(scan_msg);
 
-    
-    
+    while(scan_finished_ == 0) {
+        std::this_thread::sleep_for(100ms);
+ 
     }
 
+    scan_finished_ = 0;
+
+   
+
+}    
 
 void ArmTaskNode::execute_lift_search()
 {
@@ -850,6 +868,10 @@ void ArmTaskNode::set_parameter_on_remote_node(
 }
 
 void ArmTaskNode::if_catch_callback(const robot_interfaces::msg::Vis& msg) { catch_result_.store(msg.y); }
+
+void ArmTaskNode::scan_result_callback(const robot_interfaces::msg::Vis& msg) { 
+    scan_finished_ = msg.x; 
+}
 
 
 
