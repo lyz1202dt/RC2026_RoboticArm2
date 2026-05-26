@@ -20,6 +20,7 @@ find_package(yaml-cpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(robot_interfaces REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 # Include directories
 include_directories(include)
@@ -83,6 +84,10 @@ ament_target_dependencies(place_kfs_test
 
 target_link_libraries(arm_task
   yaml-cpp
+)
+
+target_link_libraries(move_kfs_test
+  Qt5::Widgets
 )
 
 # Install executable

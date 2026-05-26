@@ -1,5 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, TimerAction
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
@@ -24,6 +25,11 @@ def generate_launch_description():
         default_value="true",
         description="Whether to start RViz2 together with simulation",
     )
+    show_gui_arg = DeclareLaunchArgument(
+        "show_gui",
+        default_value="true",
+        description="Whether to start move_kfs_test GUI",
+    )
 
     move_kfs_test = TimerAction(
         period=3.0,
@@ -32,12 +38,14 @@ def generate_launch_description():
                 package="arm_task",
                 executable="move_kfs_test",
                 output="screen",
+                condition=IfCondition(LaunchConfiguration("show_gui")),
             )
         ],
     )
 
     return LaunchDescription([
         show_rviz_arg,
+        show_gui_arg,
         arm_task_sim_launch,
         move_kfs_test,
     ])

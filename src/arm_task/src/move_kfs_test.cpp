@@ -1,3 +1,4 @@
+
 // Copyright 2026
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +13,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// 移动任务测试节点
+// 移动任务测试 GUI 节点
 //
-// 本文件实现了一个 ROS2 测试客户端节点，用于测试机械臂的移动任务功能。
+// 本文件实现了一个 ROS2 + Qt 的测试客户端窗口，用于测试机械臂的移动任务功能。
 // 支持关节空间移动(mode=0)和笛卡尔空间移动(mode=1)两种模式。
 //
 // data 格式:
 //   mode=0 (关节空间): [0, j1, j2, j3, j4, j5, j6, duration, (pump)]
 //   mode=1 (笛卡尔空间-仅位置): [1, x, y, z, duration, (pump)]
 //   mode=1 (笛卡尔空间-位置+姿态): [1, x, y, z, roll, pitch, yaw, duration, (pump)]
-//
-// 使用方法：
-//   1. 确保 robotic_task 动作服务器已启动
-//   2. 启动本节点：ros2 run arm_task move_kfs_test
 
-#include <chrono>
 #include <array>
-#include <iostream>
+#include <chrono>
 #include <memory>
-#include <sstream>
 #include <string>
+
+#include <QApplication>
+#include <QCheckBox>
+#include <QCloseEvent>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QElapsedTimer>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QString>
+#include <QTimer>
+#include <QVBoxLayout>
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <rclcpp/executors/single_threaded_executor.hpp>
 #include <robot_interfaces/action/arm_task.hpp>
 #include <robot_interfaces/msg/arm.hpp>
 
@@ -43,338 +56,392 @@ using namespace std::chrono_literals;
 namespace {
 constexpr int32_t kMoveTaskId = 1;
 constexpr size_t kJointCount = 6;
-constexpr std::chrono::seconds kJointStateWaitTimeout(5);
+constexpr double kValueRange = 1000.0;
+constexpr double kSpinStep = 0.01;
+constexpr int kSpinDecimals = 3;
+constexpr int kSpinIntervalMs = 50;
+constexpr int kJointStateTimeoutMs = 5000;
+
 }  // namespace
 
-class MoveKfsTestNode : public rclcpp::Node {
+class MoveKfsGui : public QWidget {
 public:
     using ArmTask = robot_interfaces::action::ArmTask;
     using GoalHandleArmTask = rclcpp_action::ClientGoalHandle<ArmTask>;
 
-    MoveKfsTestNode()
-        : Node("move_kfs_test_node") {
-        action_client_ = rclcpp_action::create_client<ArmTask>(this, "robotic_task");
-        joint_state_sub_ = this->create_subscription<robot_interfaces::msg::Arm>(
+    MoveKfsGui()
+        : QWidget(nullptr),
+          node_(std::make_shared<rclcpp::Node>("move_kfs_test_node")),
+          action_client_(rclcpp_action::create_client<ArmTask>(node_, "robotic_task")) {
+        setWindowTitle("move_kfs_test");
+        resize(720, 640);
+        build_ui();
+
+        joint_state_sub_ = node_->create_subscription<robot_interfaces::msg::Arm>(
             "myjoints_state", rclcpp::SensorDataQoS(),
-            std::bind(&MoveKfsTestNode::on_joint_state, this, std::placeholders::_1));
-        startup_timer_ = this->create_wall_timer(500ms, std::bind(&MoveKfsTestNode::run_once, this));
+            std::bind(&MoveKfsGui::on_joint_state, this, std::placeholders::_1));
+
+        executor_.add_node(node_);
+
+        spin_timer_ = new QTimer(this);
+        connect(spin_timer_, &QTimer::timeout, this, [this]() {
+            executor_.spin_some();
+            check_action_server();
+            check_joint_state_timeout();
+        });
+        spin_timer_->start(kSpinIntervalMs);
+
+        joint_wait_timer_.start();
+        append_log("等待动作服务 robotic_task 就绪...");
+    }
+
+    ~MoveKfsGui() override = default;
+
+protected:
+    void closeEvent(QCloseEvent* event) override {
+        if (rclcpp::ok()) {
+            rclcpp::shutdown();
+        }
+        QWidget::closeEvent(event);
     }
 
 private:
-    static bool read_or_default(const std::string& prompt, double default_value, double& output_value) {
-        std::cout << prompt << " (默认 " << default_value << ", 直接回车使用默认): " << std::flush;
-
-        std::string line;
-        if (!std::getline(std::cin, line)) {
-            return false;
-        }
-
-        if (line.empty()) {
-            output_value = default_value;
-            return true;
-        }
-
-        std::istringstream iss(line);
-        double parsed_value = 0.0;
-        char extra = '\0';
-        if (!(iss >> parsed_value) || (iss >> extra)) {
-            return false;
-        }
-
-        output_value = parsed_value;
-        return true;
+    static void configure_spinbox(QDoubleSpinBox* spinbox, double value) {
+        spinbox->setRange(-kValueRange, kValueRange);
+        spinbox->setDecimals(kSpinDecimals);
+        spinbox->setSingleStep(kSpinStep);
+        spinbox->setValue(value);
     }
 
-    void run_once() {
-        if (request_started_) {
+    void build_ui() {
+        auto* main_layout = new QVBoxLayout(this);
+
+        status_label_ = new QLabel("动作服务：等待中", this);
+        joint_state_label_ = new QLabel("关节状态：等待中", this);
+        main_layout->addWidget(status_label_);
+        main_layout->addWidget(joint_state_label_);
+
+        auto* mode_layout = new QHBoxLayout();
+        auto* mode_label = new QLabel("移动模式:", this);
+        mode_combo_ = new QComboBox(this);
+        mode_combo_->addItem("关节空间");
+        mode_combo_->addItem("笛卡尔空间");
+        mode_layout->addWidget(mode_label);
+        mode_layout->addWidget(mode_combo_);
+        main_layout->addLayout(mode_layout);
+
+        mode_stack_ = new QStackedWidget(this);
+        mode_stack_->addWidget(build_joint_panel());
+        mode_stack_->addWidget(build_cart_panel());
+        main_layout->addWidget(mode_stack_);
+
+        auto* common_group = new QGroupBox("公共参数", this);
+        auto* common_layout = new QFormLayout(common_group);
+        duration_spin_ = new QDoubleSpinBox(this);
+        configure_spinbox(duration_spin_, 3.0);
+        duration_spin_->setMinimum(0.0);
+        common_layout->addRow("移动时长(秒)", duration_spin_);
+
+        pump_combo_ = new QComboBox(this);
+        pump_combo_->addItem("0 - 关", 0);
+        pump_combo_->addItem("1 - 开", 1);
+        pump_combo_->addItem("2 - 半自动", 2);
+        pump_combo_->addItem("3 - 自动", 3);
+        common_layout->addRow("气泵开关", pump_combo_);
+        main_layout->addWidget(common_group);
+
+        start_button_ = new QPushButton("启动", this);
+        start_button_->setEnabled(false);
+        connect(start_button_, &QPushButton::clicked, this, [this]() { on_start_clicked(); });
+        main_layout->addWidget(start_button_);
+
+        auto* log_group = new QGroupBox("日志", this);
+        auto* log_layout = new QVBoxLayout(log_group);
+        log_text_ = new QPlainTextEdit(this);
+        log_text_->setReadOnly(true);
+        log_layout->addWidget(log_text_);
+        main_layout->addWidget(log_group);
+
+        connect(mode_combo_, qOverload<int>(&QComboBox::currentIndexChanged), this,
+                [this](int index) { update_mode_ui(index); });
+    }
+
+    QWidget* build_joint_panel() {
+        auto* group = new QGroupBox("关节空间目标", this);
+        auto* layout = new QFormLayout(group);
+
+        for (size_t i = 0; i < kJointCount; ++i) {
+            auto* spin = new QDoubleSpinBox(this);
+            configure_spinbox(spin, 0.0);
+            layout->addRow(QString("关节%1(弧度)").arg(static_cast<int>(i + 1)), spin);
+            joint_spins_[i] = spin;
+            connect(spin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double) {
+                if (!setting_joint_defaults_) {
+                    joint_inputs_edited_ = true;
+                }
+            });
+        }
+
+        return group;
+    }
+
+    QWidget* build_cart_panel() {
+        auto* group = new QGroupBox("笛卡尔空间目标", this);
+        auto* layout = new QFormLayout(group);
+
+        x_spin_ = new QDoubleSpinBox(this);
+        y_spin_ = new QDoubleSpinBox(this);
+        z_spin_ = new QDoubleSpinBox(this);
+        configure_spinbox(x_spin_, 0.0);
+        configure_spinbox(y_spin_, 0.0);
+        configure_spinbox(z_spin_, 0.0);
+        layout->addRow("X(米)", x_spin_);
+        layout->addRow("Y(米)", y_spin_);
+        layout->addRow("Z(米)", z_spin_);
+
+        rpy_checkbox_ = new QCheckBox("输入姿态欧拉角 (roll/pitch/yaw)", this);
+        layout->addRow(rpy_checkbox_);
+
+        rpy_widget_ = new QWidget(this);
+        auto* rpy_layout = new QFormLayout(rpy_widget_);
+        roll_spin_ = new QDoubleSpinBox(this);
+        pitch_spin_ = new QDoubleSpinBox(this);
+        yaw_spin_ = new QDoubleSpinBox(this);
+        configure_spinbox(roll_spin_, 0.0);
+        configure_spinbox(pitch_spin_, 0.0);
+        configure_spinbox(yaw_spin_, 0.0);
+        rpy_layout->addRow("Roll(弧度)", roll_spin_);
+        rpy_layout->addRow("Pitch(弧度)", pitch_spin_);
+        rpy_layout->addRow("Yaw(弧度)", yaw_spin_);
+        rpy_widget_->setVisible(false);
+        layout->addRow(rpy_widget_);
+
+        connect(rpy_checkbox_, &QCheckBox::toggled, this, [this](bool checked) {
+            rpy_widget_->setVisible(checked);
+        });
+
+        return group;
+    }
+
+    void update_mode_ui(int index) {
+        mode_stack_->setCurrentIndex(index);
+    }
+
+    void check_action_server() {
+        if (action_server_ready_) {
             return;
         }
-        if (!action_server_ready_) {
-            if (!action_client_->wait_for_action_server(0s)) {
-                RCLCPP_INFO_THROTTLE(
-                    this->get_logger(), *this->get_clock(), 2000, "等待动作服务 robotic_task 就绪...");
-                return;
-            }
-
+        if (action_client_->wait_for_action_server(0s)) {
             action_server_ready_ = true;
-            joint_wait_start_ = this->now();
-            RCLCPP_INFO(this->get_logger(), "动作服务 robotic_task 已就绪，开始等待当前关节状态");
+            start_button_->setEnabled(true);
+            status_label_->setText("动作服务：已就绪");
+            append_log("动作服务 robotic_task 已就绪");
         }
+    }
 
-        if (!has_joint_state_) {
-            const bool wait_timeout = (this->now() - joint_wait_start_) >= rclcpp::Duration::from_seconds(kJointStateWaitTimeout.count());
-            if (!wait_timeout) {
-                RCLCPP_INFO_THROTTLE(
-                    this->get_logger(), *this->get_clock(), 2000, "等待 myjoints_state 当前关节状态...");
-                return;
-            }
-
-            if (!joint_state_timeout_logged_) {
-                RCLCPP_WARN(this->get_logger(), "5秒内未收到 myjoints_state，默认关节角回退为 0.0");
-                joint_state_timeout_logged_ = true;
-            }
-        }
-
-        request_started_ = true;
-        startup_timer_->cancel();
-
-        std::array<double, kJointCount> default_joints{};
-        if (has_joint_state_) {
-            default_joints = current_joint_rads_;
-        }
-
-        // ---- 选择模式 ----
-        double mode = 0.0;
-        std::cout << "\n========== 移动任务模式选择 ==========\n";
-        std::cout << "  0 - 关节空间移动\n";
-        std::cout << "  1 - 笛卡尔空间移动\n";
-        std::cout << "========================================\n";
-        if (!read_or_default("请选择模式(0/1)", 0.0, mode)) {
-            RCLCPP_ERROR(this->get_logger(), "读取模式失败，输入必须是 0 或 1");
-            rclcpp::shutdown();
+    void check_joint_state_timeout() {
+        if (joint_state_ready_ || joint_wait_timeout_logged_) {
             return;
         }
-        int imode = static_cast<int>(mode);
-        if (imode != 0 && imode != 1) {
-            RCLCPP_ERROR(this->get_logger(), "模式只能为 0(关节空间) 或 1(笛卡尔空间)");
-            rclcpp::shutdown();
+        if (joint_wait_timer_.elapsed() >= kJointStateTimeoutMs) {
+            joint_wait_timeout_logged_ = true;
+            joint_defaults_applied_ = true;
+            joint_state_label_->setText("关节状态：超时未收到，默认 0.0");
+            append_log("5秒内未收到 myjoints_state，默认关节角回退为 0.0");
+        }
+    }
+
+    void apply_joint_defaults(const std::array<double, kJointCount>& joints) {
+        setting_joint_defaults_ = true;
+        for (size_t i = 0; i < kJointCount; ++i) {
+            joint_spins_[i]->setValue(joints[i]);
+        }
+        setting_joint_defaults_ = false;
+    }
+
+    void on_joint_state(const robot_interfaces::msg::Arm::ConstSharedPtr& msg) {
+        for (size_t i = 0; i < kJointCount; ++i) {
+            current_joint_rads_[i] = msg->motor[i].rad;
+        }
+        if (!joint_state_ready_) {
+            append_log("已收到当前关节状态，将作为默认关节角");
+        }
+        joint_state_ready_ = true;
+        joint_state_label_->setText("关节状态：已收到");
+
+        if (!joint_defaults_applied_ && !joint_inputs_edited_) {
+            apply_joint_defaults(current_joint_rads_);
+            joint_defaults_applied_ = true;
+        }
+    }
+
+    void on_start_clicked() {
+        if (!action_server_ready_) {
+            append_log("动作服务未就绪，无法发送请求");
             return;
         }
 
         ArmTask::Goal goal_msg;
         goal_msg.task_id = kMoveTaskId;
 
-        if (imode == 0) {
-            // ---- 关节空间模式 ----
-            double joint_1 = default_joints[0];
-            double joint_2 = default_joints[1];
-            double joint_3 = default_joints[2];
-            double joint_4 = default_joints[3];
-            double joint_5 = default_joints[4];
-            double joint_6 = default_joints[5];
+        const int mode_index = mode_combo_->currentIndex();
+        const double duration = duration_spin_->value();
+        const double pump_switch = static_cast<double>(pump_combo_->currentData().toInt());
 
-            if (has_joint_state_) {
-                RCLCPP_INFO(
-                    this->get_logger(),
-                    "默认关节角使用当前状态: joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f)",
-                    joint_1, joint_2, joint_3, joint_4, joint_5, joint_6);
-            } else {
-                RCLCPP_INFO(this->get_logger(), "默认关节角使用回退值: joints=(0.000, 0.000, 0.000, 0.000, 0.000, 0.000)");
-            }
+        if (mode_index == 0) {
+            const double joint_1 = joint_spins_[0]->value();
+            const double joint_2 = joint_spins_[1]->value();
+            const double joint_3 = joint_spins_[2]->value();
+            const double joint_4 = joint_spins_[3]->value();
+            const double joint_5 = joint_spins_[4]->value();
+            const double joint_6 = joint_spins_[5]->value();
 
-            if (!read_or_default("请输入关节1角度(弧度)", joint_1, joint_1) ||
-                !read_or_default("请输入关节2角度(弧度)", joint_2, joint_2) ||
-                !read_or_default("请输入关节3角度(弧度)", joint_3, joint_3) ||
-                !read_or_default("请输入关节4角度(弧度)", joint_4, joint_4) ||
-                !read_or_default("请输入关节5角度(弧度)", joint_5, joint_5) ||
-                !read_or_default("请输入关节6角度(弧度)", joint_6, joint_6)) {
-                RCLCPP_ERROR(this->get_logger(), "读取关节角度失败，输入必须是数字或空行");
-                rclcpp::shutdown();
-                return;
-            }
-
-            double move_duration = 3.0;
-            if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
-                RCLCPP_ERROR(this->get_logger(), "读取移动时长失败");
-                rclcpp::shutdown();
-                return;
-            }
-
-            double pump_switch = 0.0;
-            if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
-                RCLCPP_ERROR(this->get_logger(), "读取气泵开关失败");
-                rclcpp::shutdown();
-                return;
-            }
-            if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 2.0 || pump_switch == 3.0)) {
-                RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 2(半自动) 或 3(自动)");
-                rclcpp::shutdown();
-                return;
-            }
-
-            // [0, j1, j2, j3, j4, j5, j6, duration, pump]
             goal_msg.data = {
                 0.0, joint_1, joint_2, joint_3, joint_4, joint_5, joint_6,
-                move_duration, pump_switch,
+                duration, pump_switch,
             };
 
-            RCLCPP_INFO(
-                this->get_logger(),
-                "发送关节空间移动请求: mode=0, joints=(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f), duration=%.3f, pump=%d",
-                joint_1, joint_2, joint_3, joint_4, joint_5, joint_6,
-                move_duration, static_cast<int>(pump_switch));
-
+            append_log(QString(
+                "发送关节空间移动请求: joints=(%1, %2, %3, %4, %5, %6), duration=%7, pump=%8")
+                           .arg(joint_1, 0, 'f', 3)
+                           .arg(joint_2, 0, 'f', 3)
+                           .arg(joint_3, 0, 'f', 3)
+                           .arg(joint_4, 0, 'f', 3)
+                           .arg(joint_5, 0, 'f', 3)
+                           .arg(joint_6, 0, 'f', 3)
+                           .arg(duration, 0, 'f', 3)
+                           .arg(static_cast<int>(pump_switch)));
         } else {
-            // ---- 笛卡尔空间模式 ----
-            double x = 0.0, y = 0.0, z = 0.0;
+            const double x = x_spin_->value();
+            const double y = y_spin_->value();
+            const double z = z_spin_->value();
 
-            if (!read_or_default("请输入目标位置X(米)", 0.0, x) ||
-                !read_or_default("请输入目标位置Y(米)", 0.0, y) ||
-                !read_or_default("请输入目标位置Z(米)", 0.0, z)) {
-                RCLCPP_ERROR(this->get_logger(), "读取目标位置失败");
-                rclcpp::shutdown();
-                return;
-            }
-
-            // 询问是否输入姿态欧拉角
-            double input_ori = 0.0;
-            std::cout << "\n是否输入目标姿态欧拉角？\n";
-            std::cout << "  0 - 不输入，使用当前末端姿态\n";
-            std::cout << "  1 - 手动输入欧拉角(roll, pitch, yaw，单位：弧度)\n";
-            if (!read_or_default("请选择(0/1)", 0.0, input_ori)) {
-                RCLCPP_ERROR(this->get_logger(), "读取姿态选项失败");
-                rclcpp::shutdown();
-                return;
-            }
-
-            if (static_cast<int>(input_ori) == 1) {
-                double roll = 0.0, pitch = 0.0, yaw = 0.0;
-                if (!read_or_default("请输入roll(弧度)", 0.0, roll) ||
-                    !read_or_default("请输入pitch(弧度)", 0.0, pitch) ||
-                    !read_or_default("请输入yaw(弧度)", 0.0, yaw)) {
-                    RCLCPP_ERROR(this->get_logger(), "读取欧拉角失败");
-                    rclcpp::shutdown();
-                    return;
-                }
-
-                double move_duration = 3.0;
-                if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
-                    rclcpp::shutdown();
-                    return;
-                }
-
-                double pump_switch = 0.0;
-                if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
-                    rclcpp::shutdown();
-                    return;
-                }
-                if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 2.0 || pump_switch == 3.0)) {
-                    RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 2(半自动) 或 3(自动)");
-                    rclcpp::shutdown();
-                    return;
-                }
-
-                // [1, x, y, z, roll, pitch, yaw, duration, pump]
+            if (rpy_checkbox_->isChecked()) {
+                const double roll = roll_spin_->value();
+                const double pitch = pitch_spin_->value();
+                const double yaw = yaw_spin_->value();
                 goal_msg.data = {
                     1.0, x, y, z, roll, pitch, yaw,
-                    move_duration, pump_switch,
+                    duration, pump_switch,
                 };
-
-                RCLCPP_INFO(
-                    this->get_logger(),
-                    "发送笛卡尔空间移动请求(含姿态): mode=1, pos=(%.3f, %.3f, %.3f), rpy=(roll=%.3f, pitch=%.3f, yaw=%.3f), duration=%.3f, pump=%d",
-                    x, y, z, roll, pitch, yaw,
-                    move_duration, static_cast<int>(pump_switch));
-
+                append_log(QString(
+                    "发送笛卡尔空间移动请求(含姿态): pos=(%1, %2, %3), rpy=(%4, %5, %6), duration=%7, pump=%8")
+                               .arg(x, 0, 'f', 3)
+                               .arg(y, 0, 'f', 3)
+                               .arg(z, 0, 'f', 3)
+                               .arg(roll, 0, 'f', 3)
+                               .arg(pitch, 0, 'f', 3)
+                               .arg(yaw, 0, 'f', 3)
+                               .arg(duration, 0, 'f', 3)
+                               .arg(static_cast<int>(pump_switch)));
             } else {
-                double move_duration = 3.0;
-                if (!read_or_default("请输入移动时长(秒)", 3.0, move_duration)) {
-                    rclcpp::shutdown();
-                    return;
-                }
-
-                double pump_switch = 0.0;
-                if (!read_or_default("请输入气泵开关(0关,1开,3自动)", 0.0, pump_switch)) {
-                    rclcpp::shutdown();
-                    return;
-                }
-                if (!(pump_switch == 0.0 || pump_switch == 1.0 || pump_switch == 2.0 || pump_switch == 3.0)) {
-                    RCLCPP_ERROR(this->get_logger(), "气泵开关只能为 0(关) 或 1(开) 或 2(半自动) 或 3(自动)");
-                    rclcpp::shutdown();
-                    return;
-                }
-
-                // [1, x, y, z, duration, pump]
                 goal_msg.data = {
                     1.0, x, y, z,
-                    move_duration, pump_switch,
+                    duration, pump_switch,
                 };
-
-                RCLCPP_INFO(
-                    this->get_logger(),
-                    "发送笛卡尔空间移动请求(使用当前姿态): mode=1, pos=(%.3f, %.3f, %.3f), duration=%.3f, pump=%d",
-                    x, y, z,
-                    move_duration, static_cast<int>(pump_switch));
+                append_log(QString(
+                    "发送笛卡尔空间移动请求(使用当前姿态): pos=(%1, %2, %3), duration=%4, pump=%5")
+                               .arg(x, 0, 'f', 3)
+                               .arg(y, 0, 'f', 3)
+                               .arg(z, 0, 'f', 3)
+                               .arg(duration, 0, 'f', 3)
+                               .arg(static_cast<int>(pump_switch)));
             }
         }
 
         rclcpp_action::Client<ArmTask>::SendGoalOptions send_goal_options;
         send_goal_options.goal_response_callback =
-            std::bind(&MoveKfsTestNode::on_goal_response, this, std::placeholders::_1);
+            std::bind(&MoveKfsGui::on_goal_response, this, std::placeholders::_1);
         send_goal_options.feedback_callback =
-            std::bind(&MoveKfsTestNode::on_feedback, this, std::placeholders::_1, std::placeholders::_2);
+            std::bind(&MoveKfsGui::on_feedback, this, std::placeholders::_1, std::placeholders::_2);
         send_goal_options.result_callback =
-            std::bind(&MoveKfsTestNode::on_result, this, std::placeholders::_1);
+            std::bind(&MoveKfsGui::on_result, this, std::placeholders::_1);
 
         action_client_->async_send_goal(goal_msg, send_goal_options);
     }
 
     void on_goal_response(const GoalHandleArmTask::SharedPtr& goal_handle) {
         if (!goal_handle) {
-            RCLCPP_ERROR(this->get_logger(), "移动目标被服务器拒绝");
-            rclcpp::shutdown();
+            append_log("移动目标被服务器拒绝");
             return;
         }
-
-        RCLCPP_INFO(this->get_logger(), "移动目标已被接受，等待执行结果");
+        append_log("移动目标已被接受，等待执行结果");
     }
 
     void on_feedback(
         const GoalHandleArmTask::SharedPtr&,
         const std::shared_ptr<const ArmTask::Feedback>& feedback) {
-        RCLCPP_INFO(this->get_logger(), "动作反馈: %s", feedback->describe.c_str());
+        append_log(QString("动作反馈: %1").arg(QString::fromStdString(feedback->describe)));
     }
 
     void on_result(const GoalHandleArmTask::WrappedResult& result) {
         switch (result.code) {
             case rclcpp_action::ResultCode::SUCCEEDED:
-                RCLCPP_INFO(
-                    this->get_logger(), "移动动作成功: err_code=%d, reason=%s",
-                    result.result->err_code, result.result->reason.c_str());
+                append_log(QString("移动动作成功: err_code=%1, reason=%2")
+                               .arg(result.result->err_code)
+                               .arg(QString::fromStdString(result.result->reason)));
                 break;
             case rclcpp_action::ResultCode::ABORTED:
-                RCLCPP_ERROR(
-                    this->get_logger(), "移动动作失败: err_code=%d, reason=%s",
-                    result.result->err_code, result.result->reason.c_str());
+                append_log(QString("移动动作失败: err_code=%1, reason=%2")
+                               .arg(result.result->err_code)
+                               .arg(QString::fromStdString(result.result->reason)));
                 break;
             case rclcpp_action::ResultCode::CANCELED:
-                RCLCPP_WARN(
-                    this->get_logger(), "移动动作被取消: err_code=%d, reason=%s",
-                    result.result->err_code, result.result->reason.c_str());
+                append_log(QString("移动动作被取消: err_code=%1, reason=%2")
+                               .arg(result.result->err_code)
+                               .arg(QString::fromStdString(result.result->reason)));
                 break;
             default:
-                RCLCPP_ERROR(this->get_logger(), "移动动作返回了未知结果码");
+                append_log("移动动作返回了未知结果码");
                 break;
         }
-
-        rclcpp::shutdown();
     }
 
-    void on_joint_state(const std::shared_ptr<const robot_interfaces::msg::Arm>& msg) {
-        for (size_t i = 0; i < kJointCount; ++i) {
-            current_joint_rads_[i] = msg->motor[i].rad;
-        }
-
-        if (!has_joint_state_) {
-            RCLCPP_INFO(this->get_logger(), "已收到当前关节状态，将作为默认关节角");
-        }
-        has_joint_state_ = true;
+    void append_log(const QString& text) {
+        log_text_->appendPlainText(text);
     }
 
+    rclcpp::Node::SharedPtr node_;
     rclcpp_action::Client<ArmTask>::SharedPtr action_client_;
     rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_state_sub_;
-    rclcpp::TimerBase::SharedPtr startup_timer_;
-    std::array<double, kJointCount> current_joint_rads_{};
-    rclcpp::Time joint_wait_start_;
+    rclcpp::executors::SingleThreadedExecutor executor_;
+    QTimer* spin_timer_{nullptr};
+    QElapsedTimer joint_wait_timer_;
     bool action_server_ready_{false};
-    bool has_joint_state_{false};
-    bool joint_state_timeout_logged_{false};
-    bool request_started_{false};
+    bool joint_state_ready_{false};
+    bool joint_wait_timeout_logged_{false};
+    bool joint_defaults_applied_{false};
+    bool joint_inputs_edited_{false};
+    bool setting_joint_defaults_{false};
+    std::array<double, kJointCount> current_joint_rads_{};
+
+    QLabel* status_label_{nullptr};
+    QLabel* joint_state_label_{nullptr};
+    QComboBox* mode_combo_{nullptr};
+    QStackedWidget* mode_stack_{nullptr};
+    std::array<QDoubleSpinBox*, kJointCount> joint_spins_{};
+    QDoubleSpinBox* x_spin_{nullptr};
+    QDoubleSpinBox* y_spin_{nullptr};
+    QDoubleSpinBox* z_spin_{nullptr};
+    QCheckBox* rpy_checkbox_{nullptr};
+    QWidget* rpy_widget_{nullptr};
+    QDoubleSpinBox* roll_spin_{nullptr};
+    QDoubleSpinBox* pitch_spin_{nullptr};
+    QDoubleSpinBox* yaw_spin_{nullptr};
+    QDoubleSpinBox* duration_spin_{nullptr};
+    QComboBox* pump_combo_{nullptr};
+    QPushButton* start_button_{nullptr};
+    QPlainTextEdit* log_text_{nullptr};
 };
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<MoveKfsTestNode>();
-    rclcpp::spin(node);
-    return 0;
+    QApplication app(argc, argv);
+    MoveKfsGui window;
+    window.show();
+    const int result = app.exec();
+    if (rclcpp::ok()) {
+        rclcpp::shutdown();
+    }
+    return result;
 }
