@@ -18,6 +18,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <thread>
 #include <vector>
+#include <std_msgs/msg/int32.hpp>
 
 
 namespace arm_task {
@@ -32,6 +33,8 @@ private:
     void if_catch_callback(const robot_interfaces::msg::Vis& msg);
     void arm_cmd_callback(const robot_interfaces::msg::Armmode& msg);
     void scan_result_callback(const robot_interfaces::msg::Vis& msg);
+    void place_position_down_callback(const robot_interfaces::msg::Vis& msg);
+    void place_position_up_callback(const robot_interfaces::msg::Vis& msg);
     bool search_for_object(geometry_msgs::msg::PoseStamped& object_pose);
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -80,8 +83,8 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr air_pub_;
-    rclcpp::Publisher<robot_interfaces::msg::Vis>::SharedPtr detect_pub;
-    rclcpp::Publisher<robot_interfaces::msg::Vis>::SharedPtr scan_pub;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr detect_pub;
+    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr scan_pub;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_1;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_2;
 
@@ -90,6 +93,8 @@ private:
     rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr vision_sub_;
     rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr scan_finish_sub_;
     rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr arm_if_catch;
+    rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr place_position_down_sub;
+    rclcpp::Subscription<robot_interfaces::msg::Vis>::SharedPtr place_position_up_sub;
     rclcpp::Subscription<robot_interfaces::msg::Armmode>::SharedPtr arm_cmd_sub_;
 
 
@@ -130,6 +135,12 @@ private:
     int air_pump_pin_{0};              // Parameter service index for air pump control
     int start_scan{0};
     int scan_finished_{0}; // 0: not started, 1: finished
+    float place_up_position_x{0.0};
+    float place_up_position_y{0.0};
+    float place_up_position_z{0.0};
+    float place_down_position_x{0.0};
+    float place_down_position_y{0.0};
+    float place_down_position_z{0.0};
 
     int last_arm_up_cmd{0};
     std::atomic<int> catch_result_{0}; // 0等待 1成功 -1失败              // 0: unknown, 1: success, -1: failure
