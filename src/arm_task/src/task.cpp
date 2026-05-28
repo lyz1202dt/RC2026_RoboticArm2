@@ -85,6 +85,9 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     scan_finish_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
         "scan_finish", 10, std::bind(&ArmTaskNode::scan_result_callback, this, std::placeholders::_1));
 
+    //跟上层控制反馈当前机械臂放置状态，是否放置完成了
+    arm_place_finish_pub = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_place_state", 10);
+
     //跟上层控制反馈当前机械臂状态，是否抓到物块了
     arm_state_pub_1 = this->create_publisher<robot_interfaces::msg::Armmode>("arm_cmd_state", 10);
 
@@ -451,6 +454,11 @@ void ArmTaskNode::execute_place_flow_first() {
         )
     );
 
+    robot_interfaces::msg::Armmode place_finish_msg;
+    place_finish_msg.mode = 1;
+    arm_place_finish_pub->publish(place_finish_msg);
+    
+
     place_down_position_x = 0.0;
     place_down_position_y = 0.0;
     place_down_position_z = 0.0;
@@ -530,6 +538,10 @@ void ArmTaskNode::execute_place_flow_second() {
         )
     );
 
+    robot_interfaces::msg::Armmode place_finish_msg;
+    place_finish_msg.mode = 1;
+    arm_place_finish_pub->publish(place_finish_msg);
+
     place_up_position_x = 0.0;
     place_up_position_y = 0.0;
     place_up_position_z = 0.0;
@@ -555,7 +567,6 @@ void ArmTaskNode::execute_look_for() {
 
     scan_finished_ = 0;
 
-   
 
 }    
 

@@ -87,6 +87,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr scan_pub;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_1;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_state_pub_2;
+    rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_place_finish_pub;
 
     // Subscribers
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr place_target_sub_;
