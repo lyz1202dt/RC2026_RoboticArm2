@@ -46,7 +46,7 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     this->declare_parameter<std::string>("base_frame", "base_link");
     this->declare_parameter<std::string>("camera_frame", "camera_link");
     this->declare_parameter<std::string>("object_frame", "target_object");
-    this->declare_parameter<std::string>("tip_frame", "link6");
+    this->declare_parameter<std::string>("tip_frame", "link7");
     this->declare_parameter<std::string>("arm_calc_node_name", "arm_calc_node");
 
     // Get parameters

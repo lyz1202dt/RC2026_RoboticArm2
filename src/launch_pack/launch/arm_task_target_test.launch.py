@@ -35,7 +35,7 @@ def generate_launch_description():
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "0.15", "0.8", "0.8",  # x, y, z translation
+            "0.5", "0.0", "0.8",  # x, y, z translation
             "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
             "base_link",
             "target_object"
@@ -43,20 +43,20 @@ def generate_launch_description():
         output="screen",
     )
 
-    # catch_kfs_test = TimerAction(
-    #     period=3.0,
-    #     actions=[
-    #         Node(
-    #             package="arm_task",
-    #             executable="catch_kfs_test",
-    #             output="screen",
-    #         )
-    #     ],
-    # )
+    catch_kfs_test = TimerAction(
+        period=3.0,
+        actions=[
+            Node(
+                package="arm_task",
+                executable="catch_kfs_test",
+                output="screen",
+            )
+        ],
+    )
     
     return LaunchDescription([
         show_rviz_arg,
         arm_task_sim_launch,
         static_tf_target,
-        # catch_kfs_test
+        catch_kfs_test
     ])

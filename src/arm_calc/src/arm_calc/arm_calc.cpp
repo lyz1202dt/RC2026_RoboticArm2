@@ -32,6 +32,21 @@ ArmCalc::ArmCalc(const KDL::Chain& chain)
     for (unsigned int i = 0; i < chain_.getNrOfJoints(); ++i) {
         last_joint_solution_(i) = 0.0;
     }
+    joint_lower_limit_.setConstant(-3.14);
+    joint_upper_limit_.setConstant(3.14);
+}
+
+void ArmCalc::set_joint_limits(const JointVector& lower, const JointVector& upper) {
+    joint_lower_limit_ = lower;
+    joint_upper_limit_ = upper;
+}
+
+JointVector ArmCalc::clamp_to_joint_limits(const JointVector& joints) const {
+    JointVector clamped;
+    for (int i = 0; i < static_cast<int>(kJointDoF); ++i) {
+        clamped[i] = std::clamp(joints[i], joint_lower_limit_[i], joint_upper_limit_[i]);
+    }
+    return clamped;
 }
 
 JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
@@ -39,13 +54,20 @@ JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result) {
 }
 
 JointVector ArmCalc::joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos) {
-    KDL::JntArray seed = to_kdl_joints(seed_joint_pos);
+    // Clamp seed to joint limits so the IK solver starts from a valid configuration.
+    JointVector clamped_seed = clamp_to_joint_limits(seed_joint_pos);
+    KDL::JntArray seed = to_kdl_joints(clamped_seed);
     KDL::Frame target_frame = to_kdl_frame(pose);
     *result = ik_solver_.CartToJnt(seed, target_frame, seed);
+    JointVector solution = from_kdl_joints(seed);
     if (*result >= 0) {
+        // Clamp the IK solution to joint limits before caching and returning.
+        solution = clamp_to_joint_limits(solution);
+        // Re-clamp seed to the clamped solution for the next iteration start
+        seed = to_kdl_joints(solution);
         last_joint_solution_ = seed;
     }
-    return from_kdl_joints(seed);
+    return solution;
 }
 
 JointVector ArmCalc::joint_vel(const JointVector& joint_pos, const CartesianVector& cartesian_twist) {

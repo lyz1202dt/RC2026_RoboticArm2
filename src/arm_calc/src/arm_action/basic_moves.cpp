@@ -43,7 +43,7 @@ Eigen::Vector3d ClampVectorNorm(const Eigen::Vector3d& vector, double limit) {
 
 Eigen::Quaterniond FixedVisualServoOrientation() {
     tf2::Quaternion q;
-    q.setRPY(0.0, 1.57, 0.0);
+    q.setRPY(0.0, 0.0, 0.0);
     return arm_calc::NormalizeQuaternion(Eigen::Quaterniond(q.w(), q.x(), q.y(), q.z()));
 }
 

@@ -6,6 +6,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <fstream>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 
@@ -65,7 +66,7 @@ void ArmCtrlNode::declare_parameters() {
     this->declare_parameter<double>("visual_servo_kp", 2.0);
     this->declare_parameter<double>("visual_servo_max_linear_acceleration", 0.5);
     this->declare_parameter<std::string>("base_link", "base_link");
-    this->declare_parameter<std::string>("tip_link", "Link6");
+    this->declare_parameter<std::string>("tip_link", "Link7");
     this->declare_parameter<std::vector<double>>("joint_target", std::vector<double>(kJointDoF, 0.0));
     this->declare_parameter<std::vector<double>>("cartesian_target_position", std::vector<double>{0.7, 0.0, 0.15});
     this->declare_parameter<std::vector<double>>("cartesian_target_quaternion", std::vector<double>{1.0, 0.0, 0.0, 0.0});
@@ -202,6 +203,79 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     }
 
     arm_calc_ = std::make_shared<ArmCalc>(arm_chain_);
+
+    // Parse joint limits from URDF and apply to ArmCalc so that IK solutions are clamped.
+    {
+        // Build a map from joint name to (lower, upper) by scanning the URDF for <limit> tags.
+        // We only need the revolute joints that are part of the KDL chain.
+        struct LimitPair { double lower; double upper; };
+        std::map<std::string, LimitPair> urdf_limits;
+
+        // Simple XML scan: find each <joint name="..."> ... <limit .../> ... </joint>
+        {
+            std::string urdf = urdf_xml;
+            std::size_t pos = 0;
+            while (true) {
+                // Find <joint
+                auto joint_start = urdf.find("<joint", pos);
+                if (joint_start == std::string::npos) break;
+
+                // Extract joint name
+                auto name_attr = urdf.find("name=\"", joint_start);
+                if (name_attr == std::string::npos) { pos = joint_start + 6; continue; }
+                name_attr += 6;
+                auto name_end = urdf.find("\"", name_attr);
+                if (name_end == std::string::npos) { pos = joint_start + 6; continue; }
+                std::string jname = urdf.substr(name_attr, name_end - name_attr);
+
+                // Find matching </joint>
+                auto joint_end = urdf.find("</joint>", name_end);
+                if (joint_end == std::string::npos) { pos = joint_start + 6; continue; }
+
+                // Look for <limit lower="..." upper="...">
+                auto limit_tag = urdf.find("<limit", name_end);
+                if (limit_tag != std::string::npos && limit_tag < joint_end) {
+                    auto lower_attr = urdf.find("lower=\"", limit_tag);
+                    auto upper_attr = urdf.find("upper=\"", limit_tag);
+                    if (lower_attr != std::string::npos && upper_attr != std::string::npos) {
+                        lower_attr += 7; upper_attr += 7;
+                        auto lower_end = urdf.find("\"", lower_attr);
+                        auto upper_end = urdf.find("\"", upper_attr);
+                        if (lower_end != std::string::npos && upper_end != std::string::npos) {
+                            double lo = std::stod(urdf.substr(lower_attr, lower_end - lower_attr));
+                            double hi = std::stod(urdf.substr(upper_attr, upper_end - upper_attr));
+                            urdf_limits[jname] = {lo, hi};
+                        }
+                    }
+                }
+                pos = joint_end + 8;
+            }
+        }
+
+        // Map KDL chain joints (in order) to limits. KDL chain joints skip fixed joints.
+        // The joint names in the chain match the URDF non-fixed joint names.
+        arm_calc::JointVector lower, upper;
+        for (unsigned int i = 0; i < arm_chain_.getNrOfJoints(); ++i) {
+            // KDL segment index: each segment has a joint; for a chain parsed from URDF,
+            // the joint name is stored in the segment.
+            // We need to find the joint name. KDL doesn't expose it directly from the segment,
+            // but since we know the order matches the URDF revolute joints, we can iterate.
+            // Actually KDL::Segment doesn't store the joint name. Instead, let's just use
+            // the known order: joint1..joint6 as defined in the URDF.
+            std::string jname = "joint" + std::to_string(i + 1);
+            auto it = urdf_limits.find(jname);
+            if (it != urdf_limits.end()) {
+                lower[static_cast<int>(i)] = it->second.lower;
+                upper[static_cast<int>(i)] = it->second.upper;
+            } else {
+                lower[static_cast<int>(i)] = -3.14;
+                upper[static_cast<int>(i)] =  3.14;
+                RCLCPP_WARN(get_logger(), "No URDF limit for %s, using ±3.14", jname.c_str());
+            }
+        }
+        arm_calc_->set_joint_limits(lower, upper);
+    }
+
     joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(arm_calc_);
     cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(arm_calc_);
     visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(arm_calc_);

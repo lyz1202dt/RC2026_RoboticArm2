@@ -41,6 +41,12 @@ public:
     void set_joint_pd(std::size_t index, double kp, double kd);
     void get_joint_pd(std::size_t index, double& kp, double& kd) const;
 
+    /** Set per-joint position limits (rad).  Values are clamped to [lower, upper]. */
+    void set_joint_limits(const JointVector& lower, const JointVector& upper);
+
+    /** Clamp a joint vector to the configured limits. */
+    JointVector clamp_to_joint_limits(const JointVector& joints) const;
+
     JointTrajectoryPoint signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target);
     JointTrajectoryPoint signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target, const JointVector& seed_joint_pos);
 
@@ -69,6 +75,11 @@ private:
 
     JointVector kp_{JointVector::Constant(50.0)};
     JointVector kd_{JointVector::Constant(3.0)};
+
+    // Joint limits (rad).  ±kNoLimit means unlimited.
+    static constexpr double kNoLimit = 1e18;
+    JointVector joint_lower_limit_{JointVector::Constant(kNoLimit)};
+    JointVector joint_upper_limit_{JointVector::Constant(kNoLimit)};
 };
 
 }  // namespace arm_calc

@@ -88,7 +88,13 @@ std::string CatchKFS::process(const std::string last_task_name) {
         target_pose.pose.position.x = -tf.transform.translation.x;
         target_pose.pose.position.y = tf.transform.translation.y;
         target_pose.pose.position.z = tf.transform.translation.z;
-        target_pose.pose.orientation = current_end_pose.pose.orientation;
+        // End-effector orientation: RPY(0, 0, 0) → pointing along +X axis
+        tf2::Quaternion q_set;
+        q_set.setRPY(0.0, 0.0, 0.0);
+        target_pose.pose.orientation.w = q_set.w();
+        target_pose.pose.orientation.x = q_set.x();
+        target_pose.pose.orientation.y = q_set.y();
+        target_pose.pose.orientation.z = q_set.z();
 
         RCLCPP_INFO(robot->node_->get_logger(), "目标位置: (%.3f, %.3f, %.3f)； 目标姿态: (%.3f, %.3f, %.3f, %.3f)", 
         target_pose.pose.position.x, target_pose.pose.position.y, target_pose.pose.position.z, 
@@ -116,7 +122,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return fail_task("启动视觉伺服失败");
     }
     while (rclcpp::ok() && robot->is_visual_servo_active()) {
-        if (robot->is_visual_servo_converged(0.03)) {
+        if (robot->is_visual_servo_converged(0.01)) {
             RCLCPP_INFO(robot->node_->get_logger(), "视觉伺服已收敛");
             break;
         }

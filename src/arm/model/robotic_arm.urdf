@@ -505,4 +505,48 @@
     <axis
       xyz="0 0 0" />
   </joint>
+  <link
+    name="end_effector">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.001" />
+      <inertia
+        ixx="1e-8"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1e-8"
+        iyz="0.0"
+        izz="1e-8" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <sphere
+          radius="0.015" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0 0 1" />
+      </material>
+    </visual>
+  </link>
+  <joint
+    name="joint8"
+    type="fixed">
+    <origin
+      xyz="0 0 0.02"
+      rpy="0 0 0" />
+    <parent
+      link="Link7" />
+    <child
+      link="end_effector" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
 </robot>

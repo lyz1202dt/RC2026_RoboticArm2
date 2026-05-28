@@ -44,6 +44,9 @@
                     <inertial pos="-0.012808 0.011896 -0.0076319" mass="0.23387" fullinertia="4.273e-05 0.00011389 9.0872e-05 -8.3213e-07 -9.9615e-07 1.7662e-09" />
                     <geom type="mesh" rgba="0.54902 1 0.92157 1" mesh="Link7" />
                     <site name="ee_site" pos="0 0 0.02" size="0.01" />
+                    <body name="end_effector" pos="0 0 0.02">
+                      <geom type="sphere" size="0.015" rgba="1 0 0 1" />
+                    </body>
                   </body>
                 </body>
               </body>
