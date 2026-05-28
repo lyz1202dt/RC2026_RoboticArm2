@@ -199,6 +199,7 @@ public:
     std::vector<double> ready_position_;  // Preparation position
     
     // Control flags
+    // 线程月推出标志
     std::atomic<bool> shutdown_requested_{false};
     
     // Parameter callback handle
@@ -254,6 +255,7 @@ private:
     std::atomic<bool> visual_servo_active_{false};
     std::thread visual_servo_thread_;
     std::mutex pose_mutex_; // 保护 target_object_pose_
+    // 目标物体位姿
     geometry_msgs::msg::PoseStamped target_object_pose_;
     bool has_object_pose_{false};
     std::mutex visual_servo_state_mutex_;

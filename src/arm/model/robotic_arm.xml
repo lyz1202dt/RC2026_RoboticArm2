@@ -1,5 +1,5 @@
 <mujoco model="robotic_arm">
-  <compiler angle="radian" />
+  <compiler angle="radian" eulerseq="zyx"/>
   <asset>
     <mesh name="base_link" file="base_link.STL" />
     <mesh name="Link1" file="Link1.STL" />
@@ -8,38 +8,43 @@
     <mesh name="Link4" file="Link4.STL" />
     <mesh name="Link5" file="Link5.STL" />
     <mesh name="Link6" file="Link6.STL" />
+    <mesh name="Link7" file="Link7.STL" />
   </asset>
   <worldbody>
     <body name="base_link">
-      <inertial pos="0.0047868411286706 0.025092753984613 0.0149908273938385" mass="1.01281835096414" fullinertia="0.00625100932656393 0.00384046369591767 0.0100624230595877 -0.000584685336704714 -3.36809667859688e-08 -5.81060329781518e-08" />
+      <inertial pos="0.0047868 0.025093 0.014991" mass="1.0128" fullinertia="0.006251 0.0038405 0.010062 -0.00058469 -3.3681e-08 -5.8106e-08" />
       <geom type="mesh" rgba="0.294118 0.294118 0.294118 1" mesh="base_link" />
       <site name="tool_site" pos="0 0 0" size="0.01" />
       <body name="Link1" pos="0 0 0.0525" euler="0 0 0">
-        <inertial pos="-5.01029972023101e-06 0.00180498616194712 0.0278206861985797" mass="1.7349745230456" fullinertia="0.00396868670174835 0.00414251056784572 0.00691209745862246 2.50920934794952e-08 4.11989140081469e-08 -1.02912960039639e-05" />
+        <inertial pos="-3.834e-06 0.00099634 0.027176" mass="1.7203" fullinertia="0.0039661 0.0041329 0.0069051 2.4854e-08 3.5046e-08 -1.0291e-05" />
         <joint name="joint1" pos="0 0 0" axis="0 0 1" range="-3.14 3.14" actuatorfrcrange="-50 50" />
         <geom type="mesh" rgba="0.898039 0.917647 0.929412 1" mesh="Link1" />
-        <body name="Link2" pos="0 0.02652 0.122" euler="1.57 0 1.57">
-          <inertial pos="0.191031530655422 4.32410497974017e-07 0.0306854552516929" mass="0.787811387302493" fullinertia="0.00049606795387562 0.0122617104406543 0.0124340315584268 2.27668521348359e-06 -6.33210945268573e-05 -9.69074921436739e-09" />
+        <body name="Link2" pos="0 0.02652 0.122" euler="0 -1.5708 1.5708">
+          <inertial pos="0.19103 4.3241e-07 0.030685" mass="0.78781" fullinertia="0.00049607 0.012262 0.012434 2.2767e-06 -6.3321e-05 -9.6907e-09" />
           <joint name="joint2" pos="0 0 0" axis="0 0 -1" range="-1.57 1.57" actuatorfrcrange="-50 50" />
           <geom type="mesh" rgba="0.294118 0.294118 0.294118 1" mesh="Link2" />
-          <body name="Link3" pos="0.5 0 0.0445" euler="0 0 0"> 
-            <inertial pos="0.25940311957003 0.000176428159097797 0.0290321909749513" mass="0.494884609286345" fullinertia="0.000156386729258121 0.00500770045542727 0.00512721053165725 9.61807998818635e-07 3.85189620428598e-06 -1.06705998971838e-06" />
+          <body name="Link3" pos="0.5 0 0.0445">
+            <inertial pos="0.27282 0.00017643 0.029032" mass="0.49488" fullinertia="0.00015639 0.0050077 0.0051272 9.6181e-07 3.8519e-06 -1.0671e-06" />
             <joint name="joint3" pos="0 0 0" axis="0 0 -1" range="-2.9 2.9" actuatorfrcrange="-50 50" />
             <geom type="mesh" rgba="0.898039 0.917647 0.929412 1" mesh="Link3" />
-            <body name="Link4" pos="0.47447 0 0.0085" euler="-3.1416 0 0">
-              <inertial pos="0.0679353921119107 -0.0238369085138454 -0.0257341390008855" mass="0.236644042415221" fullinertia="0.000207632282891493 0.000174919996697318 0.000212295889427771 8.93603536047073e-06 7.65514713415521e-08 -2.10460006398542e-08" />
-              <joint name="joint4" pos="0 0 0" axis="0 0 -1" range="-2.0 1.8" actuatorfrcrange="-50 50" />
+            <body name="Link4" pos="0.50964 0 0.0085" euler="0 0 -3.141">
+              <inertial pos="0.065717 -0.029406 -0.025734" mass="0.23664" fullinertia="0.00020889 0.00017366 0.0002123 6.1006e-06 7.4535e-08 -2.7341e-08" />
+              <joint name="joint4" pos="0 0 0" axis="0 0 -1" range="-2.0 1.3" actuatorfrcrange="-50 50" />
               <geom type="mesh" rgba="0.294118 0.294118 0.294118 1" mesh="Link4" />
-              <camera name="overview" pos="0.1 0.09 -0.03" xyaxes="0 0 1 0 1 0" />
-              <body name="Link5" pos="0.076 -0.0435 -0.02685" euler="1.57 0 0.37">
-                <inertial pos="0.066665634771627 -0.0279507791582666 -0.0354621276053786" mass="0.425979554353247" fullinertia="0.000194505916136064 0.000131747570803412 0.000201692515613288 -3.22768003027057e-05 -1.14257016010071e-06 3.66781136117267e-06" />
-                <joint name="joint5" pos="0 0 0" axis="0 0 -1" range="-0.5236 0.5236" actuatorfrcrange="-50 50" />
+              <camera name="camera" pos="0.1 -0.09 -0.03" xyaxes="0 -1 0 0 0 1" />
+              <body name="Link5" pos="0.072118 -0.049671 -0.02685" euler="0 -0.34 1.5708">
+                <inertial pos="0.06728 -0.028292 -0.034778" mass="0.40058" fullinertia="0.00018939 0.00012642 0.00019633 -3.2374e-05 -1.1426e-06 3.6678e-06" />
+                <joint name="joint5" pos="0 0 0" axis="0 0 -1" range="-0.43 0.43" actuatorfrcrange="-50 50" />
                 <geom type="mesh" rgba="0.294118 0.294118 0.294118 1" mesh="Link5" />
-                <body name="Link6" pos="0.079534 -0.016991 -0.02705" euler="0 0 -0.37724">
-                  <inertial pos="0.0249585485881318 -0.00299760440707666 -0.0193327334549921" mass="0.232464424402596" fullinertia="4.27085195830229e-05 0.000113842365448013 9.08067982933583e-05 -8.34217663831313e-07 -9.96151543026905e-07 1.76624913597618e-09" />
-                  <!-- <joint name="joint6" pos="0 0 0" axis="1 0 0" range="0 0.0" actuatorfrcrange="0 0" /> -->
-                  <geom type="mesh" rgba="0.250980 1 0.984314 1" mesh="Link6" />
-                  <site name="ee_site" pos="0 0 0.02" size="0.01" />
+                <body name="Link6" pos="0.048576 -0.019247 -0.04625" euler="2.415 -1.5708 0.377">
+                  <inertial pos="-7.5195405e-13 -3.3343883e-12 0.00904231406311307" mass="0.0254009547015186" fullinertia="5.36342143e-06 5.36342143e-06 5.08093890e-06 -1.53987e-21 -2.05047e-21 3.07049e-21" />
+                  <joint name="joint6" pos="0 0 0" axis="0 0 1" range="-1 1" actuatorfrcrange="-50 50" />
+                  <geom type="mesh" rgba="1 1 1 1" mesh="Link6" />
+                  <body name="Link7" pos="0.0075 0.0015 0.06595" euler="0 -1.5708 0">
+                    <inertial pos="-0.012808 0.011896 -0.0076319" mass="0.23387" fullinertia="4.273e-05 0.00011389 9.0872e-05 -8.3213e-07 -9.9615e-07 1.7662e-09" />
+                    <geom type="mesh" rgba="0.54902 1 0.92157 1" mesh="Link7" />
+                    <site name="ee_site" pos="0 0 0.02" size="0.01" />
+                  </body>
                 </body>
               </body>
             </body>
@@ -55,6 +60,7 @@
     <exclude body1="Link3" body2="Link4" />
     <exclude body1="Link4" body2="Link5" />
     <exclude body1="Link5" body2="Link6" />
+    <exclude body1="Link6" body2="Link7" />
   </contact>
   <actuator>
     <motor name="motor1" joint="joint1" gear="1" ctrllimited="true" ctrlrange="-50 50" />
@@ -62,7 +68,7 @@
     <motor name="motor3" joint="joint3" gear="1" ctrllimited="true" ctrlrange="-50 50" />
     <motor name="motor4" joint="joint4" gear="1" ctrllimited="true" ctrlrange="-50 50" />
     <motor name="motor5" joint="joint5" gear="1" ctrllimited="true" ctrlrange="-50 50" />
-      <!-- <motor name="motor6" joint="joint6" gear="1" ctrllimited="true" ctrlrange="-50 50" /> -->
+    <motor name="motor6" joint="joint6" gear="1" ctrllimited="true" ctrlrange="-50 50" />
   </actuator>
   <sensor>
     <actuatorpos name="motor1_p" actuator="motor1" />
@@ -70,19 +76,19 @@
     <actuatorpos name="motor3_p" actuator="motor3" />
     <actuatorpos name="motor4_p" actuator="motor4" />
     <actuatorpos name="motor5_p" actuator="motor5" />
-    <!-- <actuatorpos name="motor6_p" actuator="motor6" /> -->
+    <actuatorpos name="motor6_p" actuator="motor6" />
     <actuatorvel name="motor1_v" actuator="motor1" />
     <actuatorvel name="motor2_v" actuator="motor2" />
     <actuatorvel name="motor3_v" actuator="motor3" />
     <actuatorvel name="motor4_v" actuator="motor4" />
     <actuatorvel name="motor5_v" actuator="motor5" />
-    <!-- <actuatorvel name="motor6_v" actuator="motor6" /> -->
+    <actuatorvel name="motor6_v" actuator="motor6" />
     <actuatorfrc name="motor1_f" actuator="motor1" noise="1e-3" />
     <actuatorfrc name="motor2_f" actuator="motor2" noise="1e-3" />
     <actuatorfrc name="motor3_f" actuator="motor3" noise="1e-3" />
     <actuatorfrc name="motor4_f" actuator="motor4" noise="1e-3" />
     <actuatorfrc name="motor5_f" actuator="motor5" noise="1e-3" />
-    <!-- <actuatorfrc name="motor6_f" actuator="motor6" noise="1e-3" /> -->
+    <actuatorfrc name="motor6_f" actuator="motor6" noise="1e-3" />
     <framepos name="ee_pos" objtype="site" objname="ee_site" />
     <framequat name="ee_quat" objtype="site" objname="ee_site" />
   </sensor>

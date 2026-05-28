@@ -30,11 +30,12 @@ def generate_launch_description():
     # Position: x=0.6, y=0.0, z=0.45
     # Orientation: (0, 0, 0) which is identity quaternion (0, 0, 0, 1)
     # This simulates a detected object from vision system
+
     static_tf_target = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
         arguments=[
-            "0.35", "0.0", "0.8",  # x, y, z translation
+            "0.15", "0.8", "0.8",  # x, y, z translation
             "0.0", "0.0", "0.0", "1.0",  # quaternion (x, y, z, w) - identity (no rotation)
             "base_link",
             "target_object"

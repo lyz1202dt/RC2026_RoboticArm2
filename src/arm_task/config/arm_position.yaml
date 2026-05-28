@@ -94,7 +94,11 @@ arm_positions:
 
 
 
-
+# [arm_task-4] [INFO] [1779793804.582034882] [arm_task_node]: idel 等待新任务信号超时，继续等待
+# [arm_calc-3] [INFO] [1779793804.843721796] [arm_calc_node]: EE pose pos=(0.6298, 0.0210, 0.9755) rpy=(3.1201, 2.9330, -1.3807)
+# [arm_task-4] [INFO] [1779793805.582202304] [arm_task_node]: idel 等待新任务信号超时，继续等待
+# [arm_calc-3] [INFO] [1779793805.843748121] [arm_calc_node]: EE pose pos=(0.6298, 0.0210, 0.9755) rpy=(3.1201, 2.9330, -1.3807)
+# [arm_task-4] [INFO] [1779793806.582380148] [arm_task_node]: idel 等待新任务信号超时，继续等待
 
 
 

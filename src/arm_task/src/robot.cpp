@@ -48,7 +48,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
-    node_->declare_parameter<double>("grasp_height", 0.7);
+    node_->declare_parameter<double>("grasp_height", 1.0);
     node_->declare_parameter<double>("grasp_right_run", 0.10);
     node_->declare_parameter<double>("grasp_down_run", 0.15);
     node_->declare_parameter<double>("grasp_right_run_qian", 0.00);
@@ -638,7 +638,17 @@ bool Robot::is_visual_servo_converged(double position_tolerance_m, double* curre
     return distance < position_tolerance_m;
 }
 
+/**
+ * @brief 启动视觉伺服控制流程。
+ *
+ * 该函数用于初始化视觉伺服任务，设置目标位姿，重置内部状态，
+ * 配置机械臂计算节点进入视觉伺服模式，并启动后台发布线程。
+ *
+ * @param target_pose 目标位姿，包含期望的位置和姿态信息。
+ * @return bool 如果成功启动视觉伺服线程则返回 true，否则返回 false（当前实现始终返回 true）。
+ */
 bool Robot::start_visual_servo(const geometry_msgs::msg::PoseStamped& target_pose) {
+    // 更新目标位姿并标记为有效
     {
         std::lock_guard<std::mutex> lock(pose_mutex_);
         target_object_pose_ = target_pose;
@@ -646,6 +656,7 @@ bool Robot::start_visual_servo(const geometry_msgs::msg::PoseStamped& target_pos
     }
 
     // Reset state
+    // 重置视觉伺服的结果状态标志
     {
         std::lock_guard<std::mutex> lock(visual_servo_state_mutex_);
         visual_servo_result_ready_ = false;
@@ -653,19 +664,23 @@ bool Robot::start_visual_servo(const geometry_msgs::msg::PoseStamped& target_pos
     }
 
     // Ensure previous thread stopped
+    // 确保之前的视觉伺服线程已停止并加入主线程
     if (visual_servo_thread_.joinable()) {
-        visual_servo_active_ = false;
-        visual_servo_thread_.join();
+        visual_servo_active_ = false; // 退出线程标志
+        visual_servo_thread_.join(); // 等待旧线程执行结束
     }
 
     visual_servo_active_ = true;
 
     // Try to set arm_calc to visual servo mode (motion_mode = 3)
+    // 配置机械臂计算参数客户端以进入视觉伺服模式并执行轨迹
     if (arm_calc_param_client_ && arm_calc_param_client_->wait_for_service(5s)) {
+        // 将arm_calc设置成视觉伺服模式（motion_mode = 3），并启动执行轨迹的参数
         arm_calc_param_client_->set_parameters({rclcpp::Parameter("motion_mode", 3)});
         std::this_thread::sleep_for(100ms);
         arm_calc_param_client_->set_parameters({rclcpp::Parameter("execute_trajectory", true)});
     }
+    // 启动视觉伺服的后台线程
     visual_servo_thread_ = std::thread(&Robot::visual_servo_publish_thread, this);
     return true;
 }
@@ -718,6 +733,7 @@ void Robot::visual_servo_publish_thread() {
             visual_servo_result_ready_ = true;
             visual_servo_succeeded_ = succeeded;
         }
+        // 唤醒所有等待该条件变量的线程
         visual_servo_state_cv_.notify_all();
     };
 
@@ -727,11 +743,10 @@ void Robot::visual_servo_publish_thread() {
 
         if (!camera_data_locked) {
             try {
-
                 auto target_in_base = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
                 pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
                 pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
-                pose_to_publish.pose.position.z = node_->get_parameter("grasp_height").as_double();
+                pose_to_publish.pose.position.z = target_in_base.transform.translation.z; // node_->get_parameter("grasp_height").as_double();
                 pose_to_publish.header.frame_id = base_frame_;
                 pose_to_publish.header.stamp = node_->now();
                 has_pose = true;
@@ -788,7 +803,7 @@ void Robot::visual_servo_publish_thread() {
         }
 
         tf2::Quaternion q;
-        q.setRPY(0.0, 1.57, 0.0);
+        q.setRPY(0.0, 0.0, 0.0);
         pose_to_publish.pose.orientation.w = q.w();
         pose_to_publish.pose.orientation.x = q.x();
         pose_to_publish.pose.orientation.y = q.y();
