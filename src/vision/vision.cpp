@@ -34,8 +34,8 @@ struct KalmanFilter2D {
     KalmanFilter2D() {
         kf.init(4, 2, 1, CV_32F);
         kf.transitionMatrix = (cv::Mat_<float>(4, 4) <<
-            1, 0, 1, 0,
-            0, 1, 0, 1,
+            0, 1, 0, 0,
+            1, 0, 0, 1,
             0, 0, 1, 0,
             0, 0, 0, 1);
         kf.measurementMatrix = (cv::Mat_<float>(2, 4) <<
@@ -406,8 +406,8 @@ private:
                         Eigen::Vector4d P_cam(p3[0], p3[1], p3[2], 1.0);
 
                         // 【测试模式】总是打印当前检测到的相机坐标系坐标
-                        RCLCPP_INFO(this->get_logger(), "检测到目标 (camera_frame): (%.3f, %.3f, %.3f) 米, 距离: %.3f 米",
-                                    p3[0], p3[1], p3[2], dist_m);
+                        // RCLCPP_INFO(this->get_logger(), "检测到目标 (camera_frame): (%.3f, %.3f, %.3f) 米, 距离: %.3f 米",
+                        //             p3[0], p3[1], p3[2], dist_m);
 
                         // 【测试模式】发布 camera_link → target_camera 变换（无需手眼标定即可在 RViz 查看）
                         {
@@ -536,7 +536,7 @@ private:
                                         cv::FONT_HERSHEY_SIMPLEX, 0.7,
                                         cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
 
-                            RCLCPP_INFO(this->get_logger(), "最右侧杆坐标: (%.3f, %.3f, %.3f) 米", p3[0], p3[1], p3[2]);
+                            // RCLCPP_INFO(this->get_logger(), "最右侧杆坐标: (%.3f, %.3f, %.3f) 米", p3[0], p3[1], p3[2]);
                         }
                     } else {
                         cv::putText(color_image, "depth invalid",

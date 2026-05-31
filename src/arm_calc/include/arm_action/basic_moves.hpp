@@ -81,13 +81,16 @@ private:
     std::shared_ptr<ArmCalc> arm_calc_;
     JointState current_joint_state_{};
     CartesianState current_cartesian_state_{};
+    Eigen::Quaterniond start_orientation_{Eigen::Quaterniond::Identity()};
     CartesianPose target_pose_{};
     CartesianPose latched_target_pose_{};
     bool has_joint_state_{false};
     bool has_target_pose_{false};
     bool has_latched_target_pose_{false};
     bool servo_initialized_{false};
+    double servo_start_time_sec_{0.0};
     double last_sample_time_sec_{0.0};
+    double orientation_ramp_duration_sec_{0.3};
     double kp_{0.4};
     double max_linear_acceleration_{0.5};
 

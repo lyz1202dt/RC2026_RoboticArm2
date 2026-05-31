@@ -43,7 +43,7 @@ Eigen::Vector3d ClampVectorNorm(const Eigen::Vector3d& vector, double limit) {
 
 Eigen::Quaterniond FixedVisualServoOrientation() {
     tf2::Quaternion q;
-    q.setRPY(0.0, 0.0, 0.0);
+    q.setRPY(0.0, 0.5, 0.0);
     return arm_calc::NormalizeQuaternion(Eigen::Quaterniond(q.w(), q.x(), q.y(), q.z()));
 }
 
@@ -197,6 +197,8 @@ void VisualServoMove::start(const JointState& state, double start_time_sec) {
     desired_velocity_        = current_cartesian_state_.linear_velocity;
     desired_acceleration_.setZero();
     desired_joint_seed_   = state.position;
+    start_orientation_    = arm_calc::NormalizeQuaternion(current_cartesian_state_.pose.orientation);
+    servo_start_time_sec_ = start_time_sec;
     last_sample_time_sec_ = start_time_sec;
     servo_initialized_    = true;
 }
@@ -267,7 +269,14 @@ JointTrajectoryPoint VisualServoMove::sample(double current_time_sec) {
         cartesian_target.pose.position       = desired_position_;
         cartesian_target.linear_velocity     = desired_velocity_;
         cartesian_target.linear_acceleration = desired_acceleration_;
-        cartesian_target.pose.orientation    = FixedVisualServoOrientation();
+        const Eigen::Quaterniond target_orientation = FixedVisualServoOrientation();
+        const double orientation_blend = std::clamp(
+            (current_time_sec - servo_start_time_sec_) / orientation_ramp_duration_sec_, 0.0, 1.0);
+        const Eigen::Quaterniond blended_orientation = start_orientation_.slerp(orientation_blend, target_orientation);
+        cartesian_target.pose.orientation.w() = blended_orientation.w();
+        cartesian_target.pose.orientation.x() = blended_orientation.x();
+        cartesian_target.pose.orientation.y() = blended_orientation.y();
+        cartesian_target.pose.orientation.z() = blended_orientation.z();
         cartesian_target.angular_velocity.setZero();
         cartesian_target.angular_acceleration.setZero();
         RCLCPP_INFO_THROTTLE(
@@ -313,7 +322,14 @@ JointTrajectoryPoint VisualServoMove::sample(double current_time_sec) {
     cartesian_target.pose.position       = desired_position_;
     cartesian_target.linear_velocity     = desired_velocity_;
     cartesian_target.linear_acceleration = desired_acceleration_;
-    cartesian_target.pose.orientation    = FixedVisualServoOrientation();
+    const Eigen::Quaterniond target_orientation = FixedVisualServoOrientation();
+    const double orientation_blend = std::clamp(
+        (current_time_sec - servo_start_time_sec_) / orientation_ramp_duration_sec_, 0.0, 1.0);
+    const Eigen::Quaterniond blended_orientation = start_orientation_.slerp(orientation_blend, target_orientation);
+    cartesian_target.pose.orientation.w() = blended_orientation.w();
+    cartesian_target.pose.orientation.x() = blended_orientation.x();
+    cartesian_target.pose.orientation.y() = blended_orientation.y();
+    cartesian_target.pose.orientation.z() = blended_orientation.z();
     cartesian_target.angular_velocity.setZero();
     cartesian_target.angular_acceleration.setZero();
     RCLCPP_INFO_THROTTLE(

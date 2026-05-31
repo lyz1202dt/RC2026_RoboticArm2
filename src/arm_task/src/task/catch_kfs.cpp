@@ -87,10 +87,10 @@ std::string CatchKFS::process(const std::string last_task_name) {
         target_pose.header.stamp = robot->node_->now();
         target_pose.pose.position.x = -tf.transform.translation.x;
         target_pose.pose.position.y = tf.transform.translation.y;
-        target_pose.pose.position.z = tf.transform.translation.z;
+        target_pose.pose.position.z = robot->node_->get_parameter("grasp_height").as_double(); // tf.transform.translation.z;
         // End-effector orientation: RPY(0, 0, 0) → pointing along +X axis
         tf2::Quaternion q_set;
-        q_set.setRPY(0.0, 0.0, 0.0);
+        q_set.setRPY(0.0, 0.5, 0.0);
         target_pose.pose.orientation.w = q_set.w();
         target_pose.pose.orientation.x = q_set.x();
         target_pose.pose.orientation.y = q_set.y();
@@ -128,7 +128,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
         }
         std::this_thread::sleep_for(50ms);
     }
-    if (!robot->is_visual_servo_active()) {
+    if (!robot->wait_for_visual_servo_convergence(0.01, 0.0)) {
         return fail_task("视觉伺服被外部取消");
     }
     robot->stop_visual_servo();
@@ -141,20 +141,52 @@ std::string CatchKFS::process(const std::string last_task_name) {
     if (!robot->set_air_pump(0)) {
         return fail_task("关闭夹爪失败");
     }
+    std::this_thread::sleep_for(10000ms);
 
-    ready_position_name = "detach_gan";
+    ready_position_name = "detach_gan_1";
 
     if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
         RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
         return fail_task("未找到命名位姿 " + ready_position_name);
     }
 
-    RCLCPP_INFO(robot->node_->get_logger(), "移动到准备抓杆位置");
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到准备放杆位置");
     if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
-        return fail_task("移动到准备抓杆位置失败");
+        return fail_task("移动到准备放杆位置失败");
     } else {
-        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到准备抓杆位置");
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到准备放杆位置");
     }
+
+    ready_position_name = "detach_gan_2";
+    if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
+        return fail_task("未找到命名位姿 " + ready_position_name);
+    }
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆位置");
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+        return fail_task("移动到放杆位置失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆位置");
+    }
+
+    if (!robot->get_current_end_pose_from_arm_calc(current_end_pose)) {
+        return fail_task("获取当前末端位姿失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功获取当前末端位姿");
+        RCLCPP_INFO(robot->node_->get_logger(), "当前末端位置: (%.3f, %.3f, %.3f)； 当前末端姿态: (%.3f, %.3f, %.3f, %.3f)", 
+        current_end_pose.pose.position.x, current_end_pose.pose.position.y, current_end_pose.pose.position.z, 
+        current_end_pose.pose.orientation.x, current_end_pose.pose.orientation.y, current_end_pose.pose.orientation.z, 
+        current_end_pose.pose.orientation.w);
+    }
+
+    current_end_pose.pose.position.z -= 0.2;
+
+    if (!robot->execute_cartesian_space_trajectory(current_end_pose, 3.0)) {
+        return fail_task("向下戳杆失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功向下戳杆");
+    }
+
 
 
 

@@ -48,7 +48,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
-    node_->declare_parameter<double>("grasp_height", 1.0);
+    node_->declare_parameter<double>("grasp_height", 0.8);
     node_->declare_parameter<double>("grasp_right_run", 0.10);
     node_->declare_parameter<double>("grasp_down_run", 0.15);
     node_->declare_parameter<double>("grasp_right_run_qian", 0.00);
@@ -733,7 +733,7 @@ void Robot::visual_servo_publish_thread() {
             visual_servo_result_ready_ = true;
             visual_servo_succeeded_ = succeeded;
         }
-        // 唤醒所有等待该条件变量的线程
+    // 唤醒所有等待该条件变量的线程`
         visual_servo_state_cv_.notify_all();
     };
 
@@ -746,7 +746,7 @@ void Robot::visual_servo_publish_thread() {
                 auto target_in_base = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
                 pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
                 pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
-                pose_to_publish.pose.position.z = target_in_base.transform.translation.z; // node_->get_parameter("grasp_height").as_double();
+                pose_to_publish.pose.position.z = node_->get_parameter("grasp_height").as_double();
                 pose_to_publish.header.frame_id = base_frame_;
                 pose_to_publish.header.stamp = node_->now();
                 has_pose = true;
@@ -803,7 +803,7 @@ void Robot::visual_servo_publish_thread() {
         }
 
         tf2::Quaternion q;
-        q.setRPY(0.0, 0.0, 0.0);
+        q.setRPY(0.0, 0.5, 0.0);
         pose_to_publish.pose.orientation.w = q.w();
         pose_to_publish.pose.orientation.x = q.x();
         pose_to_publish.pose.orientation.y = q.y();

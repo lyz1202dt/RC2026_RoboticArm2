@@ -480,7 +480,7 @@ void ArmCtrlNode::publish_control_loop() {
     }
 
     const double now_sec = this->get_clock()->now().seconds();
-    if (last_ee_log_time_sec_ < 0.0 || (now_sec - last_ee_log_time_sec_) >= 1.0) {
+    if (last_ee_log_time_sec_ < 0.0 || (now_sec - last_ee_log_time_sec_) >= 0.3) {
         const CartesianPose ee_pose = arm_calc_->end_pose(current_joint_state_.position);
         const Eigen::Vector3d ee_rpy = ee_pose.orientation.toRotationMatrix().eulerAngles(0, 1, 2);
         RCLCPP_INFO(
