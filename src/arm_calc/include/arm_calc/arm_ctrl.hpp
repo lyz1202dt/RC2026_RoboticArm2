@@ -4,8 +4,8 @@
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <kdl/chain.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <robot_interfaces/msg/arm.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
@@ -22,12 +22,7 @@ public:
     explicit ArmCtrlNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
 
 private:
-    enum class MotionMode {
-        kIdle = 0,
-        kJointSpace = 1,
-        kCartesianSpace = 2,
-        kVisualServo = 3
-    };
+    enum class MotionMode { kIdle = 0, kJointSpace = 1, kCartesianSpace = 2, kVisualServo = 3 };
 
     void declare_parameters();
     void create_interfaces();
@@ -80,8 +75,10 @@ private:
     JointState joint_target_state_{};
     JointTrajectoryPoint idle_hold_point_{};
 
-    KDL::Chain arm_chain_;
-    std::shared_ptr<ArmCalc> arm_calc_;
+    KDL::Chain left_chain_;
+    KDL::Chain right_chain_;
+    std::shared_ptr<ArmCalc> left_arm_calc_;
+    std::shared_ptr<ArmCalc> right_arm_calc_;
     std::shared_ptr<arm_action::JointSpaceMove> joint_space_move_;
     std::shared_ptr<arm_action::JCartesianSpaceMove> cartesian_space_move_;
     std::shared_ptr<arm_action::VisualServoMove> visual_servo_move_;
@@ -96,4 +93,4 @@ private:
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
 };
 
-}  // namespace arm_calc
+} // namespace arm_calc
