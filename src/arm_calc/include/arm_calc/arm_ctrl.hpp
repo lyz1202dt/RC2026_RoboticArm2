@@ -10,7 +10,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-
+#include <robot_interfaces/msg/armmode.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -45,11 +45,12 @@ private:
     void on_joint_state(const JointTrajectoryPoint& point);
     void on_visual_target(const geometry_msgs::msg::PoseStamped& msg);
     void on_joint_space_target(const std_msgs::msg::Float64MultiArray& msg);
+    void on_arm_mode_control_lr(const robot_interfaces::msg::Armmode& msg);
     rcl_interfaces::msg::SetParametersResult on_parameters_changed(const std::vector<rclcpp::Parameter>& params);
 
     static MotionMode parse_motion_mode(int mode_value);
     static JointState from_arm_message(const JointTrajectoryPoint& point);
-    static robot_interfaces::msg::Arm to_arm_message(const JointTrajectoryPoint& point);
+     robot_interfaces::msg::Arm to_arm_message(const JointTrajectoryPoint& point);
     static sensor_msgs::msg::JointState to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp);
     static std::vector<double> get_double_array_param(const rclcpp::Node& node, const std::string& name, std::size_t expected_size);
 
@@ -67,6 +68,7 @@ private:
     double visual_servo_max_linear_acceleration_{0.5};
     double last_ee_log_time_sec_{-1.0};
 
+    std::string current_side_ = "idle"; // "left", "right", or "idle"
     std::vector<std::string> joint_names_{"joint1", "joint2", "joint3", "joint4"};
     std::string base_link_{"base_link"};
     std::string tip_link_{"link4"};
@@ -79,13 +81,18 @@ private:
     KDL::Chain right_chain_;
     std::shared_ptr<ArmCalc> left_arm_calc_;
     std::shared_ptr<ArmCalc> right_arm_calc_;
-    std::shared_ptr<arm_action::JointSpaceMove> joint_space_move_;
-    std::shared_ptr<arm_action::JCartesianSpaceMove> cartesian_space_move_;
-    std::shared_ptr<arm_action::VisualServoMove> visual_servo_move_;
+    std::shared_ptr<arm_action::JointSpaceMove> left_joint_space_move_;
+    std::shared_ptr<arm_action::JointSpaceMove> right_joint_space_move_;
+    std::shared_ptr<arm_action::JCartesianSpaceMove> left_cartesian_space_move_;
+    std::shared_ptr<arm_action::JCartesianSpaceMove> right_cartesian_space_move_;
+    std::shared_ptr<arm_action::VisualServoMove> left_visual_servo_move_;
+    std::shared_ptr<arm_action::VisualServoMove> right_visual_servo_move_;
 
     rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_state_sub_;
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_sub_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_sub_;
+    rclcpp::Subscription<robot_interfaces::msg::Armmode>::SharedPtr arm_mode_control_sub;
+ 
     rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr joint_target_pub_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr rviz_joint_pub_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;

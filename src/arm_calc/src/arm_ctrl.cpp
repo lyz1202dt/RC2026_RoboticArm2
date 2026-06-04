@@ -50,7 +50,7 @@ geometry_msgs::msg::Quaternion ToMsgQuaternion(const Eigen::Quaterniond& q) {
 // 辅助函数：构建静态关节目标点，用于预览或保持
 // 参数：arm_calc - 运动学计算器，position - 目标关节位置
 // 返回：JointTrajectoryPoint，包含位置、速度、加速度和扭矩
-JointTrajectoryPoint BuildStaticJointTarget(const std::shared_ptr<ArmCalc>& arm_calc, const JointVector& position) {
+JointTrajectoryPoint BuildStaticJointTarget(ArmCalc* arm_calc, const JointVector& position) {
     JointTrajectoryPoint point;
     point.position = position; // 设置目标位置
     // point.velocity.setZero();   // 速度设为零（静态）
@@ -125,6 +125,10 @@ void ArmCtrlNode::create_interfaces() {
         kVisualTargetTopic, 10, // 队列大小10
         std::bind(&ArmCtrlNode::on_visual_target, this, std::placeholders::_1));
 
+    arm_mode_control_sub = this->create_subscription<robot_interfaces::msg::Armmode>(
+        "arm_mode_control", 10, std::bind(&ArmCtrlNode::on_arm_mode_control_lr , this, std::placeholders::_1));
+        
+
     // 订阅关节目标：从"joint_space_target"话题接收关节空间的目标角度
     joint_space_target_sub_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
         kJointSpaceTargetTopic, 10, std::bind(&ArmCtrlNode::on_joint_space_target, this, std::placeholders::_1));
@@ -195,24 +199,32 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     if (!kdl_parser::treeFromString(urdf_xml, tree)) {
         throw std::runtime_error("failed to parse arm URDF into KDL tree"); // 解析失败抛异常
     }
-    // 从树中提取运动学链，从base_link到tip_link
-    if (!tree.getChain("base_link", "link5", arm_chain_)) {
-        throw std::runtime_error("failed to build KDL chain from " + base_link_ + " to " + tip_link_);
+    if (!tree.getChain("base_link", "left3", left_chain_)) {
+        throw std::runtime_error("failed to build left chain");
     }
 
+    if (!tree.getChain("base_link", "right3", right_chain_)) {
+        throw std::runtime_error("failed to build right chain");
+    }
     // 初始化运动学求解器
-    arm_calc_ = std::make_shared<ArmCalc>(arm_chain_); // 创建ArmCalc实例，基于KDL链
+    left_arm_calc_ = std::make_shared<ArmCalc>(left_chain_);
+    right_arm_calc_ = std::make_shared<ArmCalc>(right_chain_); // 创建ArmCalc实例，基于KDL链
 
     // 初始化关节空间运动规划器
-    joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(arm_calc_);
+    left_joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(left_arm_calc_);
+    right_joint_space_move_ = std::make_shared<arm_action::JointSpaceMove>(right_arm_calc_);
     // 初始化笛卡尔空间运动规划器
-    cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(arm_calc_);
+    left_cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(left_arm_calc_);
+    right_cartesian_space_move_ = std::make_shared<arm_action::JCartesianSpaceMove>(right_arm_calc_);   
     // 初始化视觉伺服运动规划器
-    visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(arm_calc_);
+    left_visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(left_arm_calc_);
+    right_visual_servo_move_ = std::make_shared<arm_action::VisualServoMove>(right_arm_calc_);
     // 设置视觉伺服的KP增益
-    visual_servo_move_->set_kp(visual_servo_kp_);
+    left_visual_servo_move_->set_kp(visual_servo_kp_);
+    right_visual_servo_move_->set_kp(visual_servo_kp_);
     // 设置视觉伺服的最大线加速度
-    visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
+    left_visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
+    right_visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
 }
 
 // 获取机器人描述：尝试从/robot_state_publisher参数服务获取URDF，如果失败则从本地文件加载
@@ -267,42 +279,62 @@ std::string ArmCtrlNode::load_local_urdf() const {
 // 刷新规划：根据当前运动模式设置运动规划器，准备执行轨迹
 // 参数：now_sec - 当前时间（秒）
 void ArmCtrlNode::refresh_plan(double now_sec) {
-    // 检查ArmCalc是否初始化且有关节状态
-    if (!arm_calc_ || !has_joint_state_) {
-        return; // 如果未初始化或无关节状态，直接返回
+    if (!left_arm_calc_ || !right_arm_calc_ || !has_joint_state_) {
+        return;
     }
 
-    // 根据活动运动模式进行规划
+    // 根据 current_side_ 选择对应的规划器和 arm_calc
+    arm_action::JointSpaceMove* joint_space_move = nullptr;
+    arm_action::JCartesianSpaceMove* cartesian_space_move = nullptr;
+    arm_action::VisualServoMove* visual_servo_move = nullptr;
+    ArmCalc* arm_calc = nullptr;
+
+    if (current_side_ == "left") {
+        joint_space_move = left_joint_space_move_.get();
+        cartesian_space_move = left_cartesian_space_move_.get();
+        visual_servo_move = left_visual_servo_move_.get();
+        arm_calc = left_arm_calc_.get();
+    } else if (current_side_ == "right") {
+        joint_space_move = right_joint_space_move_.get();
+        cartesian_space_move = right_cartesian_space_move_.get();
+        visual_servo_move = right_visual_servo_move_.get();
+        arm_calc = right_arm_calc_.get();
+    } else {  // idle
+        enter_idle_mode();
+        planners_ready_ = true;
+        return;
+    }
+
     switch (active_motion_mode_) {
-    case MotionMode::kIdle:                                                                     // 空闲模式
-        enter_idle_mode();                                                                      // 进入空闲模式
-        RCLCPP_INFO(get_logger(), "进入IDEL模式");                                              // 记录日志
+    case MotionMode::kIdle:
+        enter_idle_mode();
         break;
-    case MotionMode::kJointSpace:                                                               // 关节空间模式
-        joint_space_move_->set_start_state(current_joint_state_);                               // 设置起点状态
-        joint_space_move_->set_goal_state(joint_target_state_, trajectory_duration_sec_);       // 设置目标状态和持续时间
-        if (execute_trajectory_) {                                                              // 如果执行轨迹
-            joint_space_move_->start(now_sec);                                                  // 开始轨迹
+
+    case MotionMode::kJointSpace:
+        joint_space_move->set_start_state(current_joint_state_);
+        joint_space_move->set_goal_state(joint_target_state_, trajectory_duration_sec_);
+        if (execute_trajectory_) {
+            joint_space_move->start(now_sec);
         }
-        RCLCPP_INFO(get_logger(), "进入关节空间轨迹执行模式");                                  // 记录日志
         break;
-    case MotionMode::kCartesianSpace:                                                           // 笛卡尔空间模式
-        cartesian_space_move_->set_start_state(current_joint_state_);                           // 设置起点
-        cartesian_space_move_->set_goal_state(cartesian_target_, trajectory_duration_sec_);     // 设置目标姿态和时间
-        if (execute_trajectory_) {                                                              // 如果执行轨迹
-            cartesian_space_move_->start(now_sec);                                              // 开始轨迹
+
+    case MotionMode::kCartesianSpace:
+        cartesian_space_move->set_start_state(current_joint_state_);
+        cartesian_space_move->set_goal_state(cartesian_target_, trajectory_duration_sec_);
+        if (execute_trajectory_) {
+            cartesian_space_move->start(now_sec);
         }
-        RCLCPP_INFO(get_logger(), "进入笛卡尔空间轨迹执行模式");                                // 记录日志
         break;
-    case MotionMode::kVisualServo:                                                              // 视觉伺服模式
-        visual_servo_move_->set_kp(visual_servo_kp_);                                           // 设置KP增益
-        visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_); // 设置最大加速度
-        visual_servo_move_->set_current_joint_state(current_joint_state_);                      // 设置当前关节状态
-        visual_servo_move_->set_target_pose(visual_target_);                                    // 设置目标姿态
-        RCLCPP_INFO(get_logger(), "进入视觉伺服模式");                                          // 记录日志
+
+    case MotionMode::kVisualServo:
+        visual_servo_move->set_kp(visual_servo_kp_);
+        visual_servo_move->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
+        visual_servo_move->set_current_joint_state(current_joint_state_);
+        visual_servo_move->set_target_pose(visual_target_);
         break;
     }
-    planners_ready_ = true;                                                                     // 标记规划器已准备好
+
+    planners_ready_ = true;
 }
 
 void ArmCtrlNode::capture_idle_hold_from_current_state() {
@@ -389,15 +421,32 @@ void ArmCtrlNode::enter_idle_mode() {
  * @return false 当前模式下无轨迹运行（或处于空闲/视觉伺服等非轨迹模式）
  */
 bool ArmCtrlNode::is_trajectory_running(double now_sec) const {
-    switch (active_motion_mode_) {
-    case MotionMode::kJointSpace:     // 关节空间轨迹模式
-        return joint_space_move_ && joint_space_move_->started() && joint_space_move_->active(now_sec);
-    case MotionMode::kCartesianSpace: // 笛卡尔空间轨迹模式
-        return cartesian_space_move_ && cartesian_space_move_->started() && cartesian_space_move_->active(now_sec);
-    case MotionMode::kVisualServo:    // 视觉伺服模式（使用单独的执行标志）
-        return execute_trajectory_;
-    case MotionMode::kIdle:           // 空闲模式（默认不运行轨迹）
-    default: return false;
+    if (current_side_ == "idle") {
+        return false;
+    }
+
+    if (current_side_ == "left") {
+        switch (active_motion_mode_) {
+        case MotionMode::kJointSpace:
+            return left_joint_space_move_ && left_joint_space_move_->started() && left_joint_space_move_->active(now_sec);
+        case MotionMode::kCartesianSpace:
+            return left_cartesian_space_move_ && left_cartesian_space_move_->started() && left_cartesian_space_move_->active(now_sec);
+        case MotionMode::kVisualServo:
+            return execute_trajectory_;
+        default:
+            return false;
+        }
+    } else {  // right
+        switch (active_motion_mode_) {
+        case MotionMode::kJointSpace:
+            return right_joint_space_move_ && right_joint_space_move_->started() && right_joint_space_move_->active(now_sec);
+        case MotionMode::kCartesianSpace:
+            return right_cartesian_space_move_ && right_cartesian_space_move_->started() && right_cartesian_space_move_->active(now_sec);
+        case MotionMode::kVisualServo:
+            return execute_trajectory_;
+        default:
+            return false;
+        }
     }
 }
 
@@ -442,38 +491,44 @@ void ArmCtrlNode::set_execute_trajectory_flag(bool value) {
  * @return JointTrajectoryPoint 预览用的关节轨迹点（包含位置、速度、加速度等）
  */
 JointTrajectoryPoint ArmCtrlNode::build_preview_target() const {
-    switch (requested_motion_mode_) {
-    case MotionMode::kJointSpace:                                               // 关节空间模式：直接使用目标关节角度
-        return BuildStaticJointTarget(arm_calc_, joint_target_state_.position); // 直接使用关节目标
-
-    case MotionMode::kCartesianSpace: {                                         // 笛卡尔空间模式：需逆运动学（IK）求解
-        int result = -1;                                                        // IK 求解结果标志
-        // 使用当前关节状态或空闲保持点作为 IK 初始种子（提高求解成功率）
-        const JointVector seed = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
-        // 调用机械臂正运动学库求解笛卡尔目标对应的关节角度
-        const JointVector preview_position = arm_calc_->joint_pos(cartesian_target_, &result, seed);
-
-        if (result < 0) {                                           // IK 求解失败（奇异位形或超出关节限位）
-            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to solve IK for Cartesian preview target, keeping current display\033[0m");
-            RCLCPP_INFO(this->get_logger(), "\033[1;31mhas_joint_state_ = %s\033[0m", has_joint_state_ ? "true" : "false");
-            return idle_hold_point_;                                // 回退到空闲保持点，避免显示错误
-        }
-        return BuildStaticJointTarget(arm_calc_, preview_position); // 构建静态关节目标点
+    ArmCalc* arm_calc = nullptr;
+    if (current_side_ == "left") {
+        arm_calc = left_arm_calc_.get();
+    } else if (current_side_ == "right") {
+        arm_calc = right_arm_calc_.get();
+    } else {
+        return idle_hold_point_;
     }
 
-    case MotionMode::kVisualServo: {                                // 视觉伺服模式：同样需要 IK 求解视觉目标
-        int result                         = -1;
-        const JointVector seed             = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
-        const JointVector preview_position = arm_calc_->joint_pos(visual_target_, &result, seed);
+    switch (requested_motion_mode_) {
+    case MotionMode::kJointSpace:
+        return BuildStaticJointTarget(arm_calc, joint_target_state_.position);
+
+    case MotionMode::kCartesianSpace: {
+        int result = -1;
+        const JointVector seed = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
+        const JointVector preview_position = arm_calc->joint_pos(cartesian_target_, &result, seed);
         if (result < 0) {
-            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to solve IK for visual target preview, keeping current display\033[0m");
+            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to solve IK for Cartesian preview target\033[0m");
             return idle_hold_point_;
         }
-        return BuildStaticJointTarget(arm_calc_, preview_position);
+        return BuildStaticJointTarget(arm_calc, preview_position);
     }
 
-    case MotionMode::kIdle:                                         // 空闲模式或其他未知模式
-    default: return idle_hold_point_;                               // 默认返回空闲保持点
+    case MotionMode::kVisualServo: {
+        int result = -1;
+        const JointVector seed = has_joint_state_ ? current_joint_state_.position : idle_hold_point_.position;
+        const JointVector preview_position = arm_calc->joint_pos(visual_target_, &result, seed);
+        if (result < 0) {
+            RCLCPP_WARN(this->get_logger(), "\033[1;31mFailed to solve IK for visual target preview\033[0m");
+            return idle_hold_point_;
+        }
+        return BuildStaticJointTarget(arm_calc, preview_position);
+    }
+
+    case MotionMode::kIdle:
+    default:
+        return idle_hold_point_;
     }
 }
 
@@ -491,89 +546,94 @@ JointTrajectoryPoint ArmCtrlNode::build_preview_target() const {
 void ArmCtrlNode::publish_control_loop() {
     // 检查关节状态和规划器是否准备好
     if (!has_joint_state_ || !planners_ready_) {
-        return;                                                // 未收到关节反馈或规划器未初始化，直接跳过本次循环
+        return;
     }
 
-    const double now_sec = this->get_clock()->now().seconds(); // 获取当前 ROS 时间（秒）
+    const double now_sec = this->get_clock()->now().seconds();
 
-    if (last_ee_log_time_sec_ < 0.0 || (now_sec - last_ee_log_time_sec_) >= 0.25) {
-        const CartesianPose ee_pose  = arm_calc_->end_pose(current_joint_state_.position);
+    // ==================== 新增：动态选择当前使用的 ArmCalc ====================
+    ArmCalc* current_arm_calc = nullptr;
+    if (current_side_ == "left") {
+        current_arm_calc = left_arm_calc_.get();
+    } else if (current_side_ == "right") {
+        current_arm_calc = right_arm_calc_.get();
+    } else {
+        // idle 模式下不打印 EE pose
+        current_arm_calc = nullptr;
+    }
+
+    // ==================== 日志打印 EE pose（修复 arm_calc_ 残留） ====================
+    if (current_arm_calc && 
+        (last_ee_log_time_sec_ < 0.0 || (now_sec - last_ee_log_time_sec_) >= 0.25)) {
+        
+        const CartesianPose ee_pose = current_arm_calc->end_pose(current_joint_state_.position);
         const Eigen::Vector3d ee_rpy = ee_pose.orientation.toRotationMatrix().eulerAngles(0, 1, 2);
+        
         RCLCPP_INFO(
-            get_logger(), "EE pose pos=(%.4f, %.4f, %.4f) rpy=(%.4f, %.4f, %.4f)", ee_pose.position.x(), ee_pose.position.y(),
-            ee_pose.position.z(), ee_rpy.x(), ee_rpy.y(), ee_rpy.z());
+            get_logger(), "EE pose pos=(%.4f, %.4f, %.4f) rpy=(%.4f, %.4f, %.4f) | side=%s", 
+            ee_pose.position.x(), ee_pose.position.y(), ee_pose.position.z(), 
+            ee_rpy.x(), ee_rpy.y(), ee_rpy.z(), current_side_.c_str());
+        
         last_ee_log_time_sec_ = now_sec;
     }
 
     apply_requested_mode(now_sec);
-    JointTrajectoryPoint target_point;                         // 本次控制循环的目标关节点
-    // 根据当前激活的运动模式采样目标点
-    switch (active_motion_mode_) {
-    case MotionMode::kIdle: // 空闲模式：保持当前位置
+
+    JointTrajectoryPoint target_point;
+    if (current_side_ == "idle") {
         target_point = idle_hold_point_;
-        // 重新计算关节力矩（逆动力学），保证力控或仿真时姿态稳定
-        // target_point.torque = arm_calc_->joint_torque_inverse_dynamics(
-        //     target_point.position, JointVector::Zero(), JointVector::Zero());
-        // RCLCPP_INFO(get_logger(),"target_point=(%lf,%lf,%lf)",target_point.position[0],target_point.position[1],target_point.position[2]);
-        break;
+    } else {
+        arm_action::JointSpaceMove* joint_space_move = (current_side_ == "left") ?
+            left_joint_space_move_.get() : right_joint_space_move_.get();
+        
+        arm_action::JCartesianSpaceMove* cartesian_space_move = (current_side_ == "left") ?
+            left_cartesian_space_move_.get() : right_cartesian_space_move_.get();
+        
+        arm_action::VisualServoMove* visual_servo_move = (current_side_ == "left") ?
+            left_visual_servo_move_.get() : right_visual_servo_move_.get();
 
-    case MotionMode::kJointSpace:                                                  // 关节空间轨迹模式
-        target_point = joint_space_move_->sample(now_sec);                         // 从关节规划器采样当前时刻的目标
-        if (!joint_space_move_->active(now_sec) && joint_space_move_->started()) { // 轨迹已自然结束
-            set_idle_hold_point(target_point);                                     // 更新空闲保持点为本次轨迹终点
-            set_execute_trajectory_flag(false);                                    // 停止执行标志
-            active_motion_mode_    = MotionMode::kIdle;                            // 切换到空闲模式
-            requested_motion_mode_ = MotionMode::kIdle;
-            enter_idle_mode();                                                     // 初始化空闲保持
-            target_point = idle_hold_point_;                                       // 本次循环使用空闲点
-        }
-        break;
-
-    case MotionMode::kCartesianSpace:                                              // 笛卡尔空间轨迹模式（逻辑同关节空间）
-        target_point = cartesian_space_move_->sample(now_sec);
-        if (!cartesian_space_move_->active(now_sec) && cartesian_space_move_->started()) {
-            set_idle_hold_point(target_point);
-            set_execute_trajectory_flag(false);
-            active_motion_mode_    = MotionMode::kIdle;
-            requested_motion_mode_ = MotionMode::kIdle;
-            enter_idle_mode();
+        switch (active_motion_mode_) {
+        case MotionMode::kIdle:
             target_point = idle_hold_point_;
+            break;
+        case MotionMode::kJointSpace:
+            target_point = joint_space_move->sample(now_sec);
+            if (!joint_space_move->active(now_sec) && joint_space_move->started()) {
+                set_idle_hold_point(target_point);
+                set_execute_trajectory_flag(false);
+                active_motion_mode_ = MotionMode::kIdle;
+                requested_motion_mode_ = MotionMode::kIdle;
+                enter_idle_mode();
+                target_point = idle_hold_point_;
+            }
+            break;
+        case MotionMode::kCartesianSpace:
+            target_point = cartesian_space_move->sample(now_sec);
+            if (!cartesian_space_move->active(now_sec) && cartesian_space_move->started()) {
+                set_idle_hold_point(target_point);
+                set_execute_trajectory_flag(false);
+                active_motion_mode_ = MotionMode::kIdle;
+                requested_motion_mode_ = MotionMode::kIdle;
+                enter_idle_mode();
+                target_point = idle_hold_point_;
+            }
+            break;
+        case MotionMode::kVisualServo:
+            visual_servo_move->set_current_joint_state(current_joint_state_);
+            target_point = visual_servo_move->sample(now_sec);
+            break;
         }
-        break;
-
-    case MotionMode::kVisualServo:                                                 // 视觉伺服模式（实时闭环）
-        visual_servo_move_->set_current_joint_state(current_joint_state_);         // 更新当前关节反馈
-        target_point = visual_servo_move_->sample(now_sec);                        // 从视觉伺服规划器采样
-        //     RCLCPP_INFO(get_logger(), "进入视觉伺服joint=%lf %lf %lf %lf", target_point.position[0],
-        // target_point.position[1],target_point.position[2],target_point.position[3]);
-        break;
     }
 
+    publish_joint_target(target_point);
+    current_joint_state_ = from_arm_message(target_point);
 
-    publish_joint_target(target_point);                    // 先发布给下位机/驱动器
-    current_joint_state_ = from_arm_message(target_point); // 直接赋值（完美跟踪）
-
-    // RViz 可视化部分（保持不变）
-    // JointTrajectoryPoint rviz_point = execute_trajectory_ ? target_point : build_preview_target();
     JointTrajectoryPoint rviz_point = target_point;
-    const rclcpp::Time stamp        = this->get_clock()->now();
+    const rclcpp::Time stamp = this->get_clock()->now();
     rviz_joint_pub_->publish(to_joint_state_msg(rviz_point, stamp));
-    publish_visualization(rviz_point);
-
-
-
-
-    // // 选择 RViz 显示点：
-    // //   - 如果正在执行轨迹（execute_trajectory_ == true），显示真实目标点
-    // //   - 否则显示预览目标点（build_preview_target）
-    // JointTrajectoryPoint rviz_point = execute_trajectory_ ? target_point : build_preview_target();
-
-    // publish_joint_target(target_point);                    // 发布给下位机/驱动器的真实控制指令
-    // const rclcpp::Time stamp = this->get_clock()->now();  // 当前时间戳
-    // rviz_joint_pub_->publish(to_joint_state_msg(rviz_point, stamp));  // 发布给 RViz 的关节状态
-    // publish_visualization(rviz_point);                     // 发布当前末端与目标末端可视化 Marker
+    
+    publish_visualization(rviz_point);   // 此函数也需要同步修复（见下方）
 }
-
 /**
  * @brief 发布真实的关节控制目标（给驱动器）
  *
@@ -598,8 +658,15 @@ void ArmCtrlNode::publish_joint_target(const JointTrajectoryPoint& point) {
  * @param target_point 当前周期的目标关节点（用于计算目标末端位姿）
  */
 void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point) {
-    if (!arm_calc_) {
-        return; // 运动学计算器未初始化，无法发布可视化
+    ArmCalc* current_arm_calc = nullptr;
+    if (current_side_ == "left") {
+        current_arm_calc = left_arm_calc_.get();
+    } else if (current_side_ == "right") {
+        current_arm_calc = right_arm_calc_.get();
+    }
+
+    if (!current_arm_calc) {
+        return;  // idle 模式或未初始化时不发布可视化
     }
 
     visualization_msgs::msg::MarkerArray markers;
@@ -607,39 +674,39 @@ void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point
 
     // 当前末端位置 Marker（绿色）
     visualization_msgs::msg::Marker current_marker;
-    current_marker.header.frame_id    = base_link_;
-    current_marker.header.stamp       = stamp;
-    current_marker.ns                 = "arm_ctrl";
-    current_marker.id                 = 0;
-    current_marker.type               = visualization_msgs::msg::Marker::SPHERE;
-    current_marker.action             = visualization_msgs::msg::Marker::ADD;
-    current_marker.scale.x            = 0.04;
-    current_marker.scale.y            = 0.04;
-    current_marker.scale.z            = 0.04;
-    current_marker.color.r            = 0.1F;
-    current_marker.color.g            = 0.8F;
-    current_marker.color.b            = 0.2F;
-    current_marker.color.a            = 1.0F;
-    current_marker.pose.position      = ToPoint(arm_calc_->end_pose(current_joint_state_.position).position);
+    current_marker.header.frame_id = base_link_;
+    current_marker.header.stamp = stamp;
+    current_marker.ns = "arm_ctrl";
+    current_marker.id = 0;
+    current_marker.type = visualization_msgs::msg::Marker::SPHERE;
+    current_marker.action = visualization_msgs::msg::Marker::ADD;
+    current_marker.scale.x = 0.04;
+    current_marker.scale.y = 0.04;
+    current_marker.scale.z = 0.04;
+    current_marker.color.r = 0.1F;
+    current_marker.color.g = 0.8F;
+    current_marker.color.b = 0.2F;
+    current_marker.color.a = 1.0F;
+    current_marker.pose.position = ToPoint(current_arm_calc->end_pose(current_joint_state_.position).position);
     current_marker.pose.orientation.w = 1.0;
 
     // 目标末端位置 Marker（橙色）
     visualization_msgs::msg::Marker target_marker = current_marker;
-    target_marker.id                              = 1;
-    target_marker.color.r                         = 0.95F;
-    target_marker.color.g                         = 0.25F;
-    target_marker.color.b                         = 0.15F;
-    target_marker.pose.position                   = ToPoint(arm_calc_->end_pose(target_point.position).position);
-    target_marker.pose.orientation                = ToMsgQuaternion(arm_calc_->end_pose(target_point.position).orientation);
+    target_marker.id = 1;
+    target_marker.color.r = 0.95F;
+    target_marker.color.g = 0.25F;
+    target_marker.color.b = 0.15F;
+    target_marker.pose.position = ToPoint(current_arm_calc->end_pose(target_point.position).position);
+    target_marker.pose.orientation = ToMsgQuaternion(current_arm_calc->end_pose(target_point.position).orientation);
 
     // 连接线 Marker（蓝色）
     visualization_msgs::msg::Marker line_marker = current_marker;
-    line_marker.id                              = 2;
-    line_marker.type                            = visualization_msgs::msg::Marker::LINE_STRIP;
-    line_marker.scale.x                         = 0.01;
-    line_marker.color.r                         = 0.1F;
-    line_marker.color.g                         = 0.4F;
-    line_marker.color.b                         = 0.95F;
+    line_marker.id = 2;
+    line_marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+    line_marker.scale.x = 0.01;
+    line_marker.color.r = 0.1F;
+    line_marker.color.g = 0.4F;
+    line_marker.color.b = 0.95F;
     line_marker.points.push_back(current_marker.pose.position);
     line_marker.points.push_back(target_marker.pose.position);
 
@@ -647,9 +714,8 @@ void ArmCtrlNode::publish_visualization(const JointTrajectoryPoint& target_point
     markers.markers.push_back(target_marker);
     markers.markers.push_back(line_marker);
 
-    marker_pub_->publish(markers); // 发布完整的 MarkerArray
+    marker_pub_->publish(markers);
 }
-
 /**
  * @brief 关节状态消息回调
  *
@@ -689,8 +755,15 @@ void ArmCtrlNode::on_visual_target(const geometry_msgs::msg::PoseStamped& msg) {
     visual_target_    = target_pose;
     cartesian_target_ = target_pose;
 
-    if (visual_servo_move_) {
-        visual_servo_move_->set_target_pose(visual_target_); // 更新视觉伺服控制器目标
+    arm_action::VisualServoMove* visual_servo_move = nullptr;
+    if (current_side_ == "left") {
+        visual_servo_move = left_visual_servo_move_.get();
+    } else if (current_side_ == "right") {
+        visual_servo_move = right_visual_servo_move_.get();
+    }
+
+    if (visual_servo_move) {
+        visual_servo_move->set_target_pose(visual_target_);
     }
 
     // 如果当前请求的是笛卡尔模式且正在执行，则立即重新规划
@@ -769,13 +842,17 @@ rcl_interfaces::msg::SetParametersResult ArmCtrlNode::on_parameters_changed(cons
             }
         } else if (param.get_name() == "visual_servo_kp") {
             visual_servo_kp_ = std::max(param.as_double(), 0.0);
-            if (visual_servo_move_) {
-                visual_servo_move_->set_kp(visual_servo_kp_);
+            if (current_side_ == "left" && left_visual_servo_move_) {
+                left_visual_servo_move_->set_kp(visual_servo_kp_);
+            } else if (current_side_ == "right" && right_visual_servo_move_) {
+                right_visual_servo_move_->set_kp(visual_servo_kp_);
             }
         } else if (param.get_name() == "visual_servo_max_linear_acceleration") {
             visual_servo_max_linear_acceleration_ = std::max(param.as_double(), 0.0);
-            if (visual_servo_move_) {
-                visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
+            if (current_side_ == "left" && left_visual_servo_move_) {
+                left_visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
+            } else if (current_side_ == "right" && right_visual_servo_move_) {
+                right_visual_servo_move_->set_max_linear_acceleration(visual_servo_max_linear_acceleration_);
             }
         } else if (param.get_name() == "joint_target") {
             const auto values = param.as_double_array();
@@ -872,13 +949,46 @@ JointState ArmCtrlNode::from_arm_message(const JointTrajectoryPoint& point) {
 // 转换为Arm消息：将JointTrajectoryPoint转换为ROS Arm消息
 // 参数：point - 轨迹点
 // 返回：robot_interfaces::msg::Arm消息
-robot_interfaces::msg::Arm ArmCtrlNode::to_arm_message(const JointTrajectoryPoint& point) {
+robot_interfaces::msg::Arm ArmCtrlNode::to_arm_message(
+    const JointTrajectoryPoint& point)
+{
     robot_interfaces::msg::Arm msg;
-    for (std::size_t i = 0; i < kJointDoF; ++i) {                                   // 遍历6个关节
-        msg.motor[i].rad = static_cast<float>(point.position[static_cast<int>(i)]); // 位置
-        // msg.motor[i].omega = static_cast<float>(point.velocity[static_cast<int>(i)]);  // 速度
-        // msg.motor[i].torque = static_cast<float>(point.torque[static_cast<int>(i)]);  // 扭矩
+
+    if(current_side_ == "left")
+    {
+        // 云台
+        msg.motor[0].rad = static_cast<float>(point.position[0]);
+
+        // 左臂
+        msg.motor[1].rad = static_cast<float>(point.position[1]);
+        msg.motor[2].rad = static_cast<float>(point.position[2]);
+        msg.motor[3].rad = static_cast<float>(point.position[3]);
     }
+    else if(current_side_ == "right")
+    {
+        // 云台
+        msg.motor[0].rad = static_cast<float>(point.position[0]);
+
+        // 右臂
+        msg.motor[4].rad = -static_cast<float>(point.position[1]);
+        msg.motor[5].rad =  static_cast<float>(point.position[2]);
+        msg.motor[6].rad =  static_cast<float>(point.position[3]);
+    }else if(current_side_ == "idle")
+    {
+        // 云台
+        msg.motor[0].rad = static_cast<float>(point.position[0]);
+
+        // 左臂
+        msg.motor[1].rad = static_cast<float>(point.position[1]);
+        msg.motor[2].rad = static_cast<float>(point.position[2]);
+        msg.motor[3].rad = static_cast<float>(point.position[3]);
+
+        // 右臂
+        msg.motor[4].rad = -static_cast<float>(point.position[1]);
+        msg.motor[5].rad =  static_cast<float>(point.position[2]);
+        msg.motor[6].rad =  static_cast<float>(point.position[3]);
+    }
+
     return msg;
 }
 
@@ -909,6 +1019,23 @@ std::vector<double> ArmCtrlNode::get_double_array_param(const rclcpp::Node& node
         throw std::runtime_error("parameter " + name + " expected size " + std::to_string(expected_size));
     }
     return values;                                                  // 返回数组
+}
+
+void ArmCtrlNode::on_arm_mode_control_lr(const robot_interfaces::msg::Armmode& msg) {
+ 
+    if (msg.mode == 0) {
+        current_side_ = "idle";
+        RCLCPP_INFO(this->get_logger(), "切换到空闲模式");
+    } 
+    else if (msg.mode == 1) {
+        current_side_ = "left";
+        RCLCPP_INFO(this->get_logger(), "切换到左侧机械臂控制");
+    }
+    else if (msg.mode == 2) {
+        current_side_ = "right";
+        RCLCPP_INFO(this->get_logger(), "切换到右侧机械臂控制");
+    }
+
 }
 
 } // namespace arm_calc

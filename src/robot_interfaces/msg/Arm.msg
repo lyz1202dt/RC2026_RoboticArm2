@@ -1,2 +1,2 @@
-Joint[4] motor
+Joint[7] motor
 uint32 mode

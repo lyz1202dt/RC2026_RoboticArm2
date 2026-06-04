@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#pragma pack(1)
+
 // Expect_Robstride 用于存储预期的力矩、位置、角速度以及PID参数
 typedef enum
 {
@@ -33,19 +33,25 @@ typedef struct
 // servo 用于表示伺服电机的上下限
 typedef struct
 {
-    float up;               //!<@brief 上限
-    float low;              //!<@brief 下限
-} servo;
+	float left_up;
+	float left_low;
+	float left_down;
+	float right_up;
+	float right_low;
+	float right_down;
+}servo;
 
 // target_pack_t 用于表示目标数据包，包含多个机器人控制模块的期望数据
-typedef struct
+#pragma pack(1)
+typedef struct 
 {
-    int pack_type;       //!<@brief 包类型
-    int air_pump;
-    servo servo1;        //!<@brief 伺服电机信息
-    Expect_Robstride rob01;  //!<@brief RobStride 期望值
-    Expect_GM6020 rob02;     //!<@brief GM6020 期望值
-} target_pack_t;
+ int pack_type;
+ int arm_pump_left;
+ int arm_pump_right;
+ servo servo1;
+ Expect_Robstride rob01;
+}target_pack_t;  
+#pragma pack()
 
 typedef struct
 {
@@ -60,18 +66,6 @@ typedef struct
     uint8_t feedback;
 }RobStrideState_t;
 
-// GM6020_TypeDef 用于表示 GM6020 电机的反馈信息
-typedef struct
-{
-    uint16_t MchanicalAngle;  //!<@brief 机械角度
-    int16_t Speed;            //!<@brief 转速
-    int16_t TorqueCurrent;    //!<@brief 转矩电流
-    uint8_t temp;             //!<@brief 温度
-    uint16_t LsatAngle;       //!<@brief 上一次的机械角度
-    int16_t r;                //!<@brief 圈数
-    int32_t Angle;            //!<@brief 连续化机械角度
-    float Angle_DEG;          //!<@brief 连续化角度制角度
-} GM6020_TypeDef;
 
 // RobStrideMode 枚举类型定义了不同的控制模式
 typedef enum
@@ -90,16 +84,16 @@ typedef struct
 
 } RobStride_t;
 
-// state_pack_t 用于表示状态数据包，包含了伺服电机和 RobStride 的状态信息
-typedef struct
-{
-    int pack_type;         //!<@brief 包类型
-    servo servo2;          //!<@brief 伺服电机信息
-    RobStride_t robstride01;  //!<@brief RobStride 控制信息
-    GM6020_TypeDef GM6020;     //!<@brief GM6020 电机信息
-} state_pack_t;
+// // state_pack_t 用于表示状态数据包，包含了伺服电机和 RobStride 的状态信息
+// typedef struct
+// {
+//     int pack_type;         //!<@brief 包类型
+//     servo servo2;          //!<@brief 伺服电机信息
+//     RobStride_t robstride01;  //!<@brief RobStride 控制信息
+//     GM6020_TypeDef GM6020;     //!<@brief GM6020 电机信息
+// } state_pack_t;
 
 // RobStrideType 枚举定义了四个不同的机器人类型
 
-#pragma pack()
+
 #endif

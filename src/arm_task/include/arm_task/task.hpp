@@ -74,6 +74,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr visual_target_pub_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr joint_space_target_pub_;
     rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr air_pub_;
+       rclcpp::Publisher<robot_interfaces::msg::Armmode>::SharedPtr arm_mode_control_pub;
     // Subscribers
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr place_target_sub_;
 

@@ -63,6 +63,11 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     visual_target_pub_      = this->create_publisher<geometry_msgs::msg::PoseStamped>("visual_target_pose", 10);
     joint_space_target_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
 
+    //发布控制机械臂的左侧还是右侧的控制执行指令   1.左臂执行关节轨迹规划 2.右臂执行关节轨迹规划
+    // 3.左臂执行笛卡尔空间轨迹规划 4.右臂执行笛卡尔空间轨迹规划 
+    arm_mode_control_pub = this->create_publisher<robot_interfaces::msg::Armmode>("arm_mode_control", 10);
+ 
+
     vision_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
         "pnp_move", 10, std::bind(&ArmTaskNode::vision_callback, this, std::placeholders::_1));
 
@@ -212,19 +217,31 @@ void ArmTaskNode::execute_task_state_machine() {
     try {
         if (current_mode == 1) {
             // Grasp flow
-            RCLCPP_INFO(this->get_logger(), "开始抓取任务");
+            RCLCPP_INFO(this->get_logger(), "开始左侧抓取任务");
+            robot_interfaces::msg::Armmode arm_mode_msg;
+            arm_mode_msg.mode = 1; // 1代表左臂执行关节轨迹规划
+            arm_mode_control_pub->publish(arm_mode_msg);
             execute_grasp_flow();
         } else if (current_mode == 2) {
             // Place flow
-            RCLCPP_INFO(this->get_logger(), "开始放置任务");
-            execute_place_flow();
+            RCLCPP_INFO(this->get_logger(), "开始右侧抓取任务");
+            robot_interfaces::msg::Armmode arm_mode_msg;
+            arm_mode_msg.mode = 2; // 2代表右臂执行关节轨迹规划
+            arm_mode_control_pub->publish(arm_mode_msg);
+            execute_grasp_flow();
         } else if (current_mode == 3) {
             // Place flow
-            RCLCPP_INFO(this->get_logger(), "开始纯关节抓取任务");
-            execute_place_flow_rad();
+            RCLCPP_INFO(this->get_logger(), "开始左侧放置任务");
+            robot_interfaces::msg::Armmode arm_mode_msg;
+            arm_mode_msg.mode = 3; // 3代表左臂执行笛卡尔空间轨迹规划
+            arm_mode_control_pub->publish(arm_mode_msg);
+            execute_place_flow();
         } else if (current_mode == 4) {
-            RCLCPP_INFO(this->get_logger(), "开始纯关节放置任务");
-            execute_place_place_rad();
+            RCLCPP_INFO(this->get_logger(), "开始右侧放置任务");
+            robot_interfaces::msg::Armmode arm_mode_msg;
+            arm_mode_msg.mode = 4; // 4代表右臂执行笛卡尔空间轨迹规划
+            arm_mode_control_pub->publish(arm_mode_msg);
+            execute_place_flow();
         } else if (current_mode == 5) {
             // Place flow
             RCLCPP_INFO(this->get_logger(), "开始抓取任务");
