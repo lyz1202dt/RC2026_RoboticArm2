@@ -952,42 +952,26 @@ JointState ArmCtrlNode::from_arm_message(const JointTrajectoryPoint& point) {
 robot_interfaces::msg::Arm ArmCtrlNode::to_arm_message(
     const JointTrajectoryPoint& point)
 {
-    robot_interfaces::msg::Arm msg;
+    robot_interfaces::msg::Arm msg = current_motor_state_;
 
     if(current_side_ == "left")
     {
-        // 云台
         msg.motor[0].rad = static_cast<float>(point.position[0]);
 
-        // 左臂
         msg.motor[1].rad = static_cast<float>(point.position[1]);
         msg.motor[2].rad = static_cast<float>(point.position[2]);
         msg.motor[3].rad = static_cast<float>(point.position[3]);
     }
     else if(current_side_ == "right")
     {
-        // 云台
         msg.motor[0].rad = static_cast<float>(point.position[0]);
 
-        // 右臂
-        msg.motor[4].rad = -static_cast<float>(point.position[1]);
-        msg.motor[5].rad =  static_cast<float>(point.position[2]);
-        msg.motor[6].rad =  static_cast<float>(point.position[3]);
-    }else if(current_side_ == "idle")
-    {
-        // 云台
-        msg.motor[0].rad = static_cast<float>(point.position[0]);
-
-        // 左臂
-        msg.motor[1].rad = static_cast<float>(point.position[1]);
-        msg.motor[2].rad = static_cast<float>(point.position[2]);
-        msg.motor[3].rad = static_cast<float>(point.position[3]);
-
-        // 右臂
         msg.motor[4].rad = -static_cast<float>(point.position[1]);
         msg.motor[5].rad =  static_cast<float>(point.position[2]);
         msg.motor[6].rad =  static_cast<float>(point.position[3]);
     }
+
+    current_motor_state_ = msg;
 
     return msg;
 }
@@ -995,10 +979,46 @@ robot_interfaces::msg::Arm ArmCtrlNode::to_arm_message(
 // 转换为JointState消息：将轨迹点转换为ROS JointState消息，用于RViz
 // 参数：point - 轨迹点，stamp - 时间戳
 // 返回：sensor_msgs::msg::JointState消息
+
 sensor_msgs::msg::JointState ArmCtrlNode::to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp) {
     sensor_msgs::msg::JointState msg;
     msg.header.stamp = stamp;                                    // 设置时间戳
-    msg.name         = {"joint1", "joint2", "joint3", "joint4"}; // 关节名称
+
+
+      if(current_side_ == "left")
+    {
+        msg.name = {
+            "yuntai",
+            "left1",
+            "left2",
+            "left3",
+            
+        };
+    }
+    else if(current_side_ == "right")
+    {
+        msg.name = {
+            "yuntai",
+            "right1",
+            "right2",
+            "right3",
+            
+        };
+    }
+    else
+    {
+        msg.name = {
+            "yuntai",
+            "left1",
+            "left2",
+            "left3",
+            "right1",
+            "right2",
+            "right3",
+        };
+    }
+
+
     msg.position.resize(kJointDoF);                              // 位置数组
     // msg.velocity.resize(kJointDoF);  // 速度数组
     // msg.effort.resize(kJointDoF);  // 力矩数组

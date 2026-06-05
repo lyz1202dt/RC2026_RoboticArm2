@@ -51,7 +51,7 @@ private:
     static MotionMode parse_motion_mode(int mode_value);
     static JointState from_arm_message(const JointTrajectoryPoint& point);
      robot_interfaces::msg::Arm to_arm_message(const JointTrajectoryPoint& point);
-    static sensor_msgs::msg::JointState to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp);
+     sensor_msgs::msg::JointState to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp);
     static std::vector<double> get_double_array_param(const rclcpp::Node& node, const std::string& name, std::size_t expected_size);
 
     JointState current_joint_state_{};
@@ -98,6 +98,8 @@ private:
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
     rclcpp::TimerBase::SharedPtr control_timer_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_callback_;
+
+    robot_interfaces::msg::Arm current_motor_state_;
 };
 
 } // namespace arm_calc
