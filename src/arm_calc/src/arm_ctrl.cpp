@@ -980,53 +980,60 @@ robot_interfaces::msg::Arm ArmCtrlNode::to_arm_message(
 // 参数：point - 轨迹点，stamp - 时间戳
 // 返回：sensor_msgs::msg::JointState消息
 
-sensor_msgs::msg::JointState ArmCtrlNode::to_joint_state_msg(const JointTrajectoryPoint& point, const rclcpp::Time& stamp) {
+sensor_msgs::msg::JointState
+ArmCtrlNode::to_joint_state_msg(
+    const JointTrajectoryPoint& point,
+    const rclcpp::Time& stamp)
+{
     sensor_msgs::msg::JointState msg;
-    msg.header.stamp = stamp;                                    // 设置时间戳
 
+    msg.header.stamp = stamp;
 
-      if(current_side_ == "left")
+    msg.name =
     {
-        msg.name = {
-            "yuntai",
-            "left1",
-            "left2",
-            "left3",
-            
-        };
+        "yuntai",
+        "left1",
+        "left2",
+        "left3",
+        "right1",
+        "right2",
+        "right3"
+    };
+
+    msg.position.resize(7, 0.0);
+
+    if(current_side_ == "left")
+    {
+        msg.position[0] = point.position[0];
+
+        msg.position[1] = point.position[1];
+        msg.position[2] = point.position[2];
+        msg.position[3] = point.position[3];
+
+        msg.position[4] = 0.0;
+        msg.position[5] = 0.0;
+        msg.position[6] = 0.0;
     }
     else if(current_side_ == "right")
     {
-        msg.name = {
-            "yuntai",
-            "right1",
-            "right2",
-            "right3",
-            
-        };
+        msg.position[0] = point.position[0];
+
+        msg.position[1] = 0.0;
+        msg.position[2] = 0.0;
+        msg.position[3] = 0.0;
+
+        msg.position[4] = point.position[1];
+        msg.position[5] = point.position[2];
+        msg.position[6] = point.position[3];
     }
     else
     {
-        msg.name = {
-            "yuntai",
-            "left1",
-            "left2",
-            "left3",
-            "right1",
-            "right2",
-            "right3",
-        };
+        for(std::size_t i = 0; i < 7; ++i)
+        {
+            msg.position[i] = 0.0;
+        }
     }
 
-
-    msg.position.resize(kJointDoF);                              // 位置数组
-    // msg.velocity.resize(kJointDoF);  // 速度数组
-    // msg.effort.resize(kJointDoF);  // 力矩数组
-    for (std::size_t i = 0; i < kJointDoF; ++i) {
-        msg.position[i] = point.position[static_cast<int>(i)]; // 设置位置
-        // msg.velocity[i] = point.velocity[static_cast<int>(i)];  // 设置速度
-        // msg.effort[i] = point.torque[static_cast<int>(i)];  // 设置力矩
-    }
     return msg;
 }
 
