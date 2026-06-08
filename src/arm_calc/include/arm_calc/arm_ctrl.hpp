@@ -55,7 +55,7 @@ private:
     static std::vector<double> get_double_array_param(const rclcpp::Node& node, const std::string& name, std::size_t expected_size);
 
     JointState current_joint_state_{};
-    bool has_joint_state_{false};
+    bool has_joint_state_{true};
     bool idle_hold_initialized_{false};
     bool planners_ready_{false};
     MotionMode active_motion_mode_{MotionMode::kIdle};

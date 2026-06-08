@@ -63,10 +63,10 @@ ArmTaskNode::ArmTaskNode(const rclcpp::NodeOptions& options)
     visual_target_pub_      = this->create_publisher<geometry_msgs::msg::PoseStamped>("visual_target_pose", 10);
     joint_space_target_pub_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("joint_space_target", 10);
 
-    //发布控制机械臂的左侧还是右侧的控制执行指令   1.左臂执行关节轨迹规划 2.右臂执行关节轨迹规划
-    // 3.左臂执行笛卡尔空间轨迹规划 4.右臂执行笛卡尔空间轨迹规划 
+    // 发布控制机械臂的左侧还是右侧的控制执行指令   1.左臂执行关节轨迹规划 2.右臂执行关节轨迹规划
+    //  3.左臂执行笛卡尔空间轨迹规划 4.右臂执行笛卡尔空间轨迹规划
     arm_mode_control_pub = this->create_publisher<robot_interfaces::msg::Armmode>("arm_mode_control", 10);
- 
+
 
     vision_sub_ = this->create_subscription<robot_interfaces::msg::Vis>(
         "pnp_move", 10, std::bind(&ArmTaskNode::vision_callback, this, std::placeholders::_1));
@@ -154,7 +154,7 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
     }
 }
 
-//用于接受视觉放置坐标的函数
+// 用于接受视觉放置坐标的函数
 void ArmTaskNode::on_place_target_pose(const geometry_msgs::msg::PoseStamped::SharedPtr msg) {
     std::lock_guard<std::mutex> lock(pose_mutex_);
     place_target_pose_ = *msg;
@@ -201,7 +201,7 @@ void ArmTaskNode::execute_task_state_machine() {
     int32_t current_mode = arm_task_mode_.load();
 
     if (current_mode == 0) {
-       
+
         return;
     }
 
@@ -272,20 +272,26 @@ void ArmTaskNode::execute_grasp_flow() {
     execute_joint_space_trajectory(ready_position_, trajectory_duration_);
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 300));
 
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::seconds(2)); // 等待视觉系统稳定
 
 
     // 2. Wait for object pose from camera
     RCLCPP_INFO(this->get_logger(), "等待相机提供物体位姿");
     geometry_msgs::msg::PoseStamped object_pose;
     int retry_count = 0;
-    while (!get_object_pose_in_base_frame(object_pose) && retry_count < 50) {
+    while (!get_object_pose_in_base_frame(object_pose) && retry_count < 20) {
         std::this_thread::sleep_for(100ms);
         retry_count++;
     }
 
-    if (retry_count >= 50) {
+    if (retry_count >= 20) {
         RCLCPP_ERROR(this->get_logger(), "从相机获取目标位姿失败");
+
+        execute_joint_space_trajectory(home_position_, trajectory_duration_);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(trajectory_duration_ * 1000) + 500));
+
+
         return;
     }
 
@@ -392,7 +398,7 @@ void ArmTaskNode::stop_arm_motion() {
     }
 }
 
-//关节轨迹规划控制
+// 关节轨迹规划控制
 void ArmTaskNode::execute_joint_space_trajectory(const std::vector<double>& joint_angles, double duration) {
     RCLCPP_INFO(this->get_logger(), "执行关节轨迹规划");
 
