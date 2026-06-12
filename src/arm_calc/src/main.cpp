@@ -1,4 +1,4 @@
-#include "arm_calc/arm_ctrl.hpp"
+#include "arm_ctrl.hpp"
 
 #include <memory>
 #include <rclcpp/rclcpp.hpp>

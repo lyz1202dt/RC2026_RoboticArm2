@@ -16,16 +16,10 @@ find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rcl_interfaces REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(visualization_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_ros REQUIRED)
 find_package(robot_interfaces REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(orocos_kdl REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
 
 find_package(Eigen3 REQUIRED PATHS /usr/include/eigen3)
 
@@ -46,13 +40,13 @@ add_executable(arm_calc
   src/arm_ctrl.cpp
   src/arm_calc/arm_calc.cpp
   src/arm_calc/trajectory_calc.cpp
-  src/arm_action/basic_moves.cpp
+  src/arm_action/joint_space_move.cpp
+  src/arm_action/cartesian_space_move.cpp
 )
 
-add_executable(arm_calc_test
+add_executable(arm_test_node
   src/arm_test_node.cpp
 )
-
 
 target_include_directories(arm_calc
   PUBLIC
@@ -64,47 +58,30 @@ target_include_directories(arm_calc
 
 
 target_link_libraries(arm_calc Eigen3::Eigen)
-target_link_libraries(arm_calc_test Eigen3::Eigen)
-
-target_include_directories(arm_calc_test
-  PUBLIC
-    ${EIGEN3_INCLUDE_DIRS}
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>
-)
 
 ament_target_dependencies(
   arm_calc
   ament_index_cpp
   rclcpp
-  rcl_interfaces
-  std_msgs
-  geometry_msgs
   sensor_msgs
-  visualization_msgs
-  tf2
-  tf2_ros
   robot_interfaces
   kdl_parser
   orocos_kdl
-  tf2_geometry_msgs 
-  
 )
 
 ament_target_dependencies(
-  arm_calc_test
+  arm_test_node
   rclcpp
   rcl_interfaces
-  std_msgs
-  geometry_msgs
-  tf2
+  sensor_msgs
+  robot_interfaces
 )
 
 
 
 install(TARGETS
 arm_calc
-arm_calc_test
+arm_test_node
 DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -1,58 +1,42 @@
 #pragma once
 
-#include "arm_calc/common_types.hpp"
+#include <Eigen/Dense>
+
+#include <array>
+#include <cstddef>
 
 namespace arm_calc {
 
+constexpr std::size_t kTrajectoryDim = 4;
+using TrajectoryVector = Eigen::Matrix<double, static_cast<int>(kTrajectoryDim), 1>;
+
 class TrajectoryCalc {
 public:
-    struct QuinticPolynomial {
+    struct CubicPolynomial {
         double a0{0.0};
         double a1{0.0};
         double a2{0.0};
         double a3{0.0};
-        double a4{0.0};
-        double a5{0.0};
     };
 
     TrajectoryCalc() = default;
 
-    void set_start_state(const JointVector& position);
+    void reset(const TrajectoryVector& start, const TrajectoryVector& goal, double duration);
 
-    void set_goal_state(const JointVector& position,
-                                        double duration);
-
-    // void set_start_state(const JointVector& position,
-    //                      const JointVector& velocity = JointVector::Zero(),
-    //                      const JointVector& acceleration = JointVector::Zero());
-
-    // void set_goal_state(const JointVector& position,
-    //                     double duration,
-    //                     const JointVector& velocity = JointVector::Zero(),
-    //                     const JointVector& acceleration = JointVector::Zero());
-
-    JointTrajectoryPoint sample(double time_from_start) const;
+    TrajectoryVector sample(double time_from_start) const;
 
     double duration() const { return duration_; }
+    bool active(double time_from_start) const;
     bool is_ready() const { return ready_; }
 
 private:
-    static QuinticPolynomial build_segment(double p0, double v0, double a0,
-                                           double pf, double vf, double af,
-                                           double duration);
-    static double eval_position(const QuinticPolynomial& poly, double t);
-    static double eval_velocity(const QuinticPolynomial& poly, double t);
-    static double eval_acceleration(const QuinticPolynomial& poly, double t);
+    static CubicPolynomial build_segment(double p0, double pf, double duration);
+    static double eval_position(const CubicPolynomial& poly, double t);
 
     double duration_{0.0};
     bool ready_{false};
-    JointVector start_position_{JointVector::Zero()};
-    JointVector start_velocity_{JointVector::Zero()};
-    JointVector start_acceleration_{JointVector::Zero()};
-    JointVector goal_position_{JointVector::Zero()};
-    JointVector goal_velocity_{JointVector::Zero()};
-    JointVector goal_acceleration_{JointVector::Zero()};
-    std::array<QuinticPolynomial, kJointDoF> segments_{};
+    TrajectoryVector start_position_{TrajectoryVector::Zero()};
+    std::array<CubicPolynomial, kTrajectoryDim> segments_{};
 };
 
 }  // namespace arm_calc

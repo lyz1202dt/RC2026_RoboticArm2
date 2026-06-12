@@ -1,74 +1,63 @@
 #pragma once
 
-#include "arm_calc/common_types.hpp"
-
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <kdl/chain.hpp>
-#include <kdl/chaindynparam.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainiksolverpos_lma.hpp>
-#include <kdl/chainiksolvervel_pinv.hpp>
-#include <kdl/chainjnttojacdotsolver.hpp>
-#include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/frames.hpp>
-#include <kdl/jacobian.hpp>
 #include <kdl/jntarray.hpp>
+
+#include <cstddef>
 
 namespace arm_calc {
 
+constexpr std::size_t kArmJointDof = 4;
+
+using JointPosition = Eigen::Matrix<double, static_cast<int>(kArmJointDof), 1>;
+
+enum class ArmSide { kLeft = 0, kRight = 1 };
+
+struct CartesianTarget {
+    Eigen::Vector3d position{Eigen::Vector3d::Zero()};
+    double pitch{0.0};
+};
+
+struct CartesianPose {
+    Eigen::Vector3d position{Eigen::Vector3d::Zero()};
+    Eigen::Quaterniond orientation{Eigen::Quaterniond::Identity()};
+};
+
 class ArmCalc {
 public:
-    explicit ArmCalc(const KDL::Chain& chain);
+    ArmCalc(const KDL::Chain& left_chain, const KDL::Chain& right_chain);
     ~ArmCalc() = default;
 
-    JointVector joint_pos(const CartesianPose& pose, int* result);
-    JointVector joint_pos(const CartesianPose& pose, int* result, const JointVector& seed_joint_pos);
+    JointPosition joint_pos(ArmSide side, const CartesianTarget& target, int* result);
+    JointPosition joint_pos(ArmSide side, const CartesianTarget& target, int* result, const JointPosition& seed_joint_pos);
 
-    JointVector joint_vel(const JointVector& joint_pos, const CartesianVector& cartesian_twist);
-    JointVector joint_acc(const JointVector& joint_pos, const JointVector& joint_vel, const CartesianVector& cartesian_acc);
-
-    JointVector joint_torque_dynamic(const JointVector& joint_pos,
-                                     const JointVector& joint_vel,
-                                     const CartesianVector& cartesian_acc);
-    JointVector joint_torque_inverse_dynamics(const JointVector& joint_pos,
-                                              const JointVector& joint_vel,
-                                              const JointVector& joint_acc);
-    JointVector joint_torque_cartesian_wrench(const JointVector& joint_pos, const CartesianVector& cartesian_wrench);
-
-    CartesianPose end_pose(const JointVector& joint_pos);
-    CartesianState end_state(const JointVector& joint_pos);
-    KDL::Jacobian jacobian(const JointVector& joint_pos);
-
-    void set_joint_pd(std::size_t index, double kp, double kd);
-    void get_joint_pd(std::size_t index, double& kp, double& kd) const;
-
-    JointTrajectoryPoint signal_arm_calc(const CartesianTrajectoryPoint& cartesian_target);
+    CartesianPose end_pose(ArmSide side, const JointPosition& joint_pos);
+    void set_last_joint_pos(ArmSide side, const JointPosition& joint_pos);
 
 private:
-    static KDL::Frame to_kdl_frame(const CartesianPose& pose);
+    struct ChainContext {
+        explicit ChainContext(const KDL::Chain& input_chain);
+
+        KDL::Chain chain;
+        KDL::ChainFkSolverPos_recursive fk_solver;
+        KDL::ChainIkSolverPos_LMA ik_solver;
+        KDL::JntArray last_solution;
+    };
+
+    ChainContext& context(ArmSide side);
+
+    static KDL::Frame target_to_kdl_frame(const CartesianTarget& target, double pitch_reference);
     static CartesianPose from_kdl_frame(const KDL::Frame& frame);
-    static KDL::JntArray to_kdl_joints(const JointVector& joints);
-    static JointVector from_kdl_joints(const KDL::JntArray& joints);
-    static CartesianVector twist_to_vector(const KDL::Twist& twist);
+    static KDL::JntArray to_kdl_joints(const JointPosition& joints);
+    static JointPosition from_kdl_joints(const KDL::JntArray& joints);
 
-    KDL::Chain chain_;
-    KDL::ChainFkSolverPos_recursive fk_solver_;
-    KDL::ChainJntToJacSolver jacobian_solver_;
-    KDL::ChainJntToJacDotSolver jdot_solver_;
-    KDL::ChainIkSolverVel_pinv vel_solver_;
-    KDL::ChainIkSolverPos_LMA ik_solver_;
-    KDL::ChainDynParam dynamic_solver_;
-
-    KDL::JntSpaceInertiaMatrix mass_matrix_;
-    KDL::JntArray coriolis_;
-    KDL::JntArray gravity_;
-    KDL::Jacobian jacobian_cache_;
-    KDL::JntArray last_joint_solution_;
-    KDL::JntArrayVel joint_vel_cache_;
-    KDL::Twist jdot_qdot_cache_;
-
-  
-    JointVector kp_{JointVector::Constant(50.0)};
-    JointVector kd_{JointVector::Constant(3.0)};
+    ChainContext left_;
+    ChainContext right_;
 };
 
 }  // namespace arm_calc
