@@ -39,12 +39,6 @@ def generate_launch_description():
         description="Whether to show the MuJoCo simulator window",
     )
 
-    start_arm_calc_arg = DeclareLaunchArgument(
-        "start_arm_calc",
-        default_value="false",
-        description="Whether to start arm_calc together with the MuJoCo driver-equivalent controller",
-    )
-
     robot_state_pub = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -76,13 +70,6 @@ def generate_launch_description():
         output="screen",
     )
 
-    arm_calc = Node(
-        package="arm_calc",
-        executable="arm_calc",
-        condition=IfCondition(LaunchConfiguration("start_arm_calc")),
-        output="screen",
-    )
-
     rviz2 = Node(
         package="rviz2",
         executable="rviz2",
@@ -102,10 +89,8 @@ def generate_launch_description():
         mjcf_path_arg,
         show_rviz_arg,
         show_gui_arg,
-        start_arm_calc_arg,
         robot_state_pub,
         mujoco,
         load_controller,
-        arm_calc,
         rviz2,
     ])

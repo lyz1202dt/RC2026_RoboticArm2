@@ -10,13 +10,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
 find_package(robot_interfaces REQUIRED)
 
 # Include directories
@@ -30,9 +29,9 @@ add_executable(arm_task
 
 ament_target_dependencies(arm_task
   rclcpp
+  rcl_interfaces
   robot_interfaces
   geometry_msgs
-  std_msgs
   tf2_ros
   tf2_geometry_msgs
   ament_index_cpp
