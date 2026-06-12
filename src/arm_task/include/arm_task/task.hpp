@@ -103,7 +103,8 @@ private:
 
     // Configuration
     std::string base_frame_{"base_link"};
-    std::string camera_frame_{"camera_link"};
+    std::string camera_left_frame_{"camera_left_link"};
+    std::string camera_right_frame_{"camera_right_link"};
     std::string object_frame_{"target_object"};
     std::string tip_frame_{"link5"};
     std::string arm_calc_node_name_{"arm_calc_node"};
@@ -115,7 +116,7 @@ private:
 
     // Joint positions from YAML
     std::map<int, std::vector<double>> arm_positions_;
-    std::vector<double> ready_position_; // Preparation position
+    std::vector<double> ready_position{0.0,2.4,1.3,1.0}; // Preparation position
     std::vector<double> home_position_{0.0,0.0,0.0,0.0};
     std::vector<double> grasp_position{0.0, 3.14159, 2.45, 2.48};
     std::vector<double> grasp_position_two{0.0, 3.14159, 2.4, 2.55};

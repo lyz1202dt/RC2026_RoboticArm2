@@ -199,11 +199,11 @@ void ArmCtrlNode::load_robot_description_and_build_solver() {
     if (!kdl_parser::treeFromString(urdf_xml, tree)) {
         throw std::runtime_error("failed to parse arm URDF into KDL tree"); // 解析失败抛异常
     }
-    if (!tree.getChain("base_link", "left3", left_chain_)) {
+    if (!tree.getChain("base_link", "left4", left_chain_)) {
         throw std::runtime_error("failed to build left chain");
     }
 
-    if (!tree.getChain("base_link", "right3", right_chain_)) {
+    if (!tree.getChain("base_link", "right4", right_chain_)) {
         throw std::runtime_error("failed to build right chain");
     }
     // 初始化运动学求解器
