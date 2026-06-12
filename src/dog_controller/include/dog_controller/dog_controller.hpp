@@ -1,11 +1,11 @@
 #pragma once
 
-#include "robot_interfaces/msg/arm.hpp"
-
 #include <controller_interface/controller_interface.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/subscription.hpp>
 #include <rclcpp/time.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -26,23 +26,29 @@ public:
     controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
 private:
-    static constexpr std::size_t kJointCount = 4;
+    void on_target_joint_state(const sensor_msgs::msg::JointState& msg);
+    bool configure_joints();
+    void configure_gains();
 
-    rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr state_publisher_;
-    rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr target_subscriber_;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr target_subscriber_;
     rclcpp_lifecycle::LifecycleNode::OnSetParametersCallbackHandle::SharedPtr param_cb_;
 
+    std::mutex target_mutex_;
+    bool has_target_{false};
+    std::string target_topic_{"joint_states"};
     std::vector<std::string> joints_name_;
     std::vector<double> joint_kp_;
     std::vector<double> joint_kd_;
-
-    robot_interfaces::msg::Arm joints_target_{};
-    robot_interfaces::msg::Arm joints_state_{};
+    std::vector<double> target_position_;
+    std::vector<double> target_velocity_;
+    std::vector<double> target_effort_;
+    std::vector<double> joint_position_;
+    std::vector<double> joint_velocity_;
+    std::vector<double> joint_effort_;
 
     double joint_torque_filter_gate_{0.8};
     double joint_omega_filter_gate_{0.8};
     double command_effort_limit_{80.0};
-    rclcpp::Time last_target_log_time_{0, 0, RCL_ROS_TIME};
 };
 
 }  // namespace dog_controller

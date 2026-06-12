@@ -1,0 +1,103 @@
+<mujoco model="arm">
+  <compiler angle="radian"/>
+
+  <asset>
+    <mesh name="base_link" file="base_link.STL"/>
+    <mesh name="yuntai" file="yuntai.STL"/>
+    <mesh name="left1" file="left1.STL"/>
+    <mesh name="left2" file="left2.STL"/>
+    <mesh name="left3" file="left3.STL"/>
+    <mesh name="left4" file="left4.STL"/>
+    <mesh name="right1" file="right1.STL"/>
+    <mesh name="right2" file="right2.STL"/>
+    <mesh name="right3" file="right3.STL"/>
+    <mesh name="right4" file="right4.STL"/>
+  </asset>
+
+  <worldbody>
+    <site name="base_imu_site" pos="0 0 0.0565" size="0.01"/>
+    <geom type="mesh" rgba="1 1 1 1" mesh="base_link"/>
+    <body name="yuntai" pos="0 0 0.0565">
+      <inertial pos="4.79226e-05 4.64704e-06 0.00964529" quat="0.000129558 0.707107 -0.000129558 0.707107" mass="0.101244" diaginertia="0.000304592 0.000297591 1.42122e-05"/>
+      <joint name="yuntai" pos="0 0 0" axis="0 0 -1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+      <geom type="mesh" rgba="1 1 1 1" mesh="yuntai"/>
+      <body name="left1" pos="-0.165 0.00625 0.01" quat="0.707105 0.707108 0 0">
+        <inertial pos="0.0866317 0.0108088 0.0203965" quat="0.464511 0.547842 0.496945 0.486974" mass="0.0724494" diaginertia="4.60084e-05 3.88633e-05 1.54283e-05"/>
+        <joint name="left1" pos="0 0 0" axis="0 0 1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+        <geom type="mesh" rgba="1 1 1 1" mesh="left1"/>
+        <body name="left2" pos="0.14795 0.02 0.00935" quat="-3.67321e-06 0 0 -1">
+          <inertial pos="0.178348 -8.40191e-10 -0.00507433" quat="0.498947 0.501051 0.501051 0.498947" mass="0.0594508" diaginertia="4.91263e-05 4.50325e-05 8.83655e-06"/>
+          <joint name="left2" pos="0 0 0" axis="0 0 -1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+          <geom type="mesh" rgba="1 1 1 1" mesh="left2"/>
+          <body name="left3" pos="0.213 0 0.0229" quat="0.707105 0 0 0.707108">
+            <inertial pos="-0.00440119 0.0613952 0.00515946" quat="0.55238 0.718903 0.391768 0.156756" mass="0.170478" diaginertia="0.00107525 0.00106211 5.35082e-05"/>
+            <joint name="left3" pos="0 0 0" axis="0 0 -1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+            <geom type="mesh" rgba="1 1 1 1" mesh="left3"/>
+            <geom pos="0.1058 0.0275 -0.026" quat="-3.67321e-06 1 0 0" type="mesh" rgba="0.698039 0.698039 0.698039 1" mesh="left4"/>
+            <site name="left_ee_site" pos="0.1058 0.0275 -0.026" quat="-3.67321e-06 1 0 0" size="0.01"/>
+          </body>
+        </body>
+      </body>
+      <body name="right1" pos="0.165 -0.00625 0.01" quat="-2.59734e-06 -2.59735e-06 0.707108 0.707105">
+        <inertial pos="0.0866317 0.0108088 0.0203965" quat="0.464511 0.547842 0.496945 0.486974" mass="0.0724494" diaginertia="4.60084e-05 3.88633e-05 1.54283e-05"/>
+        <joint name="right1" pos="0 0 0" axis="0 0 1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+        <geom type="mesh" rgba="1 1 1 1" mesh="right1"/>
+        <body name="right2" pos="0.14795 0.02 0.00935" quat="1.34924e-11 3.67321e-06 1 3.67321e-06">
+          <inertial pos="0.178348 1.31277e-09 0.00507433" quat="0.501051 0.498947 0.498947 0.501051" mass="0.0594508" diaginertia="4.91263e-05 4.50325e-05 8.83655e-06"/>
+          <joint name="right2" pos="0 0 0" axis="0 0 1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+          <geom type="mesh" rgba="1 1 1 1" mesh="right2"/>
+          <body name="right3" pos="0.213 0 -0.0229" quat="0.707105 0 0 -0.707108">
+            <inertial pos="0.0258148 0.0613682 -0.00518317" quat="0.560609 0.496808 -0.207346 0.629212" mass="0.169727" diaginertia="0.000742559 0.000738367 6.41473e-05"/>
+            <joint name="right3" pos="0 0 0" axis="0 0 1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
+            <geom type="mesh" rgba="1 1 1 1" mesh="right3"/>
+            <geom pos="0.1058 -0.0275 0.026" quat="0.707107 -0.707107 0 0" type="mesh" rgba="0.698039 0.698039 0.698039 1" mesh="right4"/>
+            <site name="right_ee_site" pos="0.1058 -0.0275 0.026" quat="0.707107 -0.707107 0 0" size="0.01"/>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="yuntai_motor" joint="yuntai" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+    <motor name="left1_motor" joint="left1" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+    <motor name="left2_motor" joint="left2" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+    <motor name="left3_motor" joint="left3" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+    <motor name="right1_motor" joint="right1" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+    <motor name="right2_motor" joint="right2" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+    <motor name="right3_motor" joint="right3" gear="1" ctrllimited="true" ctrlrange="-10 10"/>
+  </actuator>
+
+  <sensor>
+    <jointpos name="yuntai_pos" joint="yuntai"/>
+    <jointpos name="left1_pos" joint="left1"/>
+    <jointpos name="left2_pos" joint="left2"/>
+    <jointpos name="left3_pos" joint="left3"/>
+    <jointpos name="right1_pos" joint="right1"/>
+    <jointpos name="right2_pos" joint="right2"/>
+    <jointpos name="right3_pos" joint="right3"/>
+
+    <jointvel name="yuntai_vel" joint="yuntai"/>
+    <jointvel name="left1_vel" joint="left1"/>
+    <jointvel name="left2_vel" joint="left2"/>
+    <jointvel name="left3_vel" joint="left3"/>
+    <jointvel name="right1_vel" joint="right1"/>
+    <jointvel name="right2_vel" joint="right2"/>
+    <jointvel name="right3_vel" joint="right3"/>
+
+    <actuatorfrc name="yuntai_frc" actuator="yuntai_motor" noise="1e-3"/>
+    <actuatorfrc name="left1_frc" actuator="left1_motor" noise="1e-3"/>
+    <actuatorfrc name="left2_frc" actuator="left2_motor" noise="1e-3"/>
+    <actuatorfrc name="left3_frc" actuator="left3_motor" noise="1e-3"/>
+    <actuatorfrc name="right1_frc" actuator="right1_motor" noise="1e-3"/>
+    <actuatorfrc name="right2_frc" actuator="right2_motor" noise="1e-3"/>
+    <actuatorfrc name="right3_frc" actuator="right3_motor" noise="1e-3"/>
+
+    <framepos name="left_ee_pos" objtype="site" objname="left_ee_site"/>
+    <framequat name="left_ee_quat" objtype="site" objname="left_ee_site"/>
+    <framepos name="right_ee_pos" objtype="site" objname="right_ee_site"/>
+    <framequat name="right_ee_quat" objtype="site" objname="right_ee_site"/>
+    <gyro name="base_gyro" site="base_imu_site"/>
+    <accelerometer name="base_accel" site="base_imu_site"/>
+  </sensor>
+</mujoco>

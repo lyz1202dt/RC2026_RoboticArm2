@@ -1,6 +1,6 @@
 <mujoco model="robotic_arm_scene">
   <option gravity="0 0 -9.81"/>
-  <include file="robotic_arm.xml"/>
+  <include file="arm4.xml"/>
 
   <statistic center="0.35 0 0.25" extent="1.2"/>
 

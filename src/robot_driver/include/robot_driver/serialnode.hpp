@@ -2,18 +2,15 @@
 #define __SERIALNODE_HPP__
 
 #include <memory>
-#include <rclcpp/rclcpp.hpp>
-#include "cdc_trans.hpp"
-#include <robot_interfaces/msg/arm.hpp>
-#include <robot_interfaces/msg/arm4.hpp>
-#include <robot_interfaces/msg/armmode.hpp>
-#include "data_pack.h"
 #include <thread>
-#include "sensor_msgs/msg/imu.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
+#include <vector>
 
+#include <rcl_interfaces/msg/set_parameters_result.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
-
+#include "cdc_trans.hpp"
+#include "data_pack.h"
 
 
 class ArmNode : public rclcpp::Node
@@ -22,31 +19,21 @@ public:
     ArmNode();
     ~ArmNode();
 private:
-    bool exit_thread;
-    bool first_update{true};
-    int state_log_print_cnt{0};
-    int target_log_print_cnt{0};
-    int state_log_update_cnt{50};
-    int target_log_update_cnt{50};
-    bool enable_control{false};
-    void armSubscribCb(const robot_interfaces::msg::Arm& msg);
-    void airSubscribCb(const robot_interfaces::msg::Armmode& msg);
-   // void publishArmState(const state_pack_t *arm_state);
-    
-    int left_air_pump;
-    int right_air_pump;
+    void jointStateCallback(const sensor_msgs::msg::JointState& msg);
+    rcl_interfaces::msg::SetParametersResult onParametersChanged(const std::vector<rclcpp::Parameter>& params);
+    void updateAirPumpTarget();
+    void sendTarget();
+
+    bool exit_thread{false};
+    bool enable_air_pump{false};
+    bool has_joint_target{false};
+
     std::unique_ptr<CDCTrans> cdc_trans;
     std::unique_ptr<std::thread> usb_event_handle_thread;
-    target_pack_t arm_target;
-    //rclcpp::Publisher<robot_interfaces::msg::Arm>::SharedPtr arm_pub;
-    rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr arm_sub;
-    rclcpp::Subscription<robot_interfaces::msg::Armmode>::SharedPtr air_sub;
-    
-    OnSetParametersCallbackHandle::SharedPtr param_server_;
-    
+    target_pack_t arm_target{};
 
-    rclcpp::Time base_time;
-    bool runned{false};
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_sub;
+    rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr param_server;
 };
 
 #endif

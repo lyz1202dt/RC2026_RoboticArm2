@@ -1,71 +1,92 @@
 #include "serialnode.hpp"
-#include "cdc_trans.hpp"
-#include "data_pack.h"
-#include <chrono>
-#include <memory>
-#include <rclcpp/logging.hpp>
-#include <robot_interfaces/msg/arm.hpp>
-#include <robot_interfaces/msg/arm4.hpp>
-#include <robot_interfaces/msg/vis.hpp>
-#include <robot_interfaces/msg/armmode.hpp>
-#include <thread>
 
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
+#include <string>
 
+namespace {
 
-using namespace std::chrono_literals;
+constexpr uint16_t kUsbVid = 0x0483;
+constexpr uint16_t kUsbPid = 0x5740;
+constexpr int kTargetPackType = 0x01;
+constexpr char kJointStateTopic[] = "joint_states";
+constexpr char kAirPumpParameter[] = "enable_air_pump";
+constexpr std::array<const char*, 7> kJointNames{
+    "yuntai",
+    "left1",
+    "left2",
+    "left3",
+    "right1",
+    "right2",
+    "right3",
+};
 
+bool getPositionByName(const sensor_msgs::msg::JointState& msg, const char* name, double& position)
+{
+    const auto iter = std::find(msg.name.begin(), msg.name.end(), name);
+    if (iter == msg.name.end()) {
+        return false;
+    }
 
+    const auto index = static_cast<std::size_t>(std::distance(msg.name.begin(), iter));
+    if (index >= msg.position.size()) {
+        return false;
+    }
 
-ArmNode::ArmNode()
-    : Node("arm_node") {   
-
-         exit_thread = false;
-    
-   
-    //arm_pub = this->create_publisher<robot_interfaces::msg::Arm>("arm_status", 10);
-
-    arm_sub = this->create_subscription<robot_interfaces::msg::Arm>(
-        "myjoints_target", 10, std::bind(&ArmNode::armSubscribCb, this, std::placeholders::_1));
-
-    air_sub = this->create_subscription<robot_interfaces::msg::Armmode>(
-        "air_pump_target", 10, std::bind(&ArmNode::airSubscribCb, this, std::placeholders::_1));
-
-    
-
-     cdc_trans = std::make_unique<CDCTrans>();          
-
-     /*                         // 创建CDC传输对象
-    cdc_trans->regeiser_recv_cb([this](const uint8_t* data, int size) { // 注册接收回调
-        // RCLCPP_INFO(this->get_logger(), "接收到了数据包,长度%d", size);
-        if (size == sizeof(state_pack_t)) // 验证包长度，可以被视作四条腿的状态数据包
-        {
-            const state_pack_t* pack = reinterpret_cast<const state_pack_t*>(data);
-            if (pack->pack_type == 0)         // 确认包类型正确
-                publishArmState(pack);        // 一旦接收，立即发布狗臂状态
-            else
-                RCLCPP_ERROR(this->get_logger(), "接收到错误的数据包类型%d", pack->pack_type);
-        }
-    });
-      */
-
-    if (!cdc_trans->open(0x0483, 0x5740))     // 开启USB_CDC传输接口
-        exit_thread = true;
-
-    // 创建线程处理CDC消息（在 open 之后、publisher 创建之后）
-    usb_event_handle_thread = std::make_unique<std::thread>([this]() {
-        do {
-            cdc_trans->process_once();
-        } while (!exit_thread);
-    });
-
-    base_time=this->get_clock()->now();
+    position = msg.position[index];
+    return true;
 }
 
+bool getJointPosition(
+    const sensor_msgs::msg::JointState& msg,
+    const char* name,
+    std::size_t fallback_index,
+    double& position)
+{
+    if (getPositionByName(msg, name, position)) {
+        return true;
+    }
 
+    if (fallback_index < msg.position.size()) {
+        position = msg.position[fallback_index];
+        return true;
+    }
 
+    return false;
+}
 
-ArmNode::~ArmNode() {
-    // 请求线程退出并等待其结束，保证安全关闭
+} // namespace
+
+ArmNode::ArmNode()
+    : Node("arm_node")
+{
+    declare_parameter<bool>(kAirPumpParameter, false);
+    get_parameter(kAirPumpParameter, enable_air_pump);
+    updateAirPumpTarget();
+
+    param_server = add_on_set_parameters_callback(
+        std::bind(&ArmNode::onParametersChanged, this, std::placeholders::_1));
+
+    joint_state_sub = create_subscription<sensor_msgs::msg::JointState>(
+        kJointStateTopic, 10, std::bind(&ArmNode::jointStateCallback, this, std::placeholders::_1));
+
+    cdc_trans = std::make_unique<CDCTrans>();
+    if (!cdc_trans->open(kUsbVid, kUsbPid)) {
+        exit_thread = true;
+    }
+
+    usb_event_handle_thread = std::make_unique<std::thread>([this]() {
+        while (!exit_thread) {
+            cdc_trans->process_once();
+        }
+    });
+}
+
+ArmNode::~ArmNode()
+{
     exit_thread = true;
     if (usb_event_handle_thread && usb_event_handle_thread->joinable()) {
         usb_event_handle_thread->join();
@@ -75,56 +96,88 @@ ArmNode::~ArmNode() {
     }
 }
 
-/*
-void ArmNode::publishArmState(const state_pack_t *arm_state){
-    robot_interfaces::msg::Arm msg;
-    msg.servo2.low=arm_state->servo2.low;
-    msg.servo2.up=arm_state->servo2.up;
-    msg.rob01.rad=arm_state->robstride01.state.rad;
-    msg.rob01.omega=arm_state->robstride01.state.omega;
-    msg.rob01.torque=arm_state->robstride01.state.torque;
-    msg.rob02.rad=arm_state->GM6020.Angle_DEG;
-    msg.rob02.omega=arm_state->GM6020.Speed;
-    msg.rob02.torque=arm_state->GM6020.TorqueCurrent;
+void ArmNode::jointStateCallback(const sensor_msgs::msg::JointState& msg)
+{
+    double yuntai = 0.0;
+    double left1 = 0.0;
+    double left2 = 0.0;
+    double left3 = 0.0;
+    double right1 = 0.0;
+    double right2 = 0.0;
+    double right3 = 0.0;
 
-    arm_pub->publish(msg);
-     
-}
-*/
+    const bool has_all_joints =
+        getJointPosition(msg, kJointNames[0], 0, yuntai) &&
+        getJointPosition(msg, kJointNames[1], 1, left1) &&
+        getJointPosition(msg, kJointNames[2], 2, left2) &&
+        getJointPosition(msg, kJointNames[3], 3, left3) &&
+        getJointPosition(msg, kJointNames[4], 4, right1) &&
+        getJointPosition(msg, kJointNames[5], 5, right2) &&
+        getJointPosition(msg, kJointNames[6], 6, right3);
 
-
-void ArmNode::armSubscribCb(const robot_interfaces::msg::Arm& msg) {
-   
-    arm_target.servo1.left_up=msg.motor[3].rad;
-    arm_target.servo1.left_low=msg.motor[2].rad;
-    arm_target.servo1.left_down=msg.motor[1].rad;
-    arm_target.servo1.right_up=msg.motor[6].rad;
-    arm_target.servo1.right_low=msg.motor[5].rad;
-    arm_target.servo1.right_down=-msg.motor[4].rad;
-
-    arm_target.rob01.except_pos=msg.motor[0].rad;
-   
-    arm_target.pack_type=0x01; // 0x01 代表这是一个机械臂目标数据包    
-    arm_target.arm_pump_left = left_air_pump;
-    arm_target.arm_pump_right = right_air_pump;
-    cdc_trans->send_struct(arm_target); // 一旦订阅到最新的包，立即发送到下位机
-
-    target_log_print_cnt++;
-    if (target_log_update_cnt/4 == target_log_print_cnt) {
-        target_log_print_cnt = 0;
-        // RCLCPP_INFO(this->get_logger(), "订阅到电机目标值 %f %f %f %f,气泵状态 %d",
-        //     arm_target.rob02.target_pos,
-        //     arm_target.rob01.except_pos,
-        //     arm_target.servo1.low,
-        //     arm_target.servo1.up,
-        // arm_target.air_pump);
+    if (!has_all_joints) {
+        RCLCPP_WARN_THROTTLE(
+            get_logger(), *get_clock(), 2000,
+            "joint_states requires yuntai,left1,left2,left3,right1,right2,right3 or at least 7 positions");
+        return;
     }
 
-    first_update = false;
+    arm_target.servo1.left_up = static_cast<float>(left3);
+    arm_target.servo1.left_low = static_cast<float>(left2);
+    arm_target.servo1.left_down = static_cast<float>(left1);
+    arm_target.servo1.right_up = static_cast<float>(right3);
+    arm_target.servo1.right_low = static_cast<float>(right2);
+    arm_target.servo1.right_down = static_cast<float>(right1);
+    arm_target.rob01.except_pos = static_cast<float>(yuntai);
+
+    has_joint_target = true;
+    sendTarget();
 }
 
-void ArmNode::airSubscribCb(const robot_interfaces::msg::Armmode& msg) {
-   left_air_pump = msg.left;
-   right_air_pump = msg.right;
-    
+rcl_interfaces::msg::SetParametersResult ArmNode::onParametersChanged(
+    const std::vector<rclcpp::Parameter>& params)
+{
+    rcl_interfaces::msg::SetParametersResult result;
+    result.successful = true;
+
+    for (const auto& param : params) {
+        if (param.get_name() != kAirPumpParameter) {
+            continue;
+        }
+
+        if (param.get_type() != rclcpp::ParameterType::PARAMETER_BOOL) {
+            result.successful = false;
+            result.reason = std::string(kAirPumpParameter) + " must be bool";
+            return result;
+        }
+
+        enable_air_pump = param.as_bool();
+        updateAirPumpTarget();
+        if (has_joint_target) {
+            sendTarget();
+        } else {
+            RCLCPP_INFO(
+                get_logger(), "enable_air_pump will be sent after the first joint_states target is received");
+        }
+        RCLCPP_INFO(get_logger(), "enable_air_pump=%s", enable_air_pump ? "true" : "false");
+    }
+
+    return result;
+}
+
+void ArmNode::updateAirPumpTarget()
+{
+    const int pump_state = enable_air_pump ? 1 : 0;
+    arm_target.arm_pump_left = pump_state;
+    arm_target.arm_pump_right = pump_state;
+}
+
+void ArmNode::sendTarget()
+{
+    arm_target.pack_type = kTargetPackType;
+    updateAirPumpTarget();
+    if (!cdc_trans) {
+        return;
+    }
+    cdc_trans->send_struct(arm_target);
 }

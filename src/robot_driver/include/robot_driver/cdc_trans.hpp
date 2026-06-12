@@ -3,6 +3,8 @@
 
 #include <atomic>
 #include <functional>
+#include <type_traits>
+
 #include <libusb-1.0/libusb.h>
 
 class CDCTrans {

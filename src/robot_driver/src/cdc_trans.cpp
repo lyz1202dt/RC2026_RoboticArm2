@@ -79,7 +79,7 @@ bool CDCTrans::open(uint16_t vid, uint16_t pid) {
         int rc = libusb_hotplug_register_callback(
             ctx, static_cast<libusb_hotplug_event>(LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT | LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED),
             LIBUSB_HOTPLUG_NO_FLAGS, vid, pid, LIBUSB_HOTPLUG_MATCH_ANY,
-            [](libusb_context* ctx, libusb_device* device, libusb_hotplug_event event, void* user_data) -> int {
+            [](libusb_context*, libusb_device*, libusb_hotplug_event event, void* user_data) -> int {
                 static_cast<CDCTrans*>(user_data)->on_hotplug(event);
                 return 0;
             },
@@ -133,7 +133,8 @@ int CDCTrans::send(const uint8_t* data, int size, unsigned int time_out) {
 
 // 处理事件
 void CDCTrans::process_once() {
-    timeval tv = {.tv_sec = 0, .tv_usec = 50000}; // 50ms 超时
+    timeval tv{};
+    tv.tv_usec = 50000; // 50ms 超时
     // RCLCPP_INFO(rclcpp::get_logger("cdc_device"),"进行一次事件处理");
 
     // 处理 USB 事件

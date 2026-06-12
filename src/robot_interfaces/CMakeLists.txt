@@ -15,14 +15,11 @@ find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/Joint.msg"
-  "msg/Arm.msg"
-  "msg/Armmode.msg"
-  "msg/Arm4.msg"
-  "msg/GM6020.msg"
-  "msg/RobStride.msg"
-  "msg/Servo.msg"
+  "msg/ArmCmd.msg"
   "msg/Vis.msg"
+  "msg/MotorCmd.msg"
+  "msg/Joint.msg"
+  DEPENDENCIES builtin_interfaces std_msgs
 )
 
 ament_export_dependencies(rosidl_default_runtime)

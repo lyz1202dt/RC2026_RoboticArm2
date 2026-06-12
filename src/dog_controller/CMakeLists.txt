@@ -18,7 +18,8 @@ find_package(controller_interface REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(robot_interfaces REQUIRED)
+find_package(rcl_interfaces REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -49,7 +50,9 @@ ament_target_dependencies(
   controller_interface
   pluginlib
   hardware_interface
-  robot_interfaces
+  rclcpp_lifecycle
+  rcl_interfaces
+  sensor_msgs
 )
 
 install(TARGETS dog_controller

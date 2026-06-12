@@ -1,9 +1,9 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, LogInfo, TimerAction
 from launch.conditions import IfCondition
-from launch.event_handlers import OnProcessStart
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -12,7 +12,7 @@ def generate_launch_description():
     arm_share = get_package_share_directory("arm")
     launch_pack_share = get_package_share_directory("launch_pack")
 
-    urdf_path = os.path.join(arm_share, "model", "robotic_arm.urdf")
+    urdf_path = os.path.join(arm_share, "model", "arm4.urdf")
     controller_yaml = os.path.join(launch_pack_share, "config", "ros2_controller.yaml")
     rviz_path = os.path.join(launch_pack_share, "rviz", "display_config.rviz")
 
@@ -33,6 +33,18 @@ def generate_launch_description():
         description="Whether to start RViz2 together with MuJoCo simulation",
     )
 
+    show_gui_arg = DeclareLaunchArgument(
+        "show_gui",
+        default_value="true",
+        description="Whether to show the MuJoCo simulator window",
+    )
+
+    start_arm_calc_arg = DeclareLaunchArgument(
+        "start_arm_calc",
+        default_value="false",
+        description="Whether to start arm_calc together with the MuJoCo driver-equivalent controller",
+    )
+
     robot_state_pub = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -49,7 +61,7 @@ def generate_launch_description():
             {"simulation_frequency": 500.0},
             {"real_time_factor": 1.0},
             {"robot_model_path": LaunchConfiguration("mjcf_path")},
-            {"show_gui": True},
+            {"show_gui": ParameterValue(LaunchConfiguration("show_gui"), value_type=bool)},
         ],
         remappings=[
             ("/controller_manager/robot_description", "/robot_description"),
@@ -67,6 +79,7 @@ def generate_launch_description():
     arm_calc = Node(
         package="arm_calc",
         executable="arm_calc",
+        condition=IfCondition(LaunchConfiguration("start_arm_calc")),
         output="screen",
     )
 
@@ -77,19 +90,19 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration("show_rviz")),
     )
 
-    load_controller = RegisterEventHandler(
-        OnProcessStart(
-            target_action=mujoco,
-            on_start=[
-                LogInfo(msg="MuJoCo started, spawning dog_controller"),
-                joint_controller,
-            ],
-        )
+    load_controller = TimerAction(
+        period=5.0,
+        actions=[
+            LogInfo(msg="Spawning dog_controller after MuJoCo setup delay"),
+            joint_controller,
+        ],
     )
 
     return LaunchDescription([
         mjcf_path_arg,
         show_rviz_arg,
+        show_gui_arg,
+        start_arm_calc_arg,
         robot_state_pub,
         mujoco,
         load_controller,

@@ -4,6 +4,89 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
   name="arm">
+  <ros2_control name="arm_hw" type="system">
+    <hardware>
+      <plugin>mujoco_ros2_control/MujocoSystem</plugin>
+    </hardware>
+
+    <joint name="yuntai">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="left1">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="left2">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="left3">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="right1">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="right2">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+
+    <joint name="right3">
+      <command_interface name="effort"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="effort"/>
+    </joint>
+  </ros2_control>
+
   <link
     name="base_link">
     <inertial>
@@ -26,7 +109,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/base_link.STL" />
+          filename="base_link.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +123,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/base_link.STL" />
+          filename="base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -66,7 +149,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/yuntai.STL" />
+          filename="yuntai.STL" />
       </geometry>
       <material
         name="">
@@ -80,7 +163,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/yuntai.STL" />
+          filename="yuntai.STL" />
       </geometry>
     </collision>
   </link>
@@ -97,10 +180,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="left1">
@@ -124,7 +207,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left1.STL" />
+          filename="left1.STL" />
       </geometry>
       <material
         name="">
@@ -138,7 +221,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left1.STL" />
+          filename="left1.STL" />
       </geometry>
     </collision>
   </link>
@@ -155,10 +238,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="left2">
@@ -182,7 +265,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left2.STL" />
+          filename="left2.STL" />
       </geometry>
       <material
         name="">
@@ -196,7 +279,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left2.STL" />
+          filename="left2.STL" />
       </geometry>
     </collision>
   </link>
@@ -213,10 +296,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="left3">
@@ -240,7 +323,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left3.STL" />
+          filename="left3.STL" />
       </geometry>
       <material
         name="">
@@ -254,7 +337,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left3.STL" />
+          filename="left3.STL" />
       </geometry>
     </collision>
   </link>
@@ -271,10 +354,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="left4">
@@ -298,7 +381,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left4.STL" />
+          filename="left4.STL" />
       </geometry>
       <material
         name="">
@@ -312,7 +395,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/left4.STL" />
+          filename="left4.STL" />
       </geometry>
     </collision>
   </link>
@@ -351,7 +434,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right1.STL" />
+          filename="right1.STL" />
       </geometry>
       <material
         name="">
@@ -365,7 +448,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right1.STL" />
+          filename="right1.STL" />
       </geometry>
     </collision>
   </link>
@@ -382,10 +465,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="right2">
@@ -409,7 +492,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right2.STL" />
+          filename="right2.STL" />
       </geometry>
       <material
         name="">
@@ -423,7 +506,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right2.STL" />
+          filename="right2.STL" />
       </geometry>
     </collision>
   </link>
@@ -440,10 +523,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="right3">
@@ -467,7 +550,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right3.STL" />
+          filename="right3.STL" />
       </geometry>
       <material
         name="">
@@ -481,7 +564,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right3.STL" />
+          filename="right3.STL" />
       </geometry>
     </collision>
   </link>
@@ -498,10 +581,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-3.14159"
+      upper="3.14159"
+      effort="10"
+      velocity="10" />
   </joint>
   <link
     name="right4">
@@ -525,7 +608,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right4.STL" />
+          filename="right4.STL" />
       </geometry>
       <material
         name="">
@@ -539,7 +622,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://arm/model/right4.STL" />
+          filename="right4.STL" />
       </geometry>
     </collision>
   </link>
