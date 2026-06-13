@@ -109,7 +109,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="base_link.STL" />
+          filename="package://arm/model/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -123,7 +123,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="base_link.STL" />
+          filename="package://arm/model/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -149,7 +149,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="yuntai.STL" />
+          filename="package://arm/model/yuntai.STL" />
       </geometry>
       <material
         name="">
@@ -163,7 +163,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="yuntai.STL" />
+          filename="package://arm/model/yuntai.STL" />
       </geometry>
     </collision>
   </link>
@@ -207,7 +207,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left1.STL" />
+          filename="package://arm/model/left1.STL" />
       </geometry>
       <material
         name="">
@@ -221,7 +221,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left1.STL" />
+          filename="package://arm/model/left1.STL" />
       </geometry>
     </collision>
   </link>
@@ -265,7 +265,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left2.STL" />
+          filename="package://arm/model/left2.STL" />
       </geometry>
       <material
         name="">
@@ -279,7 +279,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left2.STL" />
+          filename="package://arm/model/left2.STL" />
       </geometry>
     </collision>
   </link>
@@ -323,7 +323,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left3.STL" />
+          filename="package://arm/model/left3.STL" />
       </geometry>
       <material
         name="">
@@ -337,7 +337,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left3.STL" />
+          filename="package://arm/model/left3.STL" />
       </geometry>
     </collision>
   </link>
@@ -381,7 +381,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left4.STL" />
+          filename="package://arm/model/left4.STL" />
       </geometry>
       <material
         name="">
@@ -395,7 +395,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="left4.STL" />
+          filename="package://arm/model/left4.STL" />
       </geometry>
     </collision>
   </link>
@@ -434,7 +434,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right1.STL" />
+          filename="package://arm/model/right1.STL" />
       </geometry>
       <material
         name="">
@@ -448,7 +448,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right1.STL" />
+          filename="package://arm/model/right1.STL" />
       </geometry>
     </collision>
   </link>
@@ -492,7 +492,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right2.STL" />
+          filename="package://arm/model/right2.STL" />
       </geometry>
       <material
         name="">
@@ -506,7 +506,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right2.STL" />
+          filename="package://arm/model/right2.STL" />
       </geometry>
     </collision>
   </link>
@@ -550,7 +550,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right3.STL" />
+          filename="package://arm/model/right3.STL" />
       </geometry>
       <material
         name="">
@@ -564,7 +564,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right3.STL" />
+          filename="package://arm/model/right3.STL" />
       </geometry>
     </collision>
   </link>
@@ -608,7 +608,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right4.STL" />
+          filename="package://arm/model/right4.STL" />
       </geometry>
       <material
         name="">
@@ -622,7 +622,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="right4.STL" />
+          filename="package://arm/model/right4.STL" />
       </geometry>
     </collision>
   </link>

@@ -43,7 +43,7 @@ constexpr std::size_t kCommandValueCount = 4;
 constexpr double kTrajectoryDurationSec = 3.0;
 constexpr double kTaskCompletionMarginSec = 0.5;
 constexpr double kVisionStabilizationSec = 2.0;
-constexpr double kVisualTargetFixedZ = -0.256;
+constexpr double kVisualTargetFixedZ = -0.23;
 constexpr double kDefaultCartesianPitchRad = -1.57079632679489661923;
 
 bool load_vector_if_present(const YAML::Node& config, const char* key, std::vector<double>& output) {
@@ -107,7 +107,7 @@ void ArmTaskNode::load_arm_positions_from_yaml() {
         const std::string yaml_path = package_share + "/config/arm_position.yaml";
         const YAML::Node config = YAML::LoadFile(yaml_path);
 
-        load_vector_if_present(config, "ready_position", ready_position_);
+        //load_vector_if_present(config, "ready_position", ready_position_);
         load_vector_if_present(config, "home_position", home_position_);
         load_vector_if_present(config, "place_position", place_position_);
 
@@ -205,7 +205,7 @@ void ArmTaskNode::execute_task_state_machine(int32_t task_mode, int preset_posit
 
 void ArmTaskNode::execute_grasp_flow(ArmSide side) {
     RCLCPP_INFO(get_logger(), "Moving %s arm to ready position", side_name(side));
-    execute_joint_space_trajectory(side, ready_position_);
+    execute_joint_space_trajectory(side, ready_position);
     std::this_thread::sleep_for(std::chrono::duration<double>(kTrajectoryDurationSec + kTaskCompletionMarginSec));
 
     std::this_thread::sleep_for(std::chrono::duration<double>(kVisionStabilizationSec));
@@ -246,7 +246,7 @@ void ArmTaskNode::execute_grasp_flow(ArmSide side) {
 
 void ArmTaskNode::execute_place_flow(ArmSide side) {
     RCLCPP_INFO(get_logger(), "Moving %s arm to ready position", side_name(side));
-    execute_joint_space_trajectory(side, ready_position_);
+    execute_joint_space_trajectory(side, ready_position);
     std::this_thread::sleep_for(std::chrono::duration<double>(kTrajectoryDurationSec + kTaskCompletionMarginSec));
 
     geometry_msgs::msg::PoseStamped place_pose;
@@ -304,15 +304,29 @@ void ArmTaskNode::execute_joint_space_trajectory(ArmSide side, const std::vector
     publish_arm_command(side, kMotionJointSpace, joint_angles, kTrajectoryDurationSec);
 }
 
-void ArmTaskNode::execute_cartesian_space_trajectory(ArmSide side, const geometry_msgs::msg::PoseStamped& target_pose) {
+void ArmTaskNode::execute_cartesian_space_trajectory(
+    ArmSide side,
+    const geometry_msgs::msg::PoseStamped& target_pose)
+{
     std::vector<double> position;
     position.reserve(kCommandValueCount);
+
     position.push_back(target_pose.pose.position.x);
     position.push_back(target_pose.pose.position.y);
     position.push_back(target_pose.pose.position.z);
-    position.push_back(kDefaultCartesianPitchRad);
 
-    publish_arm_command(side, kMotionCartesianSpace, position, kTrajectoryDurationSec);
+    const double pitch =
+        (side == ArmSide::kLeft)
+            ? kDefaultCartesianPitchRad
+            : -kDefaultCartesianPitchRad;
+
+    position.push_back(pitch);
+
+    publish_arm_command(
+        side,
+        kMotionCartesianSpace,
+        position,
+        kTrajectoryDurationSec);
 }
 
 void ArmTaskNode::stop_arm_motion(ArmSide side) {

@@ -15,9 +15,9 @@
   </asset>
 
   <worldbody>
-    <site name="base_imu_site" pos="0 0 0.0565" size="0.01"/>
+    <site name="base_imu_site" pos="0 0 0.9565" size="0.01"/>
     <geom type="mesh" rgba="1 1 1 1" mesh="base_link"/>
-    <body name="yuntai" pos="0 0 0.0565">
+    <body name="yuntai" pos="0 0 0.9565">
       <inertial pos="4.79226e-05 4.64704e-06 0.00964529" quat="0.000129558 0.707107 -0.000129558 0.707107" mass="0.101244" diaginertia="0.000304592 0.000297591 1.42122e-05"/>
       <joint name="yuntai" pos="0 0 0" axis="0 0 -1" range="-3.14159 3.14159" actuatorfrcrange="-10 10"/>
       <geom type="mesh" rgba="1 1 1 1" mesh="yuntai"/>

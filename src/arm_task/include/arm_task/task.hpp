@@ -81,7 +81,7 @@ private:
     bool has_place_target_{false};
 
     std::map<int, std::vector<double>> arm_positions_;
-    std::vector<double> ready_position_{0.0, 2.4, 1.3, 1.0};
+    std::vector<double> ready_position{0.0, 2.4, 1.6, 0.6};
     std::vector<double> home_position_{0.0, 0.0, 0.0, 0.0};
     std::vector<double> grasp_position_{0.0, 3.14159, 2.45, 2.48};
     std::vector<double> grasp_position_two_{0.0, 3.14159, 2.4, 2.55};
