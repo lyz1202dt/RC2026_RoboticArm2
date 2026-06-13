@@ -17,12 +17,14 @@
 #include <thread>
 #include <vector>
 
-namespace arm_task {
+namespace arm_task
+{
 
-class ArmTaskNode : public rclcpp::Node {
+class ArmTaskNode : public rclcpp::Node
+{
 public:
-    explicit ArmTaskNode(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
-    ~ArmTaskNode() override;
+  explicit ArmTaskNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  ~ArmTaskNode() override;
 
 private:
     enum class ArmSide : int32_t {

@@ -35,10 +35,10 @@ private:
     void on_arm_cmd(const robot_interfaces::msg::ArmCmd& msg);
     void publish_control_loop();
     void stop_motion();
-    void publish_current_joint_state();
+    void publish_desired_joint_state();
 
-    JointPosition current_arm_position(ArmSide side) const;
-    void apply_arm_position(ArmSide side, const JointPosition& joints);
+    JointPosition desired_arm_position(ArmSide side) const;
+    void write_desired_arm_position(ArmSide side, const JointPosition& joints);
 
     static bool parse_side(int32_t arm_id, ArmSide& side);
     static bool parse_mode(int32_t mode_value, MotionMode& mode);
@@ -53,7 +53,7 @@ private:
     std::string right_tip_link_{"right4"};
     double control_period_sec_{0.02};
 
-    RobotJointPosition current_joint_positions_;
+    RobotJointPosition desired_joint_positions_;
 
     KDL::Chain left_chain_;
     KDL::Chain right_chain_;

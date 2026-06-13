@@ -38,11 +38,11 @@ constexpr int32_t kCartesianSpaceMode = 2;
 
 ArmCtrlNode::ArmCtrlNode(const rclcpp::NodeOptions& options)
     : rclcpp::Node("arm_calc_node", options) {
-    current_joint_positions_.setZero();
+    desired_joint_positions_.setZero();
     declare_parameters();
     load_kinematics();
     create_interfaces();
-    publish_current_joint_state();
+    publish_desired_joint_state();
 }
 
 void ArmCtrlNode::declare_parameters() {
@@ -68,7 +68,7 @@ void ArmCtrlNode::load_kinematics() {
         throw std::runtime_error("initial_joint_positions must contain 7 values");
     }
     for (std::size_t i = 0; i < kJointNames.size(); ++i) {
-        current_joint_positions_[static_cast<int>(i)] = initial_positions[i];
+        desired_joint_positions_[static_cast<int>(i)] = initial_positions[i];
     }
 
     KDL::Tree tree;
@@ -87,8 +87,8 @@ void ArmCtrlNode::load_kinematics() {
     }
 
     arm_calc_ = std::make_shared<ArmCalc>(left_chain_, right_chain_);
-    arm_calc_->set_last_joint_pos(ArmSide::kLeft, current_arm_position(ArmSide::kLeft));
-    arm_calc_->set_last_joint_pos(ArmSide::kRight, current_arm_position(ArmSide::kRight));
+    arm_calc_->set_last_joint_pos(ArmSide::kLeft, desired_arm_position(ArmSide::kLeft));
+    arm_calc_->set_last_joint_pos(ArmSide::kRight, desired_arm_position(ArmSide::kRight));
     cartesian_space_move_ = std::make_unique<arm_action::CartesianSpaceMove>(arm_calc_);
 }
 
@@ -149,7 +149,7 @@ void ArmCtrlNode::on_arm_cmd(const robot_interfaces::msg::ArmCmd& msg) {
 
     if (mode == MotionMode::kIdle) {
         stop_motion();
-        publish_current_joint_state();
+        publish_desired_joint_state();
         return;
     }
 
@@ -166,7 +166,7 @@ void ArmCtrlNode::on_arm_cmd(const robot_interfaces::msg::ArmCmd& msg) {
 
     const double now_sec = get_clock()->now().seconds();
     const double duration = std::max(static_cast<double>(msg.duration), 1e-3);
-    const JointPosition start_position = current_arm_position(side);
+    const JointPosition start_position = desired_arm_position(side);
 
     if (mode == MotionMode::kJointSpace) {
         joint_space_move_.start(start_position, to_joint_position(msg.position.data), duration, now_sec);
@@ -196,11 +196,12 @@ void ArmCtrlNode::on_arm_cmd(const robot_interfaces::msg::ArmCmd& msg) {
 
 void ArmCtrlNode::publish_control_loop() {
     if (!active_) {
+        publish_desired_joint_state();
         return;
     }
 
     const double now_sec = get_clock()->now().seconds();
-    JointPosition target_position = current_arm_position(active_side_);
+    JointPosition target_position = desired_arm_position(active_side_);
     bool still_active = false;
 
     if (active_mode_ == MotionMode::kJointSpace) {
@@ -208,15 +209,16 @@ void ArmCtrlNode::publish_control_loop() {
         still_active = joint_space_move_.active(now_sec);
     } else if (active_mode_ == MotionMode::kCartesianSpace && cartesian_space_move_) {
         bool ik_ok = true;
-        target_position = cartesian_space_move_->sample(now_sec, &ik_ok);
+        const JointPosition seed_position = desired_arm_position(active_side_);
+        target_position = cartesian_space_move_->sample(now_sec, seed_position, &ik_ok);
         still_active = cartesian_space_move_->active(now_sec);
         if (!ik_ok) {
             RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 1000, "IK failed while sampling cartesian trajectory");
         }
     }
 
-    apply_arm_position(active_side_, target_position);
-    publish_current_joint_state();
+    write_desired_arm_position(active_side_, target_position);
+    publish_desired_joint_state();
 
     if (!still_active) {
         active_ = false;
@@ -238,7 +240,7 @@ void ArmCtrlNode::stop_motion() {
     }
 }
 
-void ArmCtrlNode::publish_current_joint_state() {
+void ArmCtrlNode::publish_desired_joint_state() {
     if (!joint_state_pub_) {
         return;
     }
@@ -250,37 +252,41 @@ void ArmCtrlNode::publish_current_joint_state() {
 
     for (std::size_t i = 0; i < kJointNames.size(); ++i) {
         msg.name.emplace_back(kJointNames[i]);
-        msg.position[i] = current_joint_positions_[static_cast<int>(i)];
+        msg.position[i] = desired_joint_positions_[static_cast<int>(i)];
     }
 
     joint_state_pub_->publish(msg);
 }
 
-JointPosition ArmCtrlNode::current_arm_position(ArmSide side) const {
+JointPosition ArmCtrlNode::desired_arm_position(ArmSide side) const {
     JointPosition position = JointPosition::Zero();
-    position[0] = current_joint_positions_[0];
+    position[0] = desired_joint_positions_[0];
     if (side == ArmSide::kLeft) {
-        position[1] = current_joint_positions_[1];
-        position[2] = current_joint_positions_[2];
-        position[3] = current_joint_positions_[3];
+        position[1] = desired_joint_positions_[1];
+        position[2] = desired_joint_positions_[2];
+        position[3] = desired_joint_positions_[3];
     } else {
-        position[1] = current_joint_positions_[4];
-        position[2] = current_joint_positions_[5];
-        position[3] = current_joint_positions_[6];
+        position[1] = desired_joint_positions_[4];
+        position[2] = desired_joint_positions_[5];
+        position[3] = desired_joint_positions_[6];
     }
     return position;
 }
 
-void ArmCtrlNode::apply_arm_position(ArmSide side, const JointPosition& joints) {
-    current_joint_positions_[0] = joints[0];
+void ArmCtrlNode::write_desired_arm_position(ArmSide side, const JointPosition& joints) {
+    desired_joint_positions_[0] = joints[0];
     if (side == ArmSide::kLeft) {
-        current_joint_positions_[1] = joints[1];
-        current_joint_positions_[2] = joints[2];
-        current_joint_positions_[3] = joints[3];
+        desired_joint_positions_[1] = joints[1];
+        desired_joint_positions_[2] = joints[2];
+        desired_joint_positions_[3] = joints[3];
     } else {
-        current_joint_positions_[4] = joints[1];
-        current_joint_positions_[5] = joints[2];
-        current_joint_positions_[6] = joints[3];
+        desired_joint_positions_[4] = joints[1];
+        desired_joint_positions_[5] = joints[2];
+        desired_joint_positions_[6] = joints[3];
+    }
+
+    if (arm_calc_) {
+        arm_calc_->set_last_joint_pos(side, joints);
     }
 }
 

@@ -17,19 +17,27 @@ public:
                double duration,
                double start_time_sec);
 
-    arm_calc::JointPosition sample(double current_time_sec, bool* ik_ok = nullptr);
+    arm_calc::JointPosition sample(double current_time_sec,
+                                   const arm_calc::JointPosition& seed_joint_position,
+                                   bool* ik_ok = nullptr);
     bool active(double current_time_sec) const;
     bool started() const { return started_; }
     void stop();
 
 private:
-    static arm_calc::TrajectoryVector to_vector(const arm_calc::CartesianTarget& target);
-    static arm_calc::CartesianTarget to_target(const arm_calc::TrajectoryVector& vector);
+    static arm_calc::TrajectoryVector position_to_vector(const Eigen::Vector3d& position);
+    static Eigen::Vector3d vector_to_position(const arm_calc::TrajectoryVector& vector);
+    static arm_calc::TrajectoryVector pitch_to_vector(double pitch);
+    static double vector_to_pitch(const arm_calc::TrajectoryVector& vector);
+    static double pitch_from_pose(const arm_calc::CartesianPose& pose, double pitch_reference);
+    static double normalize_pitch_near(double pitch, double pitch_reference);
+
+    arm_calc::CartesianTarget sample_target(double time_from_start) const;
 
     std::shared_ptr<arm_calc::ArmCalc> arm_calc_;
-    arm_calc::TrajectoryCalc trajectory_;
+    arm_calc::TrajectoryCalc position_trajectory_;
+    arm_calc::TrajectoryCalc pitch_trajectory_;
     arm_calc::ArmSide side_{arm_calc::ArmSide::kLeft};
-    arm_calc::JointPosition last_joint_position_{arm_calc::JointPosition::Zero()};
     double start_time_sec_{0.0};
     double duration_sec_{0.0};
     bool started_{false};
