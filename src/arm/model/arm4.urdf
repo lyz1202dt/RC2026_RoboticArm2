@@ -180,10 +180,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="left1">
@@ -238,10 +238,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="left2">
@@ -296,10 +296,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="left3">
@@ -354,10 +354,10 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="left4">
@@ -404,7 +404,7 @@
     type="fixed">
     <origin
       xyz="0.1058 0.0275 -0.026"
-      rpy="3.1416 0 0" />
+      rpy="0 0 0" />
     <parent
       link="left3" />
     <child
@@ -465,10 +465,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="right2">
@@ -523,10 +523,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="right3">
@@ -581,10 +581,10 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-3.14159"
-      upper="3.14159"
-      effort="10"
-      velocity="10" />
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
   </joint>
   <link
     name="right4">
@@ -631,7 +631,7 @@
     type="fixed">
     <origin
       xyz="0.1058 -0.0274999999999999 0.0260000000000004"
-      rpy="-1.5707963267949 0 0" />
+      rpy="0 0 0" />
     <parent
       link="right3" />
     <child
