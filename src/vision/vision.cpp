@@ -1,9 +1,5 @@
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <tf2_eigen/tf2_eigen.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include <Eigen/Dense>
@@ -15,8 +11,6 @@
 #include <algorithm>
 #include <cmath>
 #include <thread>
-#include <mutex>
-#include <optional>
 #include <sstream>
 #include <iomanip>
 
@@ -34,8 +28,8 @@ struct KalmanFilter2D {
     KalmanFilter2D() {
         kf.init(4, 2, 1, CV_32F);
         kf.transitionMatrix = (cv::Mat_<float>(4, 4) <<
-            0, 1, 0, 0,
-            1, 0, 0, 1,
+            1, 0, 1, 0,
+            0, 1, 0, 1,
             0, 0, 1, 0,
             0, 0, 0, 1);
         kf.measurementMatrix = (cv::Mat_<float>(2, 4) <<
@@ -113,36 +107,9 @@ private:
 class VisionPositionPublisher : public rclcpp::Node {
 public:
     VisionPositionPublisher() : Node("vision_position_publisher"), is_running_(false), show_visualization_(true) {
-        RCLCPP_INFO(this->get_logger(), "1. 创建TF buffer...");
-        tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
-
-        RCLCPP_INFO(this->get_logger(), "2. 创建TF listener...");
-        tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
-
-        RCLCPP_INFO(this->get_logger(), "3. 创建TF broadcaster...");
+        RCLCPP_INFO(this->get_logger(), "1. 创建TF broadcaster...");
         tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
-        RCLCPP_INFO(this->get_logger(), "4. 创建静态TF broadcaster...");
-        static_tf_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
-
-        // ==================== HANDEYE CALIBRATION RESULT ====================
-        // 在这里填入手眼标定矩阵 (Camera in Flange Frame)
-        // 标定完成后替换为实际矩阵，格式：前3x3旋转，第4列前3行平移 (单位：米)
-        // 【注释】手眼标定：以下两行被注释以跳过标定。恢复方法：
-        //   1. 取消下面两行的注释
-        //   2. 填入标定结果矩阵替换 T_flange2cam_ 的 Identity()
-        //   3. 取消构造函数中 publishStaticHandEyeTransform() 的注释
-        RCLCPP_INFO(this->get_logger(), "5. 初始化手眼矩阵...");
-        T_flange2cam_ << 0.0, 0.0, 1.0, 0.1,
-                         -1.0, 0.0, 0.0, -0.09,
-                         0.0, -1.0, 0.0, -0.03,
-                         0.0, 0.0, 0.0, 1.0;
-        // ====================================================================
-
-        // 发布相机的静态 TF，方便在 RViz 里查看
-        // 【注释】手眼标定：以下代码需要手眼标定矩阵 T_flange2cam_ 正确赋值后才能启用。
-        // 要恢复：取消下行注释，并确保 T_flange2cam_ 填入标定结果。
-        publishStaticHandEyeTransform();
 
         // 启动视觉处理线程，避免阻塞 ROS 的 executor
         is_running_ = true;
@@ -158,18 +125,6 @@ public:
     }
 
 private:
-    void publishStaticHandEyeTransform() {
-        geometry_msgs::msg::TransformStamped static_tf;
-        static_tf.header.stamp = this->now();
-        static_tf.header.frame_id = "Link4";
-        static_tf.child_frame_id = "camera_link";
-
-        Eigen::Affine3d affine_flange2cam(T_flange2cam_);
-        static_tf.transform = tf2::eigenToTransform(affine_flange2cam).transform;
-
-        static_tf_broadcaster_->sendTransform(static_tf);
-    }
-
     void visionLoop() {
         // ============================================================
         // Step A: 启动相机 (带重试)
@@ -364,9 +319,6 @@ private:
             // -------------------------------------------------------------
             // 核心 ROS2 TF 发布逻辑
             // -------------------------------------------------------------
-            bool target_detected_this_frame = false;
-            Eigen::Vector3d current_target_base;
-
             if (rightmost_idx != -1) {
                 int cx = std::max(0, std::min((int)valid_sticks[rightmost_idx].center.x, depth_frame.get_width()  - 1));
                 int cy = std::max(0, std::min((int)valid_sticks[rightmost_idx].center.y, depth_frame.get_height() - 1));
@@ -402,12 +354,10 @@ private:
                         float p3[3], pix[2] = {(float)cx, (float)cy};
                         rs2_deproject_pixel_to_point(p3, &intrin, pix, dist_m);
 
-                        // Step 1: 视觉检测 → T_cam2target (相机坐标系下的目标位置)
-                        Eigen::Vector4d P_cam(p3[0], p3[1], p3[2], 1.0);
-
                         // 【测试模式】总是打印当前检测到的相机坐标系坐标
-                        // RCLCPP_INFO(this->get_logger(), "检测到目标 (camera_frame): (%.3f, %.3f, %.3f) 米, 距离: %.3f 米",
-                        //             p3[0], p3[1], p3[2], dist_m);
+                        RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                                             "检测到目标 (camera_frame): (%.3f, %.3f, %.3f) 米, 距离: %.3f 米",
+                                             p3[0], p3[1], p3[2], dist_m);
 
                         // 【测试模式】发布 camera_link → target_camera 变换（无需手眼标定即可在 RViz 查看）
                         {
@@ -422,50 +372,10 @@ private:
                             tf_broadcaster_->sendTransform(cam_tf);
                         }
 
-                        // Step 2: 查 TF → T_base2flange (机械臂基座到末端法兰)
-                        geometry_msgs::msg::TransformStamped tf_base2flange;
-                        try {
-                            tf_base2flange = tf_buffer_->lookupTransform("base_link", "Link4", tf2::TimePointZero);
-                            Eigen::Affine3d affine_base2flange = tf2::transformToEigen(tf_base2flange.transform);
-                            Eigen::Matrix4d T_base2flange = affine_base2flange.matrix();
-
-                            // Step 3: 手眼变换 → T_base2target = T_base2flange × T_flange2cam × T_cam2target
-                            Eigen::Vector4d P_base = T_base2flange * T_flange2cam_ * P_cam;
-
-                            current_target_base = Eigen::Vector3d(P_base.x(), P_base.y(), P_base.z());
-                            last_target_base_ = current_target_base;
-                            target_detected_this_frame = true;
-                        } catch (const tf2::TransformException& ex) {
-                            RCLCPP_WARN(this->get_logger(), "TF查询失败(无机器人连接), 仅发布 camera_frame 坐标: %s", ex.what());
-                        }
                     }
                 }
             }
 
-            if (!target_detected_this_frame) {
-                RCLCPP_DEBUG(this->get_logger(), "Target not detected, skipping TF publish (using old data if available)");
-            }
-
-            // Step 4: 发布 TF → base_link → target_position
-            if (last_target_base_.has_value()) {
-                geometry_msgs::msg::TransformStamped target_tf;
-                target_tf.header.stamp = this->now();
-                target_tf.header.frame_id = "base_link";
-                target_tf.child_frame_id = "target_object";
-
-                // 只发布位置
-                target_tf.transform.translation.x = last_target_base_->x();
-                target_tf.transform.translation.y = last_target_base_->y();
-                target_tf.transform.translation.z = last_target_base_->z();
-
-                // 姿态给单位四元数（无旋转）
-                target_tf.transform.rotation.w = 1.0;
-                target_tf.transform.rotation.x = 0.0;
-                target_tf.transform.rotation.y = 0.0;
-                target_tf.transform.rotation.z = 0.0;
-
-                tf_broadcaster_->sendTransform(target_tf);
-            }
 
             // ============================================================
             // 可视化绘制
@@ -536,7 +446,8 @@ private:
                                         cv::FONT_HERSHEY_SIMPLEX, 0.7,
                                         cv::Scalar(255, 0, 0), 2, cv::LINE_AA);
 
-                            // RCLCPP_INFO(this->get_logger(), "最右侧杆坐标: (%.3f, %.3f, %.3f) 米", p3[0], p3[1], p3[2]);
+                            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                                                 "最右侧杆坐标: (%.3f, %.3f, %.3f) 米", p3[0], p3[1], p3[2]);
                         }
                     } else {
                         cv::putText(color_image, "depth invalid",
@@ -569,13 +480,8 @@ private:
     std::atomic<bool> is_running_;
     bool show_visualization_;
     std::thread vision_thread_;
-    Eigen::Matrix4d T_flange2cam_;
-    std::optional<Eigen::Vector3d> last_target_base_;
 
-    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
 };
 
 int main(int argc, char** argv) {

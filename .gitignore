@@ -7,3 +7,7 @@
 memory-bank/
 .codex
 GEMINI.md
+.serena/
+.claude/
+.gitignore
+.understand-anything/

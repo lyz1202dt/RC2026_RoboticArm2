@@ -39,7 +39,7 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<std::string>("base_frame", "base_link");
     node_->declare_parameter<std::string>("camera_frame", "camera_link");
     node_->declare_parameter<std::string>("object_frame", "target_object");
-    node_->declare_parameter<std::string>("tip_frame", "Link7");
+    node_->declare_parameter<std::string>("tip_frame", "Link6");
     node_->declare_parameter<std::string>("arm_calc_node_name", "arm_calc_node");
     node_->declare_parameter<std::string>("driver_node_name", "driver_node");
     node_->declare_parameter<double>("max_linear_velocity", 0.1);
@@ -48,10 +48,9 @@ Robot::Robot(rclcpp::Node::SharedPtr node) {
     node_->declare_parameter<double>("min_trajectory_duration", 0.1);
     node_->declare_parameter<double>("max_trajectory_duration", 10.0);
     node_->declare_parameter<int>("grasp_it", 0);
-    node_->declare_parameter<double>("grasp_height", 0.8);
-    node_->declare_parameter<double>("grasp_right_run", 0.10);
-    node_->declare_parameter<double>("grasp_down_run", 0.15);
-    node_->declare_parameter<double>("grasp_right_run_qian", 0.00);
+    node_->declare_parameter<double>("grasp_height", 0.9);
+    node_->declare_parameter<double>("grasp_x_run", 0.03);
+    node_->declare_parameter<double>("grasp_y_run", -0.03);
 
     // Get parameters
     node_->get_parameter("trajectory_duration", trajectory_duration_);
@@ -601,13 +600,20 @@ bool Robot::is_visual_servo_converged(double position_tolerance_m, double* curre
     bool has_target_pose = false;
 
     try {
-        const auto target_tf = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+        auto target_in_camera = tf_buffer_->lookupTransform(camera_frame_, "target_camera", tf2::TimePointZero, tf2::durationFromSec(0.05));
+        auto base_to_camera = tf_buffer_->lookupTransform(base_frame_, camera_frame_, tf2::TimePointZero, tf2::durationFromSec(0.05));
+
+        tf2::Vector3 cam_pos(target_in_camera.transform.translation.x, target_in_camera.transform.translation.y, target_in_camera.transform.translation.z);
+        tf2::Transform base_to_camera_tf;
+        tf2::fromMsg(base_to_camera.transform, base_to_camera_tf);
+        tf2::Vector3 base_pos = base_to_camera_tf * cam_pos;
+
         target_pose.header.frame_id = base_frame_;
         target_pose.header.stamp = node_->now();
-        target_pose.pose.position.x = target_tf.transform.translation.x;
-        target_pose.pose.position.y = target_tf.transform.translation.y;
-        target_pose.pose.position.z = target_tf.transform.translation.z;
-        target_pose.pose.orientation = target_tf.transform.rotation;
+        target_pose.pose.position.x = base_pos.x();
+        target_pose.pose.position.y = base_pos.y();
+        target_pose.pose.position.z = base_pos.z();
+        target_pose.pose.orientation = target_in_camera.transform.rotation;
         has_target_pose = true;
     } catch (const tf2::TransformException&) {
         std::lock_guard<std::mutex> lock(pose_mutex_);
@@ -743,9 +749,24 @@ void Robot::visual_servo_publish_thread() {
 
         if (!camera_data_locked) {
             try {
-                auto target_in_base = tf_buffer_->lookupTransform(base_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
-                pose_to_publish.pose.position.x = target_in_base.transform.translation.x;
-                pose_to_publish.pose.position.y = target_in_base.transform.translation.y;
+                // 1. 获取相机坐标系下的目标位置: camera_link → target_camera
+                auto target_in_camera = tf_buffer_->lookupTransform(camera_frame_, "target_camera", tf2::TimePointZero, tf2::durationFromSec(0.1));
+                const auto& cam_t = target_in_camera.transform.translation;
+
+                // 2. 获取 base_link → camera_link 的变换
+                auto base_to_cam = tf_buffer_->lookupTransform(base_frame_, camera_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
+
+                // 3. 将相机坐标变换到 base_link: P_base = R * P_cam + t
+                tf2::Quaternion q_cam;
+                tf2::fromMsg(base_to_cam.transform.rotation, q_cam);
+                tf2::Vector3 p_cam(cam_t.x, cam_t.y, cam_t.z);
+                tf2::Vector3 p_base = tf2::quatRotate(q_cam, p_cam) + tf2::Vector3(
+                    base_to_cam.transform.translation.x,
+                    base_to_cam.transform.translation.y,
+                    base_to_cam.transform.translation.z);
+
+                pose_to_publish.pose.position.x = p_base.x()+node_->get_parameter("grasp_x_run").as_double();
+                pose_to_publish.pose.position.y = p_base.y()+node_->get_parameter("grasp_y_run").as_double();
                 pose_to_publish.pose.position.z = node_->get_parameter("grasp_height").as_double();
                 pose_to_publish.header.frame_id = base_frame_;
                 pose_to_publish.header.stamp = node_->now();
@@ -753,13 +774,15 @@ void Robot::visual_servo_publish_thread() {
                 last_trusted_pose = pose_to_publish;
                 has_last_trusted_pose = true;
 
-                auto target_in_camera = tf_buffer_->lookupTransform(camera_frame_, object_frame_, tf2::TimePointZero, tf2::durationFromSec(0.1));
-                const auto& translation = target_in_camera.transform.translation;
-                const double distance_to_target = std::sqrt(translation.x * translation.x + translation.y * translation.y + translation.z * translation.z);
+                RCLCPP_INFO_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
+                                     "视觉伺服获取目标位置: (%.3f, %.3f, %.3f)",
+                                     p_base.x(), p_base.y(), p_base.z());
 
+                // 4. 判断距离是否满足锁定条件
+                const double distance_to_target = std::sqrt(cam_t.x * cam_t.x + cam_t.y * cam_t.y + cam_t.z * cam_t.z);
                 if (distance_to_target < kCameraDataLockDistanceMeters) {
                     camera_data_locked = true;
-                    RCLCPP_INFO(node_->get_logger(), "camera_data_locked=true, %s 到 %s 距离为 %.3f m", camera_frame_.c_str(), object_frame_.c_str(), distance_to_target);
+                    RCLCPP_INFO(node_->get_logger(), "camera_data_locked=true, %s 到 target_camera 距离为 %.3f m", camera_frame_.c_str(), distance_to_target);
                 }
 
             } catch (const tf2::TransformException& ex) {
@@ -803,7 +826,7 @@ void Robot::visual_servo_publish_thread() {
         }
 
         tf2::Quaternion q;
-        q.setRPY(0.0, 0.5, 0.0);
+        q.setRPY(0.0, 0.3, 0.0);
         pose_to_publish.pose.orientation.w = q.w();
         pose_to_publish.pose.orientation.x = q.x();
         pose_to_publish.pose.orientation.y = q.y();

@@ -10,6 +10,7 @@
 #include <rclcpp/utilities.hpp>
 #include <tf2/LinearMath/Matrix3x3.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2/exceptions.h>
 #include <thread>
 #include <future>
@@ -59,15 +60,19 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到准备抓杆位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.0)) { // 1.0
+        RCLCPP_ERROR(robot->node_->get_logger(), "移动到准备抓杆位置失败");
         return fail_task("移动到准备抓杆位置失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到准备抓杆位置");
     }
     
+    std::this_thread::sleep_for(1s);
+
     // 1. 获取当前末端位姿
     geometry_msgs::msg::PoseStamped current_end_pose;
     if (!robot->get_current_end_pose_from_arm_calc(current_end_pose)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "获取当前末端位姿失败");
         return fail_task("获取当前末端位姿失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功获取当前末端位姿");
@@ -77,18 +82,38 @@ std::string CatchKFS::process(const std::string last_task_name) {
         current_end_pose.pose.orientation.w);
     }
 
-    // 2.1 从 TF 读取目标位置，姿态复用当前末端
+    // 2.1 从 TF 读取目标位置：camera_link → target_camera，再转换到 base_link
     geometry_msgs::msg::PoseStamped target_pose;
     try {
-        auto tf = robot->tf_buffer_->lookupTransform(
-            robot->base_frame_, robot->object_frame_,
+        // 获取相机坐标系下的目标位置
+        auto target_in_camera = robot->tf_buffer_->lookupTransform(
+            robot->camera_frame_, "target_camera",
             tf2::TimePointZero, std::chrono::milliseconds(500));
+
+        // 获取 base_link → camera_link 变换
+        auto base_to_cam = robot->tf_buffer_->lookupTransform(
+            robot->base_frame_, robot->camera_frame_,
+            tf2::TimePointZero, std::chrono::milliseconds(500));
+
+        // 将相机坐标变换到 base_link: P_base = R * P_cam + t
+        tf2::Quaternion q_cam;
+        tf2::fromMsg(base_to_cam.transform.rotation, q_cam);
+        tf2::Vector3 p_cam(
+            target_in_camera.transform.translation.x,
+            target_in_camera.transform.translation.y,
+            target_in_camera.transform.translation.z);
+        tf2::Vector3 p_base = tf2::quatRotate(q_cam, p_cam) + tf2::Vector3(
+            base_to_cam.transform.translation.x,
+            base_to_cam.transform.translation.y,
+            base_to_cam.transform.translation.z);
+
         target_pose.header.frame_id = robot->base_frame_;
         target_pose.header.stamp = robot->node_->now();
-        target_pose.pose.position.x = -tf.transform.translation.x;
-        target_pose.pose.position.y = tf.transform.translation.y;
-        target_pose.pose.position.z = robot->node_->get_parameter("grasp_height").as_double(); // tf.transform.translation.z;
-        // End-effector orientation: RPY(0, 0, 0) → pointing along +X axis
+        target_pose.pose.position.x = p_base.x();
+        target_pose.pose.position.y = p_base.y();
+        target_pose.pose.position.z = robot->node_->get_parameter("grasp_height").as_double();
+
+        // End-effector orientation: RPY(0, 0.5, 0)
         tf2::Quaternion q_set;
         q_set.setRPY(0.0, 0.5, 0.0);
         target_pose.pose.orientation.w = q_set.w();
@@ -96,12 +121,12 @@ std::string CatchKFS::process(const std::string last_task_name) {
         target_pose.pose.orientation.y = q_set.y();
         target_pose.pose.orientation.z = q_set.z();
 
-        RCLCPP_INFO(robot->node_->get_logger(), "目标位置: (%.3f, %.3f, %.3f)； 目标姿态: (%.3f, %.3f, %.3f, %.3f)", 
-        target_pose.pose.position.x, target_pose.pose.position.y, target_pose.pose.position.z, 
-        target_pose.pose.orientation.x, target_pose.pose.orientation.y, target_pose.pose.orientation.z, 
-        target_pose.pose.orientation.w
-        );
+        RCLCPP_INFO(robot->node_->get_logger(), "目标位置: (%.3f, %.3f, %.3f)； 目标姿态: (%.3f, %.3f, %.3f, %.3f)",
+            target_pose.pose.position.x, target_pose.pose.position.y, target_pose.pose.position.z,
+            target_pose.pose.orientation.x, target_pose.pose.orientation.y,
+            target_pose.pose.orientation.z, target_pose.pose.orientation.w);
     } catch (const tf2::TransformException& ex) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "获取目标位置TF失败: %s", ex.what());
         return fail_task("获取目标位置TF失败");
     }
 
@@ -119,6 +144,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     
     // 2.3 启动视觉伺服，等待收敛
     if (!robot->start_visual_servo(target_pose)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "启动视觉伺服失败");
         return fail_task("启动视觉伺服失败");
     }
     while (rclcpp::ok() && robot->is_visual_servo_active()) {
@@ -129,19 +155,35 @@ std::string CatchKFS::process(const std::string last_task_name) {
         std::this_thread::sleep_for(50ms);
     }
     if (!robot->wait_for_visual_servo_convergence(0.01, 0.0)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "视觉伺服被外部取消或未收敛");
         return fail_task("视觉伺服被外部取消");
     }
     robot->stop_visual_servo();
 
-
+    std::this_thread::sleep_for(1000ms);
 
 
 
     // 3. 关闭夹爪
     if (!robot->set_air_pump(0)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "夹爪关闭失败");
         return fail_task("关闭夹爪失败");
     }
-    std::this_thread::sleep_for(10000ms);
+    std::this_thread::sleep_for(1000ms);
+
+    ready_position_name = "detach_gan_ready";
+
+    if (!robot->get_named_joint_position(ready_position_name, ready_joint_angles)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "未找到命名位姿 [%s]", ready_position_name.c_str());
+        return fail_task("未找到命名位姿 " + ready_position_name);
+    }
+
+    RCLCPP_INFO(robot->node_->get_logger(), "移动到准备放杆位置");
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.0)) { // 1.0
+        return fail_task("移动到准备放杆位置失败");
+    } else {
+        RCLCPP_INFO(robot->node_->get_logger(), "成功移动到准备放杆位置");
+    }
 
     ready_position_name = "detach_gan_1";
 
@@ -151,7 +193,7 @@ std::string CatchKFS::process(const std::string last_task_name) {
     }
 
     RCLCPP_INFO(robot->node_->get_logger(), "移动到准备放杆位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.0)) { // 1.0
         return fail_task("移动到准备放杆位置失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到准备放杆位置");
@@ -163,13 +205,15 @@ std::string CatchKFS::process(const std::string last_task_name) {
         return fail_task("未找到命名位姿 " + ready_position_name);
     }
     RCLCPP_INFO(robot->node_->get_logger(), "移动到放杆位置");
-    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 3.0)) { // 1.0
+    if (!robot->execute_joint_space_trajectory(ready_joint_angles, 1.0)) { // 1.0
+        RCLCPP_ERROR(robot->node_->get_logger(), "移动到放杆位置失败");
         return fail_task("移动到放杆位置失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功移动到放杆位置");
     }
 
     if (!robot->get_current_end_pose_from_arm_calc(current_end_pose)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "获取当前末端位姿失败");
         return fail_task("获取当前末端位姿失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功获取当前末端位姿");
@@ -179,9 +223,11 @@ std::string CatchKFS::process(const std::string last_task_name) {
         current_end_pose.pose.orientation.w);
     }
 
-    current_end_pose.pose.position.z -= 0.2;
+    current_end_pose.pose.position.z -= 0.27;
 
+    std::this_thread::sleep_for(1000ms);
     if (!robot->execute_cartesian_space_trajectory(current_end_pose, 3.0)) {
+        RCLCPP_ERROR(robot->node_->get_logger(), "向下戳杆失败");
         return fail_task("向下戳杆失败");
     } else {
         RCLCPP_INFO(robot->node_->get_logger(), "成功向下戳杆");

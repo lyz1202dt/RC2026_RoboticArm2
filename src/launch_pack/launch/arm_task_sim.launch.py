@@ -29,16 +29,16 @@ def generate_launch_description():
     )
     
     static_tf_camera = Node(
-    package="tf2_ros",
-    executable="static_transform_publisher",
-    arguments=[
-        "0.1", "0.09", "-0.03",  # x, y, z
-        "0.7071068", "0.0", "0.7071068", "0.0",
-        "Link4",
-        "camera_link"
-    ],
-    output="screen",
-)
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        arguments=[
+            "0.1", "0.09", "-0.03",  # x, y, z
+            "0.7071068", "0.0", "0.7071068", "0.0",
+            "Link4",
+            "camera_link"
+        ],
+        output="screen",
+    )
     
     # arm_task node
     # arm_task = Node(

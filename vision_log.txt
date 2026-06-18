@@ -1,0 +1,107 @@
+[INFO] [1780317556.519497997] [vision_position_publisher]: 1. 创建TF broadcaster...
+[INFO] [1780317556.521120901] [vision_position_publisher]: Vision Position Publisher node initialized and started.
+[INFO] [1780317556.702284379] [vision_position_publisher]: [1/5] Opening RealSense pipeline...
+[INFO] [1780317556.747165777] [vision_position_publisher]: [2/5] Camera started
+[INFO] [1780317556.760863682] [vision_position_publisher]: [3/5] Entering vision loop
+[INFO] [1780317560.007157025] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.226, 0.038, 0.379) 米, 距离: 0.379 米
+[INFO] [1780317560.007729663] [vision_position_publisher]: 最右侧杆坐标: (-0.226, 0.038, 0.379) 米
+[INFO] [1780317561.039745092] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.236, -0.008, 0.408) 米, 距离: 0.408 米
+[INFO] [1780317561.040137778] [vision_position_publisher]: 最右侧杆坐标: (-0.236, -0.008, 0.408) 米
+[INFO] [1780317562.041713553] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.233, -0.008, 0.391) 米, 距离: 0.391 米
+[INFO] [1780317562.042205344] [vision_position_publisher]: 最右侧杆坐标: (-0.233, -0.008, 0.391) 米
+[INFO] [1780317563.074519473] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.248, -0.008, 0.387) 米, 距离: 0.387 米
+[INFO] [1780317563.075131211] [vision_position_publisher]: 最右侧杆坐标: (-0.248, -0.008, 0.387) 米
+[INFO] [1780317564.075032250] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.222, -0.008, 0.403) 米, 距离: 0.403 米
+[INFO] [1780317564.075463088] [vision_position_publisher]: 最右侧杆坐标: (-0.222, -0.008, 0.403) 米
+[INFO] [1780317565.076327498] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.226, -0.008, 0.405) 米, 距离: 0.405 米
+[INFO] [1780317565.076718007] [vision_position_publisher]: 最右侧杆坐标: (-0.226, -0.008, 0.405) 米
+[INFO] [1780317566.077960393] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.215, -0.008, 0.415) 米, 距离: 0.415 米
+[INFO] [1780317566.078494306] [vision_position_publisher]: 最右侧杆坐标: (-0.215, -0.008, 0.415) 米
+[INFO] [1780317567.110518906] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.214, -0.008, 0.412) 米, 距离: 0.412 米
+[INFO] [1780317567.110895051] [vision_position_publisher]: 最右侧杆坐标: (-0.214, -0.008, 0.412) 米
+[INFO] [1780317568.110909718] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.195, -0.008, 0.416) 米, 距离: 0.416 米
+[INFO] [1780317568.111306928] [vision_position_publisher]: 最右侧杆坐标: (-0.195, -0.008, 0.416) 米
+[INFO] [1780317569.245979446] [vision_position_publisher]: 检测到目标 (camera_frame): (-0.030, -0.035, 0.434) 米, 距离: 0.434 米
+[INFO] [1780317569.246386390] [vision_position_publisher]: 最右侧杆坐标: (-0.030, -0.035, 0.434) 米
+[INFO] [1780317570.247614975] [vision_position_publisher]: 检测到目标 (camera_frame): (0.122, -0.008, 0.381) 米, 距离: 0.381 米
+[INFO] [1780317570.248045340] [vision_position_publisher]: 最右侧杆坐标: (0.122, -0.008, 0.381) 米
+[INFO] [1780317571.248296489] [vision_position_publisher]: 检测到目标 (camera_frame): (0.118, -0.008, 0.385) 米, 距离: 0.385 米
+[INFO] [1780317571.248779902] [vision_position_publisher]: 最右侧杆坐标: (0.118, -0.008, 0.385) 米
+[INFO] [1780317572.282704565] [vision_position_publisher]: 检测到目标 (camera_frame): (0.126, -0.008, 0.381) 米, 距离: 0.381 米
+[INFO] [1780317572.283158916] [vision_position_publisher]: 最右侧杆坐标: (0.126, -0.008, 0.381) 米
+[INFO] [1780317573.417298453] [vision_position_publisher]: 检测到目标 (camera_frame): (0.135, -0.008, 0.382) 米, 距离: 0.382 米
+[INFO] [1780317573.417836584] [vision_position_publisher]: 最右侧杆坐标: (0.135, -0.008, 0.382) 米
+[INFO] [1780317574.418847228] [vision_position_publisher]: 检测到目标 (camera_frame): (0.137, -0.008, 0.383) 米, 距离: 0.383 米
+[INFO] [1780317574.419322297] [vision_position_publisher]: 最右侧杆坐标: (0.137, -0.008, 0.383) 米
+[INFO] [1780317575.451474469] [vision_position_publisher]: 检测到目标 (camera_frame): (0.132, -0.008, 0.389) 米, 距离: 0.389 米
+[INFO] [1780317575.451970623] [vision_position_publisher]: 最右侧杆坐标: (0.132, -0.008, 0.389) 米
+[INFO] [1780317576.486220391] [vision_position_publisher]: 检测到目标 (camera_frame): (0.156, -0.008, 0.379) 米, 距离: 0.379 米
+[INFO] [1780317576.486739199] [vision_position_publisher]: 最右侧杆坐标: (0.156, -0.008, 0.379) 米
+[INFO] [1780317577.489729884] [vision_position_publisher]: 检测到目标 (camera_frame): (0.134, -0.008, 0.377) 米, 距离: 0.377 米
+[INFO] [1780317577.490204528] [vision_position_publisher]: 最右侧杆坐标: (0.134, -0.008, 0.377) 米
+[INFO] [1780317578.521527156] [vision_position_publisher]: 检测到目标 (camera_frame): (0.074, 0.036, 0.380) 米, 距离: 0.380 米
+[INFO] [1780317578.521962077] [vision_position_publisher]: 最右侧杆坐标: (0.074, 0.036, 0.380) 米
+[INFO] [1780317579.554717641] [vision_position_publisher]: 检测到目标 (camera_frame): (0.071, -0.009, 0.373) 米, 距离: 0.373 米
+[INFO] [1780317579.555127081] [vision_position_publisher]: 最右侧杆坐标: (0.071, -0.009, 0.373) 米
+[INFO] [1780317580.555095246] [vision_position_publisher]: 检测到目标 (camera_frame): (0.093, -0.008, 0.386) 米, 距离: 0.386 米
+[INFO] [1780317580.555593257] [vision_position_publisher]: 最右侧杆坐标: (0.093, -0.008, 0.386) 米
+[INFO] [1780317581.555731654] [vision_position_publisher]: 检测到目标 (camera_frame): (0.104, -0.008, 0.384) 米, 距离: 0.384 米
+[INFO] [1780317581.556162673] [vision_position_publisher]: 最右侧杆坐标: (0.104, -0.008, 0.384) 米
+[INFO] [1780317583.257175076] [vision_position_publisher]: 检测到目标 (camera_frame): (0.139, -0.008, 0.386) 米, 距离: 0.386 米
+[INFO] [1780317583.257577232] [vision_position_publisher]: 最右侧杆坐标: (0.139, -0.008, 0.386) 米
+[INFO] [1780317584.291652566] [vision_position_publisher]: 检测到目标 (camera_frame): (0.136, -0.008, 0.387) 米, 距离: 0.387 米
+[INFO] [1780317584.292187984] [vision_position_publisher]: 最右侧杆坐标: (0.136, -0.008, 0.387) 米
+[INFO] [1780317585.324767110] [vision_position_publisher]: 检测到目标 (camera_frame): (0.122, -0.008, 0.392) 米, 距离: 0.392 米
+[INFO] [1780317585.325208341] [vision_position_publisher]: 最右侧杆坐标: (0.122, -0.008, 0.392) 米
+[INFO] [1780317586.326290789] [vision_position_publisher]: 检测到目标 (camera_frame): (0.117, -0.008, 0.395) 米, 距离: 0.395 米
+[INFO] [1780317586.326744281] [vision_position_publisher]: 最右侧杆坐标: (0.117, -0.008, 0.395) 米
+[INFO] [1780317587.326588088] [vision_position_publisher]: 检测到目标 (camera_frame): (0.111, -0.008, 0.396) 米, 距离: 0.396 米
+[INFO] [1780317587.327151981] [vision_position_publisher]: 最右侧杆坐标: (0.111, -0.008, 0.396) 米
+[INFO] [1780317588.327478914] [vision_position_publisher]: 检测到目标 (camera_frame): (0.108, -0.008, 0.397) 米, 距离: 0.397 米
+[INFO] [1780317588.327964425] [vision_position_publisher]: 最右侧杆坐标: (0.108, -0.008, 0.397) 米
+[INFO] [1780317589.329834685] [vision_position_publisher]: 检测到目标 (camera_frame): (0.108, -0.008, 0.397) 米, 距离: 0.397 米
+[INFO] [1780317589.330322447] [vision_position_publisher]: 最右侧杆坐标: (0.108, -0.008, 0.397) 米
+[INFO] [1780317590.331074962] [vision_position_publisher]: 检测到目标 (camera_frame): (0.104, -0.008, 0.399) 米, 距离: 0.399 米
+[INFO] [1780317590.331598857] [vision_position_publisher]: 最右侧杆坐标: (0.104, -0.008, 0.399) 米
+[INFO] [1780317591.331906175] [vision_position_publisher]: 检测到目标 (camera_frame): (0.102, -0.008, 0.399) 米, 距离: 0.399 米
+[INFO] [1780317591.332475865] [vision_position_publisher]: 最右侧杆坐标: (0.102, -0.008, 0.399) 米
+[INFO] [1780317592.333655750] [vision_position_publisher]: 检测到目标 (camera_frame): (0.098, -0.008, 0.401) 米, 距离: 0.401 米
+[INFO] [1780317592.334239889] [vision_position_publisher]: 最右侧杆坐标: (0.098, -0.008, 0.401) 米
+[INFO] [1780317593.334431083] [vision_position_publisher]: 检测到目标 (camera_frame): (0.095, -0.008, 0.402) 米, 距离: 0.402 米
+[INFO] [1780317593.334938348] [vision_position_publisher]: 最右侧杆坐标: (0.095, -0.008, 0.402) 米
+[INFO] [1780317594.367790454] [vision_position_publisher]: 检测到目标 (camera_frame): (0.092, -0.008, 0.403) 米, 距离: 0.403 米
+[INFO] [1780317594.368312426] [vision_position_publisher]: 最右侧杆坐标: (0.092, -0.008, 0.403) 米
+[INFO] [1780317595.401396778] [vision_position_publisher]: 检测到目标 (camera_frame): (0.082, -0.009, 0.405) 米, 距离: 0.405 米
+[INFO] [1780317595.401909580] [vision_position_publisher]: 最右侧杆坐标: (0.082, -0.009, 0.405) 米
+[INFO] [1780317596.401677277] [vision_position_publisher]: 检测到目标 (camera_frame): (0.080, -0.009, 0.405) 米, 距离: 0.405 米
+[INFO] [1780317596.402353578] [vision_position_publisher]: 最右侧杆坐标: (0.080, -0.009, 0.405) 米
+[INFO] [1780317597.402517511] [vision_position_publisher]: 检测到目标 (camera_frame): (0.080, -0.009, 0.406) 米, 距离: 0.406 米
+[INFO] [1780317597.403022487] [vision_position_publisher]: 最右侧杆坐标: (0.080, -0.009, 0.406) 米
+[INFO] [1780317598.404647560] [vision_position_publisher]: 检测到目标 (camera_frame): (0.078, -0.008, 0.407) 米, 距离: 0.407 米
+[INFO] [1780317598.405170386] [vision_position_publisher]: 最右侧杆坐标: (0.078, -0.008, 0.407) 米
+[INFO] [1780317599.605933230] [vision_position_publisher]: 检测到目标 (camera_frame): (0.081, -0.008, 0.424) 米, 距离: 0.424 米
+[INFO] [1780317599.606467800] [vision_position_publisher]: 最右侧杆坐标: (0.081, -0.008, 0.424) 米
+[INFO] [1780317600.606166877] [vision_position_publisher]: 检测到目标 (camera_frame): (0.087, -0.008, 0.422) 米, 距离: 0.422 米
+[INFO] [1780317600.606672425] [vision_position_publisher]: 最右侧杆坐标: (0.087, -0.008, 0.422) 米
+[INFO] [1780317601.673677862] [vision_position_publisher]: 检测到目标 (camera_frame): (0.083, -0.009, 0.425) 米, 距离: 0.425 米
+[INFO] [1780317601.674310560] [vision_position_publisher]: 最右侧杆坐标: (0.083, -0.009, 0.425) 米
+[INFO] [1780317602.674426059] [vision_position_publisher]: 检测到目标 (camera_frame): (0.076, -0.008, 0.425) 米, 距离: 0.425 米
+[INFO] [1780317602.675094171] [vision_position_publisher]: 最右侧杆坐标: (0.076, -0.008, 0.425) 米
+[INFO] [1780317604.672506283] [vision_position_publisher]: 检测到目标 (camera_frame): (0.075, -0.009, 0.427) 米, 距离: 0.427 米
+[INFO] [1780317604.672910175] [vision_position_publisher]: 最右侧杆坐标: (0.075, -0.009, 0.427) 米
+[INFO] [1780317605.841330453] [vision_position_publisher]: 检测到目标 (camera_frame): (0.090, -0.008, 0.427) 米, 距离: 0.427 米
+[INFO] [1780317605.841909071] [vision_position_publisher]: 最右侧杆坐标: (0.090, -0.008, 0.427) 米
+[INFO] [1780317607.543117950] [vision_position_publisher]: 检测到目标 (camera_frame): (0.097, -0.008, 0.424) 米, 距离: 0.424 米
+[INFO] [1780317607.543577557] [vision_position_publisher]: 最右侧杆坐标: (0.097, -0.008, 0.424) 米
+[INFO] [1780317608.544287510] [vision_position_publisher]: 检测到目标 (camera_frame): (0.091, -0.008, 0.425) 米, 距离: 0.425 米
+[INFO] [1780317608.544797847] [vision_position_publisher]: 最右侧杆坐标: (0.091, -0.008, 0.425) 米
+[INFO] [1780317609.545248087] [vision_position_publisher]: 检测到目标 (camera_frame): (0.088, -0.008, 0.426) 米, 距离: 0.426 米
+[INFO] [1780317609.545795475] [vision_position_publisher]: 最右侧杆坐标: (0.088, -0.008, 0.426) 米
+[INFO] [1780317610.778636339] [vision_position_publisher]: 检测到目标 (camera_frame): (0.091, -0.008, 0.425) 米, 距离: 0.425 米
+[INFO] [1780317610.779165577] [vision_position_publisher]: 最右侧杆坐标: (0.091, -0.008, 0.425) 米
+[INFO] [1780317611.813435352] [vision_position_publisher]: 检测到目标 (camera_frame): (0.089, -0.009, 0.428) 米, 距离: 0.428 米
+[INFO] [1780317611.813938015] [vision_position_publisher]: 最右侧杆坐标: (0.089, -0.009, 0.428) 米
+[INFO] [1780317613.180469663] [vision_position_publisher]: 检测到目标 (camera_frame): (0.091, -0.008, 0.425) 米, 距离: 0.425 米
+[INFO] [1780317613.180940758] [vision_position_publisher]: 最右侧杆坐标: (0.091, -0.008, 0.425) 米
+[INFO] [1780317614.383454454] [vision_position_publisher]: 检测到目标 (camera_frame): (0.095, -0.008, 0.424) 米, 距离: 0.424 米
+[INFO] [1780317614.384046335] [vision_position_publisher]: 最右侧杆坐标: (0.095, -0.008, 0.424) 米
