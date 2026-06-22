@@ -1,0 +1,147 @@
+[
+  {
+    "id": "layer:documentation",
+    "name": "Documentation",
+    "description": "项目文档和AI代理指南",
+    "nodeIds": [
+      "document:AGENTS.md",
+      "document:CLAUDE.md",
+      "document:README.md",
+      "config:log/COLCON_IGNORE",
+      "document:memory-bank/progress.md",
+      "document:memory-bank/rules.md"
+    ]
+  },
+  {
+    "id": "layer:interfaces",
+    "name": "Robot Interfaces",
+    "description": "自定义ROS2消息/服务/动作定义",
+    "nodeIds": [
+      "config:src/robot_interfaces/CMakeLists.txt",
+      "config:src/robot_interfaces/package.xml",
+      "file:src/robot_interfaces/msg/Arm.msg",
+      "file:src/robot_interfaces/msg/Joint.msg",
+      "file:src/robot_interfaces/srv/ForwardKinematics.srv",
+      "file:src/robot_interfaces/srv/GetCurrentEndPose.srv",
+      "file:src/robot_interfaces/action/ArmTask.action"
+    ]
+  },
+  {
+    "id": "layer:model",
+    "name": "Robot Model",
+    "description": "URDF模型、STL网格和ros2_control插件",
+    "nodeIds": [
+      "config:src/arm/CMakeLists.txt",
+      "config:src/arm/package.xml",
+      "file:src/arm/include/arm/robotic_arm_ros2_control.hpp",
+      "file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp",
+      "file:src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp",
+      "file:src/arm/launch/arm_rviz.launch.py",
+      "file:src/arm/model/robotic_arm.urdf",
+      "file:src/arm/model/meshes/base_link.stl",
+      "file:src/arm/model/meshes/link1.stl",
+      "file:src/arm/model/meshes/link2.stl",
+      "file:src/arm/model/meshes/link3.stl",
+      "file:src/arm/model/meshes/link4.stl",
+      "file:src/arm/model/meshes/link5.stl",
+      "file:src/arm/model/meshes/link6.stl",
+      "file:src/arm/model/meshes/link7.stl",
+      "file:src/arm/model/meshes/ee_link.stl"
+    ]
+  },
+  {
+    "id": "layer:kinematics",
+    "name": "Kinematics & Motion Planning",
+    "description": "KDL求解器和轨迹规划",
+    "nodeIds": [
+      "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "file:src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "file:src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "file:src/arm_calc/src/arm_ctrl.cpp",
+      "file:src/arm_calc/src/arm_test_node.cpp",
+      "file:src/arm_calc/config/arm_calc_params.yaml",
+      "file:src/arm_calc/include/arm_action/basic_moves.hpp"
+    ]
+  },
+  {
+    "id": "layer:task",
+    "name": "Task State Machine",
+    "description": "高层任务调度和状态管理",
+    "nodeIds": [
+      "config:src/arm_task/CMakeLists.txt",
+      "config:src/arm_task/package.xml",
+      "file:src/arm_task/include/robot.hpp",
+      "file:src/arm_task/include/task/base_task.hpp",
+      "file:src/arm_task/include/task/move_kfs.hpp",
+      "file:src/arm_task/include/task/catch_kfs.hpp",
+      "file:src/arm_task/src/robot.cpp",
+      "file:src/arm_task/src/task/move_kfs.cpp",
+      "file:src/arm_task/src/task/catch_kfs.cpp",
+      "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "file:src/arm_task/config/arm_position.yaml",
+      "file:src/arm_task/include/task/idel.hpp",
+      "file:src/arm_task/include/task/place_kfs.hpp"
+    ]
+  },
+  {
+    "id": "layer:vision",
+    "name": "Vision System",
+    "description": "RealSense相机和颜色检测",
+    "nodeIds": [
+      "config:src/vision/CMakeLists.txt",
+      "config:src/vision/package.xml",
+      "file:src/vision/vision.cpp"
+    ]
+  },
+  {
+    "id": "layer:hardware",
+    "name": "Hardware Interface",
+    "description": "USB CDC驱动和STM32通信",
+    "nodeIds": [
+      "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "file:src/robot_driver/src/serialnode.cpp",
+      "file:src/robot_driver/src/cdc_trans.cpp"
+    ]
+  },
+  {
+    "id": "layer:control",
+    "name": "Joint Control",
+    "description": "关节PD控制器插件",
+    "nodeIds": [
+      "config:src/dog_controller/CMakeLists.txt",
+      "config:src/dog_controller/package.xml",
+      "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "file:src/dog_controller/src/dog_controller.cpp"
+    ]
+  },
+  {
+    "id": "layer:simulation",
+    "name": "Simulation",
+    "description": "MuJoCo仿真集成",
+    "nodeIds": [
+      "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "file:src/mujoco_ros2_control/src/mujoco_system.cpp"
+    ]
+  },
+  {
+    "id": "layer:launch",
+    "name": "Launch & Configuration",
+    "description": "启动文件和配置文件",
+    "nodeIds": [
+      "config:src/launch_pack/CMakeLists.txt",
+      "config:src/launch_pack/package.xml",
+      "file:src/launch_pack/launch/arm_real.launch.py",
+      "file:src/launch_pack/config/ros2_controller.yaml",
+      "file:src/launch_pack/config/arm_position.yaml",
+      "file:src/launch_pack/rviz/display_config.rviz"
+    ]
+  }
+]

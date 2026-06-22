@@ -1,0 +1,7446 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "1e32a56a128d160696a536e9d6d606acb0b12065",
+  "generatedAt": "2026-06-10T11:10:59.829Z",
+  "files": {
+    "AGENTS.md": {
+      "filePath": "AGENTS.md",
+      "contentHash": "3008b3dffa570ffffff445efee08899cb5bf5654f9694a16af9c3f93892af7da",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "CLAUDE.md": {
+      "filePath": "CLAUDE.md",
+      "contentHash": "e3fe6a7d10664760fdf3a83f3e01077d35b2dc8583cc4eb494b49598abf4e513",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 75,
+      "hasStructuralAnalysis": true
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "19cc268e5f7d566ef904579d22c00cd188d66bde4d88f7bdbfc36be2ee7b6dfd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 78,
+      "hasStructuralAnalysis": true
+    },
+    "joint_catch.cpp": {
+      "filePath": "joint_catch.cpp",
+      "contentHash": "ba144644df828b1f04aeeaec0ca19c79ee5b762ec691dce57cb82dbdd0615100",
+      "functions": [
+        {
+          "name": "CatchKFS",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "~CatchKFS",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "process",
+          "params": [
+            "last_task_name"
+          ],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 182
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "task/catch_kfs.hpp",
+          "specifiers": [
+            "task/catch_kfs.hpp"
+          ]
+        },
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/transform_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/transform_stamped.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/utilities.hpp",
+          "specifiers": [
+            "rclcpp/utilities.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Matrix3x3.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Matrix3x3.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.hpp"
+          ]
+        },
+        {
+          "source": "tf2/exceptions.h",
+          "specifiers": [
+            "tf2/exceptions.h"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        },
+        {
+          "source": "future",
+          "specifiers": [
+            "future"
+          ]
+        }
+      ],
+      "exports": [
+        "CatchKFS",
+        "~CatchKFS",
+        "process"
+      ],
+      "totalLines": 209,
+      "hasStructuralAnalysis": true
+    },
+    "log.txt": {
+      "filePath": "log.txt",
+      "contentHash": "c505de915d51cc4460c83446c3c467241dd1c90228ce0b44d84c13a64d4aa859",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 281,
+      "hasStructuralAnalysis": false
+    },
+    "vision_log.txt": {
+      "filePath": "vision_log.txt",
+      "contentHash": "f029f49e73c9e888c878c0db619f6a7186d173aca844f8ddfc6be4404fb466de",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 108,
+      "hasStructuralAnalysis": false
+    },
+    "memory-bank/progress.md": {
+      "filePath": "memory-bank/progress.md",
+      "contentHash": "542cf67e4b34ba08a4839258ba3485815d6c2b20ed44188692a94727dac0e7a1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": true
+    },
+    "memory-bank/rules.md": {
+      "filePath": "memory-bank/rules.md",
+      "contentHash": "fedaa24258b83af655f808272a8bd8dfa00edd65aee921e4240278a1214608b5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 43,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm/CMakeLists.txt": {
+      "filePath": "src/arm/CMakeLists.txt",
+      "contentHash": "f302007f870c0e615fd1868d331f94d232a97c6a145f8556e5454489407d1a41",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 36,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/package.xml": {
+      "filePath": "src/arm/package.xml",
+      "contentHash": "c70514e8b742073ef4edc338a45e9dfed8f3793c428d06ef73263634d8911173",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/config/joint_names_robotic_arm.yaml": {
+      "filePath": "src/arm/config/joint_names_robotic_arm.yaml",
+      "contentHash": "da83a79253a7daab865ee6f1596be05994a08a0f386fceb7270caeba149d3a99",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm/model/robotic_arm.urdf": {
+      "filePath": "src/arm/model/robotic_arm.urdf",
+      "contentHash": "0246030a23785dd68840a6bd41ec77c6cdacdd3775eb3e0963d583d8a09bf0a8",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 508,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/robotic_arm.xml": {
+      "filePath": "src/arm/model/robotic_arm.xml",
+      "contentHash": "caa49e9673023f5aeb12785d665926b8807b3018e58c3aaf940786510bd22c23",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 99,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/robotic_arm.csv": {
+      "filePath": "src/arm/model/robotic_arm.csv",
+      "contentHash": "852b40fc87b037e973797ba37a90ebbd32debd4d175b6e894f6a39146fc89f77",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 10,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/scene.xml": {
+      "filePath": "src/arm/model/scene.xml",
+      "contentHash": "334bb3f172b7d8fa2e2ee86f91ad00d01f0c36de347048b6accb0709d18bebc0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 36,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/base_link.STL": {
+      "filePath": "src/arm/model/base_link.STL",
+      "contentHash": "4ff2af5b6764928f42267779bcab996dafb19a51f6b505984602ba552070e12c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16120,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link1.STL": {
+      "filePath": "src/arm/model/Link1.STL",
+      "contentHash": "b8105fe8ed81d7725745f715bdf58865ee9aa15f747e2001dab3ab44dd14bdd0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 11553,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link2.STL": {
+      "filePath": "src/arm/model/Link2.STL",
+      "contentHash": "61dd08bb71371e98512e34fa7603d5834358c20bec5a4b6f32011dbeb5698e73",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32703,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link3.STL": {
+      "filePath": "src/arm/model/Link3.STL",
+      "contentHash": "dfb7799bfbf652b23fef4b82064d5e978b9bcb401915f3d0091c213151497af0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 42674,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link4.STL": {
+      "filePath": "src/arm/model/Link4.STL",
+      "contentHash": "1f1f216b94c09d2755e94c5eae9518855b1e257d834b282a1a56a4860f3b7070",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 883,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link5.STL": {
+      "filePath": "src/arm/model/Link5.STL",
+      "contentHash": "9d697ca5ff93cd7e9e24f0293a15c735295242dded6b69842abf210f37531eb5",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 871,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link6.STL": {
+      "filePath": "src/arm/model/Link6.STL",
+      "contentHash": "4159d0e2306ecb364772e3ae6d20b82cfa7542f233b9abe7588291020c861934",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 117,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm/model/Link7.STL": {
+      "filePath": "src/arm/model/Link7.STL",
+      "contentHash": "d50209451693ce16812f866667b51fc79ad9e41beade8a8175d5d487e8548613",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 436,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm_calc/CMakeLists.txt": {
+      "filePath": "src/arm_calc/CMakeLists.txt",
+      "contentHash": "0bf0ad693f469395a9dbc9e37e1d9a445840044798f9906a00d9ef697cdcafdf",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 116,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm_calc/package.xml": {
+      "filePath": "src/arm_calc/package.xml",
+      "contentHash": "b6d028db2aee8bbfdaed8dfb7b999a95e3b54d0a6da3bdffaf4f158751610246",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 34,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm_calc/include/arm_action/basic_moves.hpp": {
+      "filePath": "src/arm_calc/include/arm_action/basic_moves.hpp",
+      "contentHash": "6d29e44e7e426edca56f46f1ae9561a0c720e92a0b88f40f29e81f28caff6286",
+      "functions": [],
+      "classes": [
+        {
+          "name": "JointSpaceMove",
+          "methods": [
+            "set_start_state",
+            "set_goal_state",
+            "start",
+            "sample",
+            "active",
+            "started"
+          ],
+          "properties": [
+            "arm_calc_",
+            "trajectory_",
+            "start_state_",
+            "goal_state_",
+            "start_time_sec_",
+            "duration_sec_",
+            "started_"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "JCartesianSpaceMove",
+          "methods": [
+            "set_start_state",
+            "set_goal_state",
+            "start",
+            "sample",
+            "active",
+            "started",
+            "build_cartesian_target"
+          ],
+          "properties": [
+            "arm_calc_",
+            "start_joint_state_",
+            "start_cartesian_state_",
+            "goal_pose_",
+            "start_orientation_",
+            "goal_orientation_",
+            "orientation_rotation_vector_world_",
+            "start_time_sec_",
+            "duration_sec_",
+            "started_",
+            "position_trajectory_",
+            "orientation_trajectory_"
+          ],
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "VisualServoMove",
+          "methods": [
+            "start",
+            "set_current_joint_state",
+            "set_target_pose",
+            "set_kp",
+            "set_max_linear_acceleration",
+            "sample"
+          ],
+          "properties": [
+            "arm_calc_",
+            "current_joint_state_",
+            "current_cartesian_state_",
+            "start_orientation_",
+            "target_pose_",
+            "latched_target_pose_",
+            "has_joint_state_",
+            "has_target_pose_",
+            "has_latched_target_pose_",
+            "servo_initialized_",
+            "servo_start_time_sec_",
+            "last_sample_time_sec_",
+            "orientation_ramp_duration_sec_",
+            "kp_",
+            "max_linear_acceleration_",
+            "desired_position_",
+            "desired_velocity_",
+            "desired_acceleration_",
+            "desired_joint_seed_"
+          ],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "imports": [
+        {
+          "source": "arm_calc/arm_calc.hpp",
+          "specifiers": [
+            "arm_calc/arm_calc.hpp"
+          ]
+        },
+        {
+          "source": "arm_calc/trajectory_calc.hpp",
+          "specifiers": [
+            "arm_calc/trajectory_calc.hpp"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        }
+      ],
+      "exports": [
+        "set_start_state",
+        "set_goal_state",
+        "start",
+        "sample",
+        "active",
+        "started",
+        "JointSpaceMove",
+        "set_start_state",
+        "set_goal_state",
+        "start",
+        "sample",
+        "active",
+        "started",
+        "JCartesianSpaceMove",
+        "start",
+        "set_current_joint_state",
+        "set_target_pose",
+        "set_kp",
+        "set_max_linear_acceleration",
+        "sample",
+        "VisualServoMove"
+      ],
+      "totalLines": 104,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/include/arm_calc/arm_calc.hpp": {
+      "filePath": "src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "contentHash": "ddb83301a9d0db7e77adc54ff413df3256b7e9a9741a290235955a7bca4d1518",
+      "functions": [
+        {
+          "name": "~ArmCalc",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        }
+      ],
+      "classes": [
+        {
+          "name": "ArmCalc",
+          "methods": [
+            "~ArmCalc",
+            "joint_pos",
+            "joint_pos",
+            "joint_vel",
+            "joint_acc",
+            "joint_torque_dynamic",
+            "joint_torque_inverse_dynamics",
+            "joint_torque_cartesian_wrench",
+            "end_pose",
+            "end_state",
+            "jacobian",
+            "set_joint_pd",
+            "get_joint_pd",
+            "set_joint_limits",
+            "clamp_to_joint_limits",
+            "signal_arm_calc",
+            "signal_arm_calc",
+            "to_kdl_frame",
+            "from_kdl_frame",
+            "to_kdl_joints",
+            "from_kdl_joints",
+            "twist_to_vector"
+          ],
+          "properties": [
+            "chain_",
+            "fk_solver_",
+            "jacobian_solver_",
+            "jdot_solver_",
+            "vel_solver_",
+            "ik_solver_",
+            "dynamic_solver_",
+            "mass_matrix_",
+            "coriolis_",
+            "gravity_",
+            "jacobian_cache_",
+            "last_joint_solution_",
+            "joint_vel_cache_",
+            "jdot_qdot_cache_",
+            "kp_",
+            "kd_",
+            "kNoLimit",
+            "joint_lower_limit_",
+            "joint_upper_limit_"
+          ],
+          "exported": true,
+          "lineCount": 66
+        }
+      ],
+      "imports": [
+        {
+          "source": "arm_calc/common_types.hpp",
+          "specifiers": [
+            "arm_calc/common_types.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chain.hpp",
+          "specifiers": [
+            "kdl/chain.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chaindynparam.hpp",
+          "specifiers": [
+            "kdl/chaindynparam.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chainfksolverpos_recursive.hpp",
+          "specifiers": [
+            "kdl/chainfksolverpos_recursive.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chainiksolverpos_lma.hpp",
+          "specifiers": [
+            "kdl/chainiksolverpos_lma.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chainiksolvervel_pinv.hpp",
+          "specifiers": [
+            "kdl/chainiksolvervel_pinv.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chainjnttojacdotsolver.hpp",
+          "specifiers": [
+            "kdl/chainjnttojacdotsolver.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chainjnttojacsolver.hpp",
+          "specifiers": [
+            "kdl/chainjnttojacsolver.hpp"
+          ]
+        },
+        {
+          "source": "kdl/frames.hpp",
+          "specifiers": [
+            "kdl/frames.hpp"
+          ]
+        },
+        {
+          "source": "kdl/jacobian.hpp",
+          "specifiers": [
+            "kdl/jacobian.hpp"
+          ]
+        },
+        {
+          "source": "kdl/jntarray.hpp",
+          "specifiers": [
+            "kdl/jntarray.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "~ArmCalc",
+        "joint_pos",
+        "joint_pos",
+        "joint_vel",
+        "joint_acc",
+        "joint_torque_dynamic",
+        "joint_torque_inverse_dynamics",
+        "joint_torque_cartesian_wrench",
+        "end_pose",
+        "end_state",
+        "jacobian",
+        "set_joint_pd",
+        "get_joint_pd",
+        "set_joint_limits",
+        "clamp_to_joint_limits",
+        "signal_arm_calc",
+        "signal_arm_calc",
+        "ArmCalc"
+      ],
+      "totalLines": 86,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/include/arm_calc/arm_ctrl.hpp": {
+      "filePath": "src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "contentHash": "850162ce3fe62da3ea671c1a6eef3a7e42c8d4173f796692ef5519460d8028e7",
+      "functions": [],
+      "classes": [
+        {
+          "name": "ArmCtrlNode",
+          "methods": [
+            "declare_parameters",
+            "create_interfaces",
+            "load_robot_description_and_build_solver",
+            "fetch_robot_description",
+            "load_local_urdf",
+            "refresh_plan",
+            "apply_requested_mode",
+            "capture_idle_hold_from_current_state",
+            "set_idle_hold_point",
+            "enter_idle_mode",
+            "is_trajectory_running",
+            "can_switch_mode_immediately",
+            "set_execute_trajectory_flag",
+            "build_preview_target",
+            "publish_control_loop",
+            "publish_joint_target",
+            "publish_visualization",
+            "on_joint_state",
+            "on_visual_target",
+            "on_joint_space_target",
+            "on_forward_kinematics_request",
+            "on_get_current_end_pose_request",
+            "on_parameters_changed",
+            "parse_motion_mode",
+            "from_arm_message",
+            "to_arm_message",
+            "to_joint_state_msg",
+            "get_double_array_param"
+          ],
+          "properties": [
+            "current_joint_state_",
+            "has_joint_state_",
+            "idle_hold_initialized_",
+            "planners_ready_",
+            "active_motion_mode_",
+            "requested_motion_mode_",
+            "trajectory_duration_sec_",
+            "control_period_sec_",
+            "execute_trajectory_",
+            "updating_execute_parameter_",
+            "visual_servo_kp_",
+            "visual_servo_max_linear_acceleration_",
+            "last_ee_log_time_sec_",
+            "joint_names_",
+            "base_link_",
+            "tip_link_",
+            "cartesian_target_",
+            "visual_target_",
+            "joint_target_state_",
+            "idle_hold_point_",
+            "arm_chain_",
+            "arm_calc_",
+            "joint_space_move_",
+            "cartesian_space_move_",
+            "visual_servo_move_",
+            "joint_state_sub_",
+            "visual_target_sub_",
+            "joint_space_target_sub_",
+            "joint_target_pub_",
+            "rviz_joint_pub_",
+            "marker_pub_",
+            "forward_kinematics_service_",
+            "current_end_pose_service_",
+            "control_timer_",
+            "param_callback_"
+          ],
+          "exported": true,
+          "lineCount": 86
+        }
+      ],
+      "imports": [
+        {
+          "source": "arm_action/basic_moves.hpp",
+          "specifiers": [
+            "arm_action/basic_moves.hpp"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/pose_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/pose_stamped.hpp"
+          ]
+        },
+        {
+          "source": "kdl/chain.hpp",
+          "specifiers": [
+            "kdl/chain.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/msg/arm.hpp",
+          "specifiers": [
+            "robot_interfaces/msg/arm.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/srv/forward_kinematics.hpp",
+          "specifiers": [
+            "robot_interfaces/srv/forward_kinematics.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/srv/get_current_end_pose.hpp",
+          "specifiers": [
+            "robot_interfaces/srv/get_current_end_pose.hpp"
+          ]
+        },
+        {
+          "source": "sensor_msgs/msg/joint_state.hpp",
+          "specifiers": [
+            "sensor_msgs/msg/joint_state.hpp"
+          ]
+        },
+        {
+          "source": "std_msgs/msg/float64_multi_array.hpp",
+          "specifiers": [
+            "std_msgs/msg/float64_multi_array.hpp"
+          ]
+        },
+        {
+          "source": "visualization_msgs/msg/marker_array.hpp",
+          "specifiers": [
+            "visualization_msgs/msg/marker_array.hpp"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        }
+      ],
+      "exports": [
+        "ArmCtrlNode"
+      ],
+      "totalLines": 110,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/include/arm_calc/common_types.hpp": {
+      "filePath": "src/arm_calc/include/arm_calc/common_types.hpp",
+      "contentHash": "44694a58310c258581c270a5790e368406ed807c6785b05afd008383793f0cea",
+      "functions": [
+        {
+          "name": "NormalizeQuaternion",
+          "params": [
+            "q"
+          ],
+          "returnType": "Eigen::Quaterniond",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [
+        {
+          "name": "JointState",
+          "methods": [],
+          "properties": [
+            "position",
+            "velocity",
+            "torque"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "JointTrajectoryPoint",
+          "methods": [],
+          "properties": [
+            "position",
+            "velocity",
+            "acceleration",
+            "torque"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "CartesianPose",
+          "methods": [],
+          "properties": [
+            "position",
+            "orientation"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "CartesianState",
+          "methods": [],
+          "properties": [
+            "pose",
+            "linear_velocity",
+            "angular_velocity"
+          ],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "CartesianTrajectoryPoint",
+          "methods": [],
+          "properties": [
+            "pose",
+            "linear_velocity",
+            "linear_acceleration",
+            "angular_velocity",
+            "angular_acceleration"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "imports": [
+        {
+          "source": "Eigen/Dense",
+          "specifiers": [
+            "Eigen/Dense"
+          ]
+        },
+        {
+          "source": "Eigen/Geometry",
+          "specifiers": [
+            "Eigen/Geometry"
+          ]
+        },
+        {
+          "source": "array",
+          "specifiers": [
+            "array"
+          ]
+        }
+      ],
+      "exports": [
+        "JointState",
+        "JointTrajectoryPoint",
+        "CartesianPose",
+        "CartesianState",
+        "CartesianTrajectoryPoint",
+        "NormalizeQuaternion"
+      ],
+      "totalLines": 57,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/include/arm_calc/trajectory_calc.hpp": {
+      "filePath": "src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "contentHash": "3b90a472140518f38c4a5ae71b59f775fb628a1d63405a56b4e5b3f426476a7b",
+      "functions": [
+        {
+          "name": "TrajectoryCalc",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "duration",
+          "params": [],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "is_ready",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 1
+        }
+      ],
+      "classes": [
+        {
+          "name": "TrajectoryCalc",
+          "methods": [
+            "TrajectoryCalc",
+            "set_start_state",
+            "set_goal_state",
+            "sample",
+            "duration",
+            "is_ready",
+            "build_segment",
+            "eval_position",
+            "eval_velocity",
+            "eval_acceleration"
+          ],
+          "properties": [
+            "duration_",
+            "ready_",
+            "start_position_",
+            "start_velocity_",
+            "start_acceleration_",
+            "goal_position_",
+            "goal_velocity_",
+            "goal_acceleration_",
+            "segments_"
+          ],
+          "exported": true,
+          "lineCount": 45
+        }
+      ],
+      "imports": [
+        {
+          "source": "arm_calc/common_types.hpp",
+          "specifiers": [
+            "arm_calc/common_types.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "TrajectoryCalc",
+        "set_start_state",
+        "set_goal_state",
+        "sample",
+        "duration",
+        "is_ready",
+        "TrajectoryCalc"
+      ],
+      "totalLines": 54,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/src/arm_action/basic_moves.cpp": {
+      "filePath": "src/arm_calc/src/arm_action/basic_moves.cpp",
+      "contentHash": "d644cbd7747050d37d36fe9a7b81b3545df1fbed5846b9aca177188a58e86e4e",
+      "functions": [
+        {
+          "name": "VisualServoLogger",
+          "params": [],
+          "returnType": "rclcpp::Logger",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "QuaternionToRotationVectorWorld",
+          "params": [
+            "start",
+            "goal"
+          ],
+          "returnType": "Eigen::Vector3d",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "ClampVectorNorm",
+          "params": [
+            "vector",
+            "limit"
+          ],
+          "returnType": "Eigen::Vector3d",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "FixedVisualServoOrientation",
+          "params": [],
+          "returnType": "Eigen::Quaterniond",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "BuildJointPoint",
+          "params": [
+            "arm_calc",
+            "position",
+            "velocity",
+            "acceleration"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "JointSpaceMove",
+          "params": [
+            "arm_calc"
+          ],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "set_start_state",
+          "params": [
+            "state"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "set_goal_state",
+          "params": [
+            "state",
+            "duration"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "start",
+          "params": [
+            "start_time_sec"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "sample",
+          "params": [
+            "current_time_sec"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "active",
+          "params": [
+            "current_time_sec"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "started",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "JCartesianSpaceMove",
+          "params": [
+            "arm_calc"
+          ],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "set_start_state",
+          "params": [
+            "state"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "set_goal_state",
+          "params": [
+            "pose",
+            "duration"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "start",
+          "params": [
+            "start_time_sec"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "sample",
+          "params": [
+            "current_time_sec"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "active",
+          "params": [
+            "current_time_sec"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "started",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "build_cartesian_target",
+          "params": [
+            "current_time_sec"
+          ],
+          "returnType": "CartesianTrajectoryPoint",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "VisualServoMove",
+          "params": [
+            "arm_calc"
+          ],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "start",
+          "params": [
+            "state",
+            "start_time_sec"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "set_current_joint_state",
+          "params": [
+            "state"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "set_target_pose",
+          "params": [
+            "pose"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "set_kp",
+          "params": [
+            "kp"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "set_max_linear_acceleration",
+          "params": [
+            "max_linear_acceleration"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "sample",
+          "params": [
+            "current_time_sec"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 108
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "arm_action/basic_moves.hpp",
+          "specifiers": [
+            "arm_action/basic_moves.hpp"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        },
+        {
+          "source": "rclcpp/logger.hpp",
+          "specifiers": [
+            "rclcpp/logger.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "VisualServoLogger",
+        "QuaternionToRotationVectorWorld",
+        "ClampVectorNorm",
+        "FixedVisualServoOrientation",
+        "BuildJointPoint",
+        "JointSpaceMove",
+        "set_start_state",
+        "set_goal_state",
+        "start",
+        "sample",
+        "active",
+        "started",
+        "JCartesianSpaceMove",
+        "set_start_state",
+        "set_goal_state",
+        "start",
+        "sample",
+        "active",
+        "started",
+        "build_cartesian_target",
+        "VisualServoMove",
+        "start",
+        "set_current_joint_state",
+        "set_target_pose",
+        "set_kp",
+        "set_max_linear_acceleration",
+        "sample"
+      ],
+      "totalLines": 356,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/src/arm_calc/arm_calc.cpp": {
+      "filePath": "src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "contentHash": "67944f7f7e9c3e652ebcfcfa25be86f19450f67df1eb86445792587bda0cdabf",
+      "functions": [
+        {
+          "name": "ToCartesianVector",
+          "params": [
+            "linear",
+            "angular"
+          ],
+          "returnType": "CartesianVector",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "ArmCalc",
+          "params": [
+            "chain"
+          ],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "set_joint_limits",
+          "params": [
+            "lower",
+            "upper"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "clamp_to_joint_limits",
+          "params": [
+            "joints"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "joint_pos",
+          "params": [
+            "pose",
+            "result"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "joint_pos",
+          "params": [
+            "pose",
+            "result",
+            "seed_joint_pos"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "joint_vel",
+          "params": [
+            "joint_pos",
+            "cartesian_twist"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "joint_acc",
+          "params": [
+            "joint_pos",
+            "joint_vel",
+            "cartesian_acc"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "joint_torque_dynamic",
+          "params": [
+            "joint_pos",
+            "joint_vel",
+            "cartesian_acc"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "joint_torque_inverse_dynamics",
+          "params": [
+            "joint_pos",
+            "joint_vel",
+            "joint_acc"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "joint_torque_cartesian_wrench",
+          "params": [
+            "joint_pos",
+            "cartesian_wrench"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "end_pose",
+          "params": [
+            "joint_pos"
+          ],
+          "returnType": "CartesianPose",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "end_state",
+          "params": [
+            "joint_pos",
+            "joint_vel"
+          ],
+          "returnType": "CartesianState",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "jacobian",
+          "params": [
+            "joint_pos"
+          ],
+          "returnType": "KDL::Jacobian",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "set_joint_pd",
+          "params": [
+            "index",
+            "kp",
+            "kd"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "get_joint_pd",
+          "params": [
+            "index",
+            "kp",
+            "kd"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "signal_arm_calc",
+          "params": [
+            "cartesian_target"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "signal_arm_calc",
+          "params": [
+            "cartesian_target",
+            "seed_joint_pos"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "to_kdl_frame",
+          "params": [
+            "pose"
+          ],
+          "returnType": "KDL::Frame",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "from_kdl_frame",
+          "params": [
+            "frame"
+          ],
+          "returnType": "CartesianPose",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "to_kdl_joints",
+          "params": [
+            "joints"
+          ],
+          "returnType": "KDL::JntArray",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "from_kdl_joints",
+          "params": [
+            "joints"
+          ],
+          "returnType": "JointVector",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "twist_to_vector",
+          "params": [
+            "twist"
+          ],
+          "returnType": "CartesianVector",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "arm_calc/arm_calc.hpp",
+          "specifiers": [
+            "arm_calc/arm_calc.hpp"
+          ]
+        },
+        {
+          "source": "Eigen/Geometry",
+          "specifiers": [
+            "Eigen/Geometry"
+          ]
+        }
+      ],
+      "exports": [
+        "ToCartesianVector",
+        "ArmCalc",
+        "set_joint_limits",
+        "clamp_to_joint_limits",
+        "joint_pos",
+        "joint_pos",
+        "joint_vel",
+        "joint_acc",
+        "joint_torque_dynamic",
+        "joint_torque_inverse_dynamics",
+        "joint_torque_cartesian_wrench",
+        "end_pose",
+        "end_state",
+        "jacobian",
+        "set_joint_pd",
+        "get_joint_pd",
+        "signal_arm_calc",
+        "signal_arm_calc",
+        "to_kdl_frame",
+        "from_kdl_frame",
+        "to_kdl_joints",
+        "from_kdl_joints",
+        "twist_to_vector"
+      ],
+      "totalLines": 228,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/src/arm_calc/trajectory_calc.cpp": {
+      "filePath": "src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "contentHash": "291d35660808a888178424d762fd11b20e7939e1ac1a620ec79ab764ac5bf27d",
+      "functions": [
+        {
+          "name": "set_start_state",
+          "params": [
+            "position",
+            "velocity",
+            "acceleration"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "set_goal_state",
+          "params": [
+            "position",
+            "duration",
+            "velocity",
+            "acceleration"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "sample",
+          "params": [
+            "time_from_start"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "build_segment",
+          "params": [
+            "p0",
+            "v0",
+            "a0",
+            "pf",
+            "vf",
+            "af",
+            "duration"
+          ],
+          "returnType": "TrajectoryCalc::QuinticPolynomial",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "eval_position",
+          "params": [
+            "poly",
+            "t"
+          ],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "eval_velocity",
+          "params": [
+            "poly",
+            "t"
+          ],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "eval_acceleration",
+          "params": [
+            "poly",
+            "t"
+          ],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "arm_calc/trajectory_calc.hpp",
+          "specifiers": [
+            "arm_calc/trajectory_calc.hpp"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        }
+      ],
+      "exports": [
+        "set_start_state",
+        "set_goal_state",
+        "sample",
+        "build_segment",
+        "eval_position",
+        "eval_velocity",
+        "eval_acceleration"
+      ],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/src/arm_ctrl.cpp": {
+      "filePath": "src/arm_calc/src/arm_ctrl.cpp",
+      "contentHash": "732dda637c56edc5a11d2363db867a9505fc25d4e861faa298c9bb3f91a08448",
+      "functions": [
+        {
+          "name": "ToPoint",
+          "params": [
+            "value"
+          ],
+          "returnType": "geometry_msgs::msg::Point",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "ToMsgQuaternion",
+          "params": [
+            "q"
+          ],
+          "returnType": "geometry_msgs::msg::Quaternion",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "BuildStaticJointTarget",
+          "params": [
+            "arm_calc",
+            "position"
+          ],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "ArmCtrlNode",
+          "params": [
+            "options"
+          ],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "declare_parameters",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "create_interfaces",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "on_forward_kinematics_request",
+          "params": [
+            "request",
+            "response"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "on_get_current_end_pose_request",
+          "params": [
+            "response"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "load_robot_description_and_build_solver",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 113
+        },
+        {
+          "name": "fetch_robot_description",
+          "params": [],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "load_local_urdf",
+          "params": [],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "refresh_plan",
+          "params": [
+            "now_sec"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "capture_idle_hold_from_current_state",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "set_idle_hold_point",
+          "params": [
+            "point"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "apply_requested_mode",
+          "params": [
+            "now_sec"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "enter_idle_mode",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "is_trajectory_running",
+          "params": [
+            "now_sec"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "can_switch_mode_immediately",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "set_execute_trajectory_flag",
+          "params": [
+            "value"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "build_preview_target",
+          "params": [],
+          "returnType": "JointTrajectoryPoint",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "publish_control_loop",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 65
+        },
+        {
+          "name": "publish_joint_target",
+          "params": [
+            "point"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "publish_visualization",
+          "params": [
+            "target_point"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "on_joint_state",
+          "params": [
+            "msg"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "on_visual_target",
+          "params": [
+            "msg"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "on_joint_space_target",
+          "params": [
+            "msg"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "on_parameters_changed",
+          "params": [
+            "params"
+          ],
+          "returnType": "rcl_interfaces::msg::SetParametersResult",
+          "exported": true,
+          "lineCount": 76
+        },
+        {
+          "name": "parse_motion_mode",
+          "params": [
+            "mode_value"
+          ],
+          "returnType": "ArmCtrlNode::MotionMode",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "from_arm_message",
+          "params": [
+            "msg"
+          ],
+          "returnType": "JointState",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "to_arm_message",
+          "params": [
+            "point"
+          ],
+          "returnType": "robot_interfaces::msg::Arm",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "to_joint_state_msg",
+          "params": [
+            "point",
+            "stamp"
+          ],
+          "returnType": "sensor_msgs::msg::JointState",
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "get_double_array_param",
+          "params": [
+            "node",
+            "name",
+            "expected_size"
+          ],
+          "returnType": "std::vector<double>",
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "arm_calc/arm_ctrl.hpp",
+          "specifiers": [
+            "arm_calc/arm_ctrl.hpp"
+          ]
+        },
+        {
+          "source": "ament_index_cpp/get_package_share_directory.hpp",
+          "specifiers": [
+            "ament_index_cpp/get_package_share_directory.hpp"
+          ]
+        },
+        {
+          "source": "kdl_parser/kdl_parser.hpp",
+          "specifiers": [
+            "kdl_parser/kdl_parser.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.h",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.h"
+          ]
+        },
+        {
+          "source": "tf2_geometry_msgs/tf2_geometry_msgs.hpp",
+          "specifiers": [
+            "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+          ]
+        },
+        {
+          "source": "fstream",
+          "specifiers": [
+            "fstream"
+          ]
+        },
+        {
+          "source": "map",
+          "specifiers": [
+            "map"
+          ]
+        },
+        {
+          "source": "sstream",
+          "specifiers": [
+            "sstream"
+          ]
+        },
+        {
+          "source": "stdexcept",
+          "specifiers": [
+            "stdexcept"
+          ]
+        }
+      ],
+      "exports": [
+        "ToPoint",
+        "ToMsgQuaternion",
+        "BuildStaticJointTarget",
+        "ArmCtrlNode",
+        "declare_parameters",
+        "create_interfaces",
+        "on_forward_kinematics_request",
+        "on_get_current_end_pose_request",
+        "load_robot_description_and_build_solver",
+        "fetch_robot_description",
+        "load_local_urdf",
+        "refresh_plan",
+        "capture_idle_hold_from_current_state",
+        "set_idle_hold_point",
+        "apply_requested_mode",
+        "enter_idle_mode",
+        "is_trajectory_running",
+        "can_switch_mode_immediately",
+        "set_execute_trajectory_flag",
+        "build_preview_target",
+        "publish_control_loop",
+        "publish_joint_target",
+        "publish_visualization",
+        "on_joint_state",
+        "on_visual_target",
+        "on_joint_space_target",
+        "on_parameters_changed",
+        "parse_motion_mode",
+        "from_arm_message",
+        "to_arm_message",
+        "to_joint_state_msg",
+        "get_double_array_param"
+      ],
+      "totalLines": 790,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/src/arm_test_node.cpp": {
+      "filePath": "src/arm_calc/src/arm_test_node.cpp",
+      "contentHash": "ecf7121155545687702fe75dadfe4b5e647ecc32ac0d60fa426c34774d539835",
+      "functions": [
+        {
+          "name": "ArmTestNode",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "declare_parameters",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "on_parameters_changed",
+          "params": [
+            "params"
+          ],
+          "returnType": "rcl_interfaces::msg::SetParametersResult",
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "publish_joint_target",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "publish_pose_target",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [
+        {
+          "name": "ArmTestNode",
+          "methods": [
+            "ArmTestNode",
+            "declare_parameters",
+            "on_parameters_changed",
+            "publish_joint_target",
+            "publish_pose_target"
+          ],
+          "properties": [
+            "joint_target_pub_",
+            "pose_target_pub_",
+            "param_callback_"
+          ],
+          "exported": true,
+          "lineCount": 79
+        }
+      ],
+      "imports": [
+        {
+          "source": "geometry_msgs/msg/pose_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/pose_stamped.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "std_msgs/msg/float64_multi_array.hpp",
+          "specifiers": [
+            "std_msgs/msg/float64_multi_array.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.h",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.h"
+          ]
+        },
+        {
+          "source": "array",
+          "specifiers": [
+            "array"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        }
+      ],
+      "exports": [
+        "ArmTestNode",
+        "ArmTestNode",
+        "main"
+      ],
+      "totalLines": 114,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_calc/src/main.cpp": {
+      "filePath": "src/arm_calc/src/main.cpp",
+      "contentHash": "bec51691efa77b3cbb0e3005846a2b400d88516ef0dce9f30d75db282828a712",
+      "functions": [
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "arm_calc/arm_ctrl.hpp",
+          "specifiers": [
+            "arm_calc/arm_ctrl.hpp"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "main"
+      ],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/CMakeLists.txt": {
+      "filePath": "src/arm_task/CMakeLists.txt",
+      "contentHash": "83b2b1aed578ae5c78967c164b32b1002dc55d8e38d9907f8ee6d05e04295a97",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 119,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm_task/package.xml": {
+      "filePath": "src/arm_task/package.xml",
+      "contentHash": "9d2d33ce41ca7add66727e9e1829d82e3f87d955be516f974c78c72ec6ebb009",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": false
+    },
+    "src/arm_task/config/arm_position.yaml": {
+      "filePath": "src/arm_task/config/arm_position.yaml",
+      "contentHash": "b733f5858341d3d6b9180516011eb9296db12593a22496f3f9b5459f3baaa201",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 135,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/robot.hpp": {
+      "filePath": "src/arm_task/include/robot.hpp",
+      "contentHash": "5c478edee4b3a4a5a06c3f7f25538579822159a44e5220b2d709566d3c0044a9",
+      "functions": [],
+      "classes": [
+        {
+          "name": "Robot",
+          "methods": [
+            "on_handle_goal",
+            "on_cancel_goal",
+            "on_handle_accepted",
+            "wait_for_idle_signal",
+            "take_pending_task",
+            "get_active_task_context",
+            "finish_current_task",
+            "porcess_task",
+            "register_task",
+            "init_task_manager",
+            "stop_arm_motion",
+            "execute_joint_space_trajectory",
+            "execute_cartesian_space_trajectory",
+            "forward_kinematics",
+            "execute_visual_servo",
+            "is_visual_servo_active",
+            "is_visual_servo_converged",
+            "start_visual_servo",
+            "wait_for_visual_servo_convergence",
+            "stop_visual_servo",
+            "set_air_pump",
+            "set_grasp_state",
+            "set_trajectory_mode",
+            "get_named_joint_position",
+            "load_named_joint_positions_from_yaml",
+            "get_current_joint_positions",
+            "on_parameters_changed",
+            "calculate_duration",
+            "calculate_duration",
+            "calculate_duration",
+            "get_current_end_pose_from_arm_calc",
+            "get_current_end_pose",
+            "visual_servo_publish_thread",
+            "load_arm_positions_from_yaml",
+            "joint_states_callback"
+          ],
+          "properties": [
+            "node_",
+            "tf_buffer_",
+            "tf_listener_",
+            "visual_target_pub_",
+            "joint_space_target_pub_",
+            "marker_pub_",
+            "task_handle_server",
+            "task_thread_",
+            "task_manager_mutex_",
+            "task_manager_cv_",
+            "task_manager_initialized_",
+            "current_task_name_",
+            "last_task_name_",
+            "task_table_",
+            "base_frame_",
+            "camera_frame_",
+            "object_frame_",
+            "tip_frame_",
+            "arm_calc_node_name_",
+            "driver_node_name_",
+            "approach_distance_",
+            "trajectory_duration_",
+            "grasp_time_",
+            "visual_servo_max_linear_acc_",
+            "arm_positions_",
+            "ready_position_",
+            "shutdown_requested_",
+            "param_callback_",
+            "arm_calc_param_client_",
+            "driver_param_client_",
+            "arm_calc_fk_client_",
+            "current_end_pose_client_",
+            "action_state_mutex_",
+            "task_executing_",
+            "goal_pending_",
+            "expected_task_id_",
+            "current_kfs_num_",
+            "expected_task_data_",
+            "pending_goal_handle_",
+            "has_active_task_context_",
+            "active_task_context_",
+            "idle_task_signal_",
+            "target_shelf_",
+            "max_linear_velocity_",
+            "max_angular_velocity_",
+            "max_joint_velocity_",
+            "min_trajectory_duration_",
+            "max_trajectory_duration_",
+            "grasp_kfs_num_",
+            "visual_servo_active_",
+            "visual_servo_thread_",
+            "pose_mutex_",
+            "target_object_pose_",
+            "has_object_pose_",
+            "visual_servo_state_mutex_",
+            "visual_servo_state_cv_",
+            "visual_servo_result_ready_",
+            "visual_servo_succeeded_",
+            "joint_state_sub_",
+            "current_joint_positions_",
+            "joint_state_mutex_",
+            "has_joint_state_"
+          ],
+          "exported": true,
+          "lineCount": 243
+        }
+      ],
+      "imports": [
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        },
+        {
+          "source": "cstdint",
+          "specifiers": [
+            "cstdint"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/pose_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/pose_stamped.hpp"
+          ]
+        },
+        {
+          "source": "std_msgs/msg/float64_multi_array.hpp",
+          "specifiers": [
+            "std_msgs/msg/float64_multi_array.hpp"
+          ]
+        },
+        {
+          "source": "tf2_ros/transform_listener.h",
+          "specifiers": [
+            "tf2_ros/transform_listener.h"
+          ]
+        },
+        {
+          "source": "tf2_ros/buffer.h",
+          "specifiers": [
+            "tf2_ros/buffer.h"
+          ]
+        },
+        {
+          "source": "tf2_geometry_msgs/tf2_geometry_msgs.hpp",
+          "specifiers": [
+            "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp_action/rclcpp_action.hpp",
+          "specifiers": [
+            "rclcpp_action/rclcpp_action.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/action/arm_task.hpp",
+          "specifiers": [
+            "robot_interfaces/action/arm_task.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/srv/forward_kinematics.hpp",
+          "specifiers": [
+            "robot_interfaces/srv/forward_kinematics.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/srv/get_current_end_pose.hpp",
+          "specifiers": [
+            "robot_interfaces/srv/get_current_end_pose.hpp"
+          ]
+        },
+        {
+          "source": "visualization_msgs/msg/marker_array.hpp",
+          "specifiers": [
+            "visualization_msgs/msg/marker_array.hpp"
+          ]
+        },
+        {
+          "source": "sensor_msgs/msg/joint_state.hpp",
+          "specifiers": [
+            "sensor_msgs/msg/joint_state.hpp"
+          ]
+        },
+        {
+          "source": "atomic",
+          "specifiers": [
+            "atomic"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "condition_variable",
+          "specifiers": [
+            "condition_variable"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "mutex",
+          "specifiers": [
+            "mutex"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        },
+        {
+          "source": "map",
+          "specifiers": [
+            "map"
+          ]
+        }
+      ],
+      "exports": [
+        "on_handle_goal",
+        "on_cancel_goal",
+        "on_handle_accepted",
+        "wait_for_idle_signal",
+        "take_pending_task",
+        "get_active_task_context",
+        "finish_current_task",
+        "porcess_task",
+        "register_task",
+        "init_task_manager",
+        "stop_arm_motion",
+        "execute_joint_space_trajectory",
+        "execute_cartesian_space_trajectory",
+        "forward_kinematics",
+        "execute_visual_servo",
+        "is_visual_servo_active",
+        "is_visual_servo_converged",
+        "start_visual_servo",
+        "wait_for_visual_servo_convergence",
+        "stop_visual_servo",
+        "set_air_pump",
+        "set_grasp_state",
+        "set_trajectory_mode",
+        "get_named_joint_position",
+        "load_named_joint_positions_from_yaml",
+        "get_current_joint_positions",
+        "on_parameters_changed",
+        "calculate_duration",
+        "calculate_duration",
+        "calculate_duration",
+        "get_current_end_pose_from_arm_calc",
+        "Robot"
+      ],
+      "totalLines": 280,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/task/base_task.hpp": {
+      "filePath": "src/arm_task/include/task/base_task.hpp",
+      "contentHash": "8ee5f507354892f5002d1ed79def2bcd62f4ca5564a738661d98cfe945b35d46",
+      "functions": [
+        {
+          "name": "BaseTask",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "~BaseTask",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        }
+      ],
+      "classes": [
+        {
+          "name": "Robot",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "BaseTask",
+          "methods": [
+            "BaseTask",
+            "~BaseTask",
+            "process"
+          ],
+          "properties": [
+            "robot",
+            "task_name"
+          ],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        }
+      ],
+      "exports": [
+        "Robot",
+        "BaseTask",
+        "~BaseTask",
+        "process",
+        "BaseTask"
+      ],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/task/catch_kfs.hpp": {
+      "filePath": "src/arm_task/include/task/catch_kfs.hpp",
+      "contentHash": "9248e71a926edeb2fa73189ada9d5cc993b0a04bc1861dcbfb8228961edb8ba1",
+      "functions": [],
+      "classes": [
+        {
+          "name": "CatchKFS",
+          "methods": [
+            "process"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/node_interfaces/node_parameters_interface.hpp",
+          "specifiers": [
+            "rclcpp/node_interfaces/node_parameters_interface.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "process",
+        "CatchKFS"
+      ],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/task/idel.hpp": {
+      "filePath": "src/arm_task/include/task/idel.hpp",
+      "contentHash": "87cd35f6807858a533318f5ec1b902249043be60099132678dd5561718684a22",
+      "functions": [],
+      "classes": [
+        {
+          "name": "IdelTask",
+          "methods": [
+            "process"
+          ],
+          "properties": [
+            "is_first_run"
+          ],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "imports": [
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "process",
+        "IdelTask"
+      ],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/task/move_kfs.hpp": {
+      "filePath": "src/arm_task/include/task/move_kfs.hpp",
+      "contentHash": "5bce62bdc589f877a03f5041e5faff8cb840e9a6882552263ffaf73d44d359ec",
+      "functions": [],
+      "classes": [
+        {
+          "name": "MoveKFS",
+          "methods": [
+            "process"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/node_interfaces/node_parameters_interface.hpp",
+          "specifiers": [
+            "rclcpp/node_interfaces/node_parameters_interface.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "process",
+        "MoveKFS"
+      ],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/task/place_kfs.hpp": {
+      "filePath": "src/arm_task/include/task/place_kfs.hpp",
+      "contentHash": "5fa709818977d544f52b94562b1a23a26d80c843410e06c6ca06b9b70095726a",
+      "functions": [],
+      "classes": [
+        {
+          "name": "PlaceKFS",
+          "methods": [
+            "process"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "imports": [
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/node_interfaces/node_parameters_interface.hpp",
+          "specifiers": [
+            "rclcpp/node_interfaces/node_parameters_interface.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "process",
+        "PlaceKFS"
+      ],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/include/task/visual_serve.hpp": {
+      "filePath": "src/arm_task/include/task/visual_serve.hpp",
+      "contentHash": "0503131355a0c3f6a3aeb75fcc31da19dda602106a1d90cf30daf773ba67c99e",
+      "functions": [],
+      "classes": [
+        {
+          "name": "VisualServe",
+          "methods": [
+            "process",
+            "is_camera_data_locked",
+            "query_current_distance"
+          ],
+          "properties": [
+            "vs_timeout_unlock_",
+            "vs_timeout_lock_",
+            "vs_monitor_interval_ms_",
+            "kCameraDataLockDistanceMeters",
+            "kVisualServoConvergencePositionToleranceMeters"
+          ],
+          "exported": true,
+          "lineCount": 21
+        }
+      ],
+      "imports": [
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/node_interfaces/node_parameters_interface.hpp",
+          "specifiers": [
+            "rclcpp/node_interfaces/node_parameters_interface.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/pose_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/pose_stamped.hpp"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        }
+      ],
+      "exports": [
+        "process",
+        "VisualServe"
+      ],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/main.cpp": {
+      "filePath": "src/arm_task/src/main.cpp",
+      "contentHash": "2b75c3940a68ee3884c39bf3dbcdde19aa5ea7370f6d0d5b9db67a563cab30ae",
+      "functions": [
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        }
+      ],
+      "exports": [
+        "main"
+      ],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/robot.cpp": {
+      "filePath": "src/arm_task/src/robot.cpp",
+      "contentHash": "f306191e483859534b2dff1c8d09159d5928e798e2061e87142b03319893d0e5",
+      "functions": [
+        {
+          "name": "Robot",
+          "params": [
+            "node"
+          ],
+          "exported": true,
+          "lineCount": 96
+        },
+        {
+          "name": "~Robot",
+          "params": [],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "on_handle_goal",
+          "params": [
+            "uuid",
+            "goal"
+          ],
+          "returnType": "rclcpp_action::GoalResponse",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "on_cancel_goal",
+          "params": [
+            "goal_handle"
+          ],
+          "returnType": "rclcpp_action::CancelResponse",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "on_handle_accepted",
+          "params": [
+            "goal_handle"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "wait_for_idle_signal",
+          "params": [
+            "timeout"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "take_pending_task",
+          "params": [
+            "request"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "get_active_task_context",
+          "params": [
+            "context"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "finish_current_task",
+          "params": [
+            "goal_handle",
+            "success",
+            "reason"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "load_arm_positions_from_yaml",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "joint_states_callback",
+          "params": [
+            "msg"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "get_current_joint_positions",
+          "params": [
+            "joints"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "porcess_task",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 68
+        },
+        {
+          "name": "register_task",
+          "params": [
+            "task_ptr"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "init_task_manager",
+          "params": [
+            "first_task_name"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 31
+        },
+        {
+          "name": "on_parameters_changed",
+          "params": [
+            "params"
+          ],
+          "returnType": "rcl_interfaces::msg::SetParametersResult",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "stop_arm_motion",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "execute_joint_space_trajectory",
+          "params": [
+            "joint_angles",
+            "duration"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 63
+        },
+        {
+          "name": "execute_cartesian_space_trajectory",
+          "params": [
+            "target_pose",
+            "duration"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 64
+        },
+        {
+          "name": "execute_visual_servo",
+          "params": [
+            "target_pose"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "is_visual_servo_active",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "is_visual_servo_converged",
+          "params": [
+            "position_tolerance_m",
+            "current_distance_m"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 58
+        },
+        {
+          "name": "start_visual_servo",
+          "params": [
+            "target_pose"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "wait_for_visual_servo_convergence",
+          "params": [
+            "position_tolerance_m",
+            "timeout_sec"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "stop_visual_servo",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "visual_servo_publish_thread",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 132
+        },
+        {
+          "name": "set_air_pump",
+          "params": [
+            "enable"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "set_grasp_state",
+          "params": [
+            "finished"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "get_named_joint_position",
+          "params": [
+            "name",
+            "joint_angles"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "load_named_joint_positions_from_yaml",
+          "params": [
+            "yaml_path"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 49
+        },
+        {
+          "name": "get_current_end_pose",
+          "params": [
+            "current_pose"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 18
+        },
+        {
+          "name": "get_current_end_pose_from_arm_calc",
+          "params": [
+            "current_pose"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 33
+        },
+        {
+          "name": "forward_kinematics",
+          "params": [
+            "joint_angles",
+            "end_pose",
+            "message"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 61
+        },
+        {
+          "name": "calculate_duration",
+          "params": [
+            "target_pose"
+          ],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 37
+        },
+        {
+          "name": "calculate_duration",
+          "params": [
+            "target_joints"
+          ],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 70
+        },
+        {
+          "name": "calculate_duration",
+          "params": [
+            "named_position"
+          ],
+          "returnType": "double",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "task/base_task.hpp",
+          "specifiers": [
+            "task/base_task.hpp"
+          ]
+        },
+        {
+          "source": "task/catch_kfs.hpp",
+          "specifiers": [
+            "task/catch_kfs.hpp"
+          ]
+        },
+        {
+          "source": "task/idel.hpp",
+          "specifiers": [
+            "task/idel.hpp"
+          ]
+        },
+        {
+          "source": "task/move_kfs.hpp",
+          "specifiers": [
+            "task/move_kfs.hpp"
+          ]
+        },
+        {
+          "source": "task/place_kfs.hpp",
+          "specifiers": [
+            "task/place_kfs.hpp"
+          ]
+        },
+        {
+          "source": "ament_index_cpp/get_package_share_directory.hpp",
+          "specifiers": [
+            "ament_index_cpp/get_package_share_directory.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/action/arm_task.hpp",
+          "specifiers": [
+            "robot_interfaces/action/arm_task.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/srv/forward_kinematics.hpp",
+          "specifiers": [
+            "robot_interfaces/srv/forward_kinematics.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/srv/get_current_end_pose.hpp",
+          "specifiers": [
+            "robot_interfaces/srv/get_current_end_pose.hpp"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        },
+        {
+          "source": "future",
+          "specifiers": [
+            "future"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.hpp"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        },
+        {
+          "source": "yaml-cpp/yaml.h",
+          "specifiers": [
+            "yaml-cpp/yaml.h"
+          ]
+        },
+        {
+          "source": "visualization_msgs/msg/marker_array.hpp",
+          "specifiers": [
+            "visualization_msgs/msg/marker_array.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "Robot",
+        "~Robot",
+        "on_handle_goal",
+        "on_cancel_goal",
+        "on_handle_accepted",
+        "wait_for_idle_signal",
+        "take_pending_task",
+        "get_active_task_context",
+        "finish_current_task",
+        "load_arm_positions_from_yaml",
+        "joint_states_callback",
+        "get_current_joint_positions",
+        "porcess_task",
+        "register_task",
+        "init_task_manager",
+        "on_parameters_changed",
+        "stop_arm_motion",
+        "execute_joint_space_trajectory",
+        "execute_cartesian_space_trajectory",
+        "execute_visual_servo",
+        "is_visual_servo_active",
+        "is_visual_servo_converged",
+        "start_visual_servo",
+        "wait_for_visual_servo_convergence",
+        "stop_visual_servo",
+        "visual_servo_publish_thread",
+        "set_air_pump",
+        "set_grasp_state",
+        "get_named_joint_position",
+        "load_named_joint_positions_from_yaml",
+        "get_current_end_pose",
+        "get_current_end_pose_from_arm_calc",
+        "forward_kinematics",
+        "calculate_duration",
+        "calculate_duration",
+        "calculate_duration"
+      ],
+      "totalLines": 1196,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/catch_kfs_test.cpp": {
+      "filePath": "src/arm_task/src/catch_kfs_test.cpp",
+      "contentHash": "fdb112ed3a6d810c05cbe5aebdaecf802c9f9a4dcc7d6a734a866061c19958a9",
+      "functions": [
+        {
+          "name": "CatchKfsTestNode",
+          "params": [],
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "run_once",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 65
+        },
+        {
+          "name": "on_goal_response",
+          "params": [
+            "goal_handle"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "on_feedback",
+          "params": [
+            "feedback"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "on_result",
+          "params": [
+            "result"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [
+        {
+          "name": "CatchKfsTestNode",
+          "methods": [
+            "CatchKfsTestNode",
+            "run_once",
+            "on_goal_response",
+            "on_feedback",
+            "on_result"
+          ],
+          "properties": [
+            "action_client_",
+            "tf_buffer_",
+            "tf_listener_",
+            "startup_timer_",
+            "request_started_"
+          ],
+          "exported": true,
+          "lineCount": 170
+        }
+      ],
+      "imports": [
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/transform_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/transform_stamped.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp_action/rclcpp_action.hpp",
+          "specifiers": [
+            "rclcpp_action/rclcpp_action.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/action/arm_task.hpp",
+          "specifiers": [
+            "robot_interfaces/action/arm_task.hpp"
+          ]
+        },
+        {
+          "source": "tf2_ros/buffer.h",
+          "specifiers": [
+            "tf2_ros/buffer.h"
+          ]
+        },
+        {
+          "source": "tf2_ros/transform_listener.h",
+          "specifiers": [
+            "tf2_ros/transform_listener.h"
+          ]
+        }
+      ],
+      "exports": [
+        "CatchKfsTestNode",
+        "CatchKfsTestNode",
+        "main"
+      ],
+      "totalLines": 242,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/move_kfs_test.cpp": {
+      "filePath": "src/arm_task/src/move_kfs_test.cpp",
+      "contentHash": "14b5769a06ba89af4521c22e34709c14b245fc47a9ac3a6d6ac7f7ebb809ace4",
+      "functions": [
+        {
+          "name": "MoveKfsGui",
+          "params": [],
+          "exported": true,
+          "lineCount": 25
+        },
+        {
+          "name": "~MoveKfsGui",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "closeEvent",
+          "params": [
+            "event"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "configure_spinbox",
+          "params": [
+            "spinbox",
+            "value"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "build_ui",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 52
+        },
+        {
+          "name": "update_mode_ui",
+          "params": [
+            "index"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "check_action_server",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "check_joint_state_timeout",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "apply_joint_defaults",
+          "params": [
+            "joints"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "on_joint_state",
+          "params": [
+            "msg"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 15
+        },
+        {
+          "name": "on_start_clicked",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 84
+        },
+        {
+          "name": "on_goal_response",
+          "params": [
+            "goal_handle"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "on_feedback",
+          "params": [
+            "feedback"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "on_result",
+          "params": [
+            "result"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 22
+        },
+        {
+          "name": "append_log",
+          "params": [
+            "text"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [
+        {
+          "name": "MoveKfsGui",
+          "methods": [
+            "MoveKfsGui",
+            "~MoveKfsGui",
+            "closeEvent",
+            "configure_spinbox",
+            "build_ui",
+            "update_mode_ui",
+            "check_action_server",
+            "check_joint_state_timeout",
+            "apply_joint_defaults",
+            "on_joint_state",
+            "on_start_clicked",
+            "on_goal_response",
+            "on_feedback",
+            "on_result",
+            "append_log"
+          ],
+          "properties": [
+            "node_",
+            "action_client_",
+            "joint_state_sub_",
+            "executor_",
+            "spin_timer_",
+            "joint_wait_timer_",
+            "action_server_ready_",
+            "joint_state_ready_",
+            "joint_wait_timeout_logged_",
+            "joint_defaults_applied_",
+            "joint_inputs_edited_",
+            "setting_joint_defaults_",
+            "current_joint_rads_",
+            "status_label_",
+            "joint_state_label_",
+            "mode_combo_",
+            "mode_stack_",
+            "joint_spins_",
+            "x_spin_",
+            "y_spin_",
+            "z_spin_",
+            "rpy_checkbox_",
+            "rpy_widget_",
+            "roll_spin_",
+            "pitch_spin_",
+            "yaw_spin_",
+            "duration_spin_",
+            "pump_combo_",
+            "start_button_",
+            "log_text_"
+          ],
+          "exported": true,
+          "lineCount": 369
+        }
+      ],
+      "imports": [
+        {
+          "source": "array",
+          "specifiers": [
+            "array"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "QApplication",
+          "specifiers": [
+            "QApplication"
+          ]
+        },
+        {
+          "source": "QCheckBox",
+          "specifiers": [
+            "QCheckBox"
+          ]
+        },
+        {
+          "source": "QCloseEvent",
+          "specifiers": [
+            "QCloseEvent"
+          ]
+        },
+        {
+          "source": "QComboBox",
+          "specifiers": [
+            "QComboBox"
+          ]
+        },
+        {
+          "source": "QDoubleSpinBox",
+          "specifiers": [
+            "QDoubleSpinBox"
+          ]
+        },
+        {
+          "source": "QElapsedTimer",
+          "specifiers": [
+            "QElapsedTimer"
+          ]
+        },
+        {
+          "source": "QFormLayout",
+          "specifiers": [
+            "QFormLayout"
+          ]
+        },
+        {
+          "source": "QGroupBox",
+          "specifiers": [
+            "QGroupBox"
+          ]
+        },
+        {
+          "source": "QHBoxLayout",
+          "specifiers": [
+            "QHBoxLayout"
+          ]
+        },
+        {
+          "source": "QLabel",
+          "specifiers": [
+            "QLabel"
+          ]
+        },
+        {
+          "source": "QPlainTextEdit",
+          "specifiers": [
+            "QPlainTextEdit"
+          ]
+        },
+        {
+          "source": "QPushButton",
+          "specifiers": [
+            "QPushButton"
+          ]
+        },
+        {
+          "source": "QStackedWidget",
+          "specifiers": [
+            "QStackedWidget"
+          ]
+        },
+        {
+          "source": "QString",
+          "specifiers": [
+            "QString"
+          ]
+        },
+        {
+          "source": "QTimer",
+          "specifiers": [
+            "QTimer"
+          ]
+        },
+        {
+          "source": "QVBoxLayout",
+          "specifiers": [
+            "QVBoxLayout"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp_action/rclcpp_action.hpp",
+          "specifiers": [
+            "rclcpp_action/rclcpp_action.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/executors/single_threaded_executor.hpp",
+          "specifiers": [
+            "rclcpp/executors/single_threaded_executor.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/action/arm_task.hpp",
+          "specifiers": [
+            "robot_interfaces/action/arm_task.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/msg/arm.hpp",
+          "specifiers": [
+            "robot_interfaces/msg/arm.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "MoveKfsGui",
+        "~MoveKfsGui",
+        "MoveKfsGui",
+        "main"
+      ],
+      "totalLines": 448,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/place_kfs_test.cpp": {
+      "filePath": "src/arm_task/src/place_kfs_test.cpp",
+      "contentHash": "d2edfc687b1709eb3bc4d82461f6d0aa477d391a36a17e3e852662041e3a20f3",
+      "functions": [
+        {
+          "name": "PlaceKfsTestNode",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "run_once",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 61
+        },
+        {
+          "name": "on_goal_response",
+          "params": [
+            "goal_handle"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "on_feedback",
+          "params": [
+            "feedback"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "on_result",
+          "params": [
+            "result"
+          ],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [
+        {
+          "name": "PlaceKfsTestNode",
+          "methods": [
+            "PlaceKfsTestNode",
+            "run_once",
+            "on_goal_response",
+            "on_feedback",
+            "on_result"
+          ],
+          "properties": [
+            "action_client_",
+            "tf_buffer_",
+            "tf_listener_",
+            "startup_timer_",
+            "request_started_"
+          ],
+          "exported": true,
+          "lineCount": 165
+        }
+      ],
+      "imports": [
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "future",
+          "specifiers": [
+            "future"
+          ]
+        },
+        {
+          "source": "memory",
+          "specifiers": [
+            "memory"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/transform_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/transform_stamped.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp_action/rclcpp_action.hpp",
+          "specifiers": [
+            "rclcpp_action/rclcpp_action.hpp"
+          ]
+        },
+        {
+          "source": "robot_interfaces/action/arm_task.hpp",
+          "specifiers": [
+            "robot_interfaces/action/arm_task.hpp"
+          ]
+        },
+        {
+          "source": "tf2_ros/buffer.h",
+          "specifiers": [
+            "tf2_ros/buffer.h"
+          ]
+        },
+        {
+          "source": "tf2_ros/transform_listener.h",
+          "specifiers": [
+            "tf2_ros/transform_listener.h"
+          ]
+        }
+      ],
+      "exports": [
+        "PlaceKfsTestNode",
+        "PlaceKfsTestNode",
+        "main"
+      ],
+      "totalLines": 239,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/task/catch_kfs.cpp": {
+      "filePath": "src/arm_task/src/task/catch_kfs.cpp",
+      "contentHash": "35bba730afac053fae466a313ba37b63c30cf9bd81c5cae74a314bc501df04d5",
+      "functions": [
+        {
+          "name": "CatchKFS",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "~CatchKFS",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "process",
+          "params": [
+            "last_task_name"
+          ],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 224
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "task/catch_kfs.hpp",
+          "specifiers": [
+            "task/catch_kfs.hpp"
+          ]
+        },
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/transform_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/transform_stamped.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/utilities.hpp",
+          "specifiers": [
+            "rclcpp/utilities.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Matrix3x3.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Matrix3x3.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Vector3.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Vector3.hpp"
+          ]
+        },
+        {
+          "source": "tf2/exceptions.h",
+          "specifiers": [
+            "tf2/exceptions.h"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        },
+        {
+          "source": "future",
+          "specifiers": [
+            "future"
+          ]
+        }
+      ],
+      "exports": [
+        "CatchKFS",
+        "~CatchKFS",
+        "process"
+      ],
+      "totalLines": 252,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/task/idel.cpp": {
+      "filePath": "src/arm_task/src/task/idel.cpp",
+      "contentHash": "fd037189efe9a147a80b13d96cc9d8ccfdb6a634831485dee57761611f5774c1",
+      "functions": [
+        {
+          "name": "IdelTask",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "~IdelTask",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "process",
+          "params": [
+            "last_task_name"
+          ],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 68
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "task/idel.hpp",
+          "specifiers": [
+            "task/idel.hpp"
+          ]
+        },
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/utilities.hpp",
+          "specifiers": [
+            "rclcpp/utilities.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "IdelTask",
+        "~IdelTask",
+        "process"
+      ],
+      "totalLines": 91,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/task/move_kfs.cpp": {
+      "filePath": "src/arm_task/src/task/move_kfs.cpp",
+      "contentHash": "0bcc3eeab67964f8fc446e62aa7cd20230958c47fbfe7d294deb3ae21c0de371",
+      "functions": [
+        {
+          "name": "MoveKFS",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "~MoveKFS",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "process",
+          "params": [
+            "last_task_name"
+          ],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 143
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "task/move_kfs.hpp",
+          "specifiers": [
+            "task/move_kfs.hpp"
+          ]
+        },
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/pose_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/pose_stamped.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.hpp"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        }
+      ],
+      "exports": [
+        "MoveKFS",
+        "~MoveKFS",
+        "process"
+      ],
+      "totalLines": 161,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/task/place_kfs.cpp": {
+      "filePath": "src/arm_task/src/task/place_kfs.cpp",
+      "contentHash": "a98bc23b17dfa3f7ff51f074d1467ac65e46164b3ea1bc52471da42d40ec0a4b",
+      "functions": [
+        {
+          "name": "PlaceKFS",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "~PlaceKFS",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "process",
+          "params": [
+            "last_task_name"
+          ],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 167
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "task/place_kfs.hpp",
+          "specifiers": [
+            "task/place_kfs.hpp"
+          ]
+        },
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        }
+      ],
+      "exports": [
+        "PlaceKFS",
+        "~PlaceKFS",
+        "process"
+      ],
+      "totalLines": 182,
+      "hasStructuralAnalysis": true
+    },
+    "src/arm_task/src/task/visual_serve.cpp": {
+      "filePath": "src/arm_task/src/task/visual_serve.cpp",
+      "contentHash": "62d678553890bf0f1670d8dbb995e625ed68bef6adec7649a866a54ec5811ec0",
+      "functions": [
+        {
+          "name": "VisualServe",
+          "params": [
+            "context",
+            "name"
+          ],
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "~VisualServe",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "process",
+          "params": [],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 150
+        },
+        {
+          "name": "is_camera_data_locked",
+          "params": [],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "query_current_distance",
+          "params": [
+            "out_distance_m"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "robot.hpp",
+          "specifiers": [
+            "robot.hpp"
+          ]
+        },
+        {
+          "source": "task/visual_serve.hpp",
+          "specifiers": [
+            "task/visual_serve.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "tf2/LinearMath/Quaternion.hpp",
+          "specifiers": [
+            "tf2/LinearMath/Quaternion.hpp"
+          ]
+        },
+        {
+          "source": "tf2/exceptions.h",
+          "specifiers": [
+            "tf2/exceptions.h"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        }
+      ],
+      "exports": [
+        "VisualServe",
+        "~VisualServe",
+        "process",
+        "is_camera_data_locked",
+        "query_current_distance"
+      ],
+      "totalLines": 190,
+      "hasStructuralAnalysis": true
+    },
+    "src/dog_controller/CMakeLists.txt": {
+      "filePath": "src/dog_controller/CMakeLists.txt",
+      "contentHash": "750166bdb7eecd00d9e7bf12d388ea56928d77283b841f5212f34e774b21ff3f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 67,
+      "hasStructuralAnalysis": false
+    },
+    "src/dog_controller/package.xml": {
+      "filePath": "src/dog_controller/package.xml",
+      "contentHash": "5438846d0c91c4b748a7236a3f291a0c49eed9a5f349f4fc22e03232d4f8e359",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": false
+    },
+    "src/dog_controller/plugin.xml": {
+      "filePath": "src/dog_controller/plugin.xml",
+      "contentHash": "af838d9fdefbaffbef82b0f1cf89f7cfd42035624098232f6c0394c2a739698d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 7,
+      "hasStructuralAnalysis": false
+    },
+    "src/dog_controller/include/dog_controller/dog_controller.hpp": {
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "contentHash": "47912e71ce9e9809733d0e5cba773947fe5413d05b0908a939cdcb48a203a016",
+      "functions": [],
+      "classes": [
+        {
+          "name": "DogController",
+          "methods": [
+            "on_init",
+            "on_configure",
+            "on_activate",
+            "on_deactivate",
+            "update",
+            "command_interface_configuration",
+            "state_interface_configuration"
+          ],
+          "properties": [
+            "kJointCount",
+            "state_publisher_",
+            "target_subscriber_",
+            "param_cb_",
+            "joints_name_",
+            "joint_kp_",
+            "joint_kd_",
+            "joints_target_",
+            "joints_state_",
+            "joint_torque_filter_gate_",
+            "joint_omega_filter_gate_",
+            "command_effort_limit_",
+            "last_target_log_time_"
+          ],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "imports": [
+        {
+          "source": "robot_interfaces/msg/arm.hpp",
+          "specifiers": [
+            "robot_interfaces/msg/arm.hpp"
+          ]
+        },
+        {
+          "source": "controller_interface/controller_interface.hpp",
+          "specifiers": [
+            "controller_interface/controller_interface.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/subscription.hpp",
+          "specifiers": [
+            "rclcpp/subscription.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/time.hpp",
+          "specifiers": [
+            "rclcpp/time.hpp"
+          ]
+        },
+        {
+          "source": "string",
+          "specifiers": [
+            "string"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        }
+      ],
+      "exports": [
+        "on_init",
+        "on_configure",
+        "on_activate",
+        "on_deactivate",
+        "update",
+        "command_interface_configuration",
+        "state_interface_configuration",
+        "DogController"
+      ],
+      "totalLines": 49,
+      "hasStructuralAnalysis": true
+    },
+    "src/dog_controller/src/dog_controller.cpp": {
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "contentHash": "602ef5de9d28151620d0274b0000a7fede0cfe30a177eaac6fbae8224f9fb7a2",
+      "functions": [
+        {
+          "name": "DogController",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "on_init",
+          "params": [],
+          "returnType": "controller_interface::CallbackReturn",
+          "exported": true,
+          "lineCount": 65
+        },
+        {
+          "name": "on_configure",
+          "params": [
+            "previous_state"
+          ],
+          "returnType": "controller_interface::CallbackReturn",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "on_activate",
+          "params": [
+            "previous_state"
+          ],
+          "returnType": "controller_interface::CallbackReturn",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "on_deactivate",
+          "params": [
+            "previous_state"
+          ],
+          "returnType": "controller_interface::CallbackReturn",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "update",
+          "params": [
+            "time",
+            "period"
+          ],
+          "returnType": "controller_interface::return_type",
+          "exported": true,
+          "lineCount": 40
+        },
+        {
+          "name": "command_interface_configuration",
+          "params": [],
+          "returnType": "controller_interface::InterfaceConfiguration",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "state_interface_configuration",
+          "params": [],
+          "returnType": "controller_interface::InterfaceConfiguration",
+          "exported": true,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "dog_controller/dog_controller.hpp",
+          "specifiers": [
+            "dog_controller/dog_controller.hpp"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "controller_interface/controller_interface.hpp",
+          "specifiers": [
+            "controller_interface/controller_interface.hpp"
+          ]
+        },
+        {
+          "source": "pluginlib/class_list_macros.hpp",
+          "specifiers": [
+            "pluginlib/class_list_macros.hpp"
+          ]
+        },
+        {
+          "source": "rcl_interfaces/msg/set_parameters_result.hpp",
+          "specifiers": [
+            "rcl_interfaces/msg/set_parameters_result.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "DogController",
+        "on_init",
+        "on_configure",
+        "on_activate",
+        "on_deactivate",
+        "update",
+        "command_interface_configuration",
+        "state_interface_configuration"
+      ],
+      "totalLines": 176,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/CMakeLists.txt": {
+      "filePath": "src/launch_pack/CMakeLists.txt",
+      "contentHash": "743e85f1c9f0eea46dc930d06b7c757ae2804ac6c742f1201ba56298e4cbe7fd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": false
+    },
+    "src/launch_pack/package.xml": {
+      "filePath": "src/launch_pack/package.xml",
+      "contentHash": "ba5748ad405f87e8e97fccb55c7b46f8c1d93979bdce849ea5b6c067cced30f2",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": false
+    },
+    "src/launch_pack/config/ros2_controller.yaml": {
+      "filePath": "src/launch_pack/config/ros2_controller.yaml",
+      "contentHash": "460d641c79f2fc42f7290dedfc1c099d443d918cb85b0c328d43e24debeac265",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_mujoco_sim.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_mujoco_sim.launch.py",
+      "contentHash": "fd32a17375337943d692ab845432bfdc34aa2f0946500dac241fe3ad162e9949",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 111
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "DeclareLaunchArgument",
+            "LogInfo",
+            "RegisterEventHandler"
+          ]
+        },
+        {
+          "source": "launch.conditions",
+          "specifiers": [
+            "IfCondition"
+          ]
+        },
+        {
+          "source": "launch.event_handlers",
+          "specifiers": [
+            "OnProcessStart"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "LaunchConfiguration"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 122,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_real.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_real.launch.py",
+      "contentHash": "b5473f443cbdb74ddfd359f3a19257d243ce0e1679c9e2a959139345809c93a3",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 68
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 75,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_real_target_test.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_real_target_test.launch.py",
+      "contentHash": "ce4d991fbab9673a75293921ca14ad56c939cceb98f423c553d8247f34225669",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 84
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 91,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_static_display.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_static_display.launch.py",
+      "contentHash": "8015c47e523df7cadb3889063fc021259baaf865bd6d3d642058d402db056bfe",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 33
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_task_catch_test.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_task_catch_test.launch.py",
+      "contentHash": "37ec57abffdff299d17c318ed8236a60a0ad484a4c77a7c81f6a1e9759563257",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 50
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "DeclareLaunchArgument",
+            "IncludeLaunchDescription",
+            "TimerAction"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "LaunchConfiguration"
+          ]
+        },
+        {
+          "source": "launch.launch_description_sources",
+          "specifiers": [
+            "PythonLaunchDescriptionSource"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 59,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_task_move_test.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_task_move_test.launch.py",
+      "contentHash": "a71db0c5f7ccb418d3f372cc38757b0a751dbd31f3df90fe1ba8ca577282046d",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 41
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "DeclareLaunchArgument",
+            "IncludeLaunchDescription",
+            "TimerAction"
+          ]
+        },
+        {
+          "source": "launch.conditions",
+          "specifiers": [
+            "IfCondition"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "LaunchConfiguration"
+          ]
+        },
+        {
+          "source": "launch.launch_description_sources",
+          "specifiers": [
+            "PythonLaunchDescriptionSource"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_task_place_test.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_task_place_test.launch.py",
+      "contentHash": "ad65f92553fe4c935874aeb45565345a0efaa6ca1471b55a65845c6977209acf",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 52
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "DeclareLaunchArgument",
+            "IncludeLaunchDescription",
+            "TimerAction"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "LaunchConfiguration"
+          ]
+        },
+        {
+          "source": "launch.launch_description_sources",
+          "specifiers": [
+            "PythonLaunchDescriptionSource"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 62,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_task_sim.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_task_sim.launch.py",
+      "contentHash": "e837956af292dd0d886d996457b8cc5ae4b28d254bc97c39448660282c920074",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 44
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "DeclareLaunchArgument",
+            "LogInfo",
+            "RegisterEventHandler",
+            "IncludeLaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.conditions",
+          "specifiers": [
+            "IfCondition"
+          ]
+        },
+        {
+          "source": "launch.event_handlers",
+          "specifiers": [
+            "OnProcessStart"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "LaunchConfiguration"
+          ]
+        },
+        {
+          "source": "launch.launch_description_sources",
+          "specifiers": [
+            "PythonLaunchDescriptionSource"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 56,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/arm_task_target_test.launch.py": {
+      "filePath": "src/launch_pack/launch/arm_task_target_test.launch.py",
+      "contentHash": "a14109ab6f23e4f8a995c4a7eaa93fb123ab5efc4dffd142a8608cf2ccc57032",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 80
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "DeclareLaunchArgument",
+            "IncludeLaunchDescription",
+            "TimerAction"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "LaunchConfiguration"
+          ]
+        },
+        {
+          "source": "launch.launch_description_sources",
+          "specifiers": [
+            "PythonLaunchDescriptionSource"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 90,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/launch/vision_tf_test.launch.py": {
+      "filePath": "src/launch_pack/launch/vision_tf_test.launch.py",
+      "contentHash": "68d95b18f4c746b84bdc11fb5d1c52827a085a37fedb97fb21e698bc6df2b2cc",
+      "functions": [
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 60
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        }
+      ],
+      "exports": [
+        "generate_launch_description"
+      ],
+      "totalLines": 67,
+      "hasStructuralAnalysis": true
+    },
+    "src/launch_pack/rviz/arm_display_config.rviz": {
+      "filePath": "src/launch_pack/rviz/arm_display_config.rviz",
+      "contentHash": "cfe61e31889398ff1f7a3d20c58350ce07d16f497726b1d3b570e3675fce4c5b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 79,
+      "hasStructuralAnalysis": false
+    },
+    "src/launch_pack/rviz/display_config.rviz": {
+      "filePath": "src/launch_pack/rviz/display_config.rviz",
+      "contentHash": "1b9ec7e98db49864de81e9d127a46c5883908212adc6be8bcf88bf90f0bbdb12",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 348,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/CMakeLists.txt": {
+      "filePath": "src/mujoco_ros2_control/CMakeLists.txt",
+      "contentHash": "1b48280c6da7320ed64e34e13e25574f9cd8496e7ae049db9d5c8b7aca6ed19e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 274,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/package.xml": {
+      "filePath": "src/mujoco_ros2_control/package.xml",
+      "contentHash": "63c44603d7d57791aad67b7f1e415acbd66b28ef07d68b77a228b27ad289eea7",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 45,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/Doxyfile": {
+      "filePath": "src/mujoco_ros2_control/Doxyfile",
+      "contentHash": "5e88b032f76f6040982669073fbdb926866e9dbee2b291e39a3c1c0b26c07c7a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 356,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/LICENSE": {
+      "filePath": "src/mujoco_ros2_control/LICENSE",
+      "contentHash": "5e20757a1bbe1f43c2488c80f615e76c90e6791869c246435adcd9f1c6cdc49f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/README.md": {
+      "filePath": "src/mujoco_ros2_control/README.md",
+      "contentHash": "f1e8522da108d39f2bba5b6e0cd916333e9bf88366c751012271270f764164d9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 143,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/mujoco_system_plugins.xml": {
+      "filePath": "src/mujoco_ros2_control/mujoco_system_plugins.xml",
+      "contentHash": "aff2d72fc81c252674cd46f66c883925578db78965a384decdb3f5962ade07b0",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 10,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/cmake/config.h.in": {
+      "filePath": "src/mujoco_ros2_control/cmake/config.h.in",
+      "contentHash": "86dfa337824fa4f7b9ec23963ce27cec61f3cb2c4a48f52eea1f857e60c3e445",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/mjcf/scene.xml": {
+      "filePath": "src/mujoco_ros2_control/mjcf/scene.xml",
+      "contentHash": "bcf7c736f8cdebd3743ca18361c577a7e9513436221b22563cd6234f2d218223",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": false
+    },
+    "src/mujoco_ros2_control/include/mujoco_rgbd_camera/mujoco_depth_camera.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_rgbd_camera/mujoco_depth_camera.hpp",
+      "contentHash": "b8bb650483b03705f17ac0a75a42384ebb14307def69956c7f938c2c786dac64",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 314,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "contentHash": "39e0913b87d207277f9b9241670afdff1e15320749c91ae749c60b34ea48011f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 265,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "contentHash": "84b28d74b6edc6b21cbfc8ee3af8f0bff7857640c42cf7a014af60adc7aed4c6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 330,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system_interface.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system_interface.hpp",
+      "contentHash": "fa3dbcdc9ddd52409344ffc4fa72c2b5b03051aa971c28ade0e756272431bb4f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 105,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/imu_sensor.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/imu_sensor.hpp",
+      "contentHash": "f241cb831b73a95d17132806a13fa24deb87ed6884cd1eea483770b810f89c04",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 86,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/mujoco_ros2_sensors.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/mujoco_ros2_sensors.hpp",
+      "contentHash": "fc79db4be70fb154263cc114cb33727b98e026ca8ee1a8d4aa26fb67493fdd63",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 101,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/pose_sensor.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/pose_sensor.hpp",
+      "contentHash": "5fc2326c1cfcd166ecdf95ac33f961e1c458351927bdbf250d5990930ea52556",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 93,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/wrench_sensor.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/wrench_sensor.hpp",
+      "contentHash": "cbb61acc9afc04f00414fa8293ab3ff656cf1fa77ee5c4dfffdc984ddb3d10cd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/include/mujoco_visualization/mujoco_visualization.hpp": {
+      "filePath": "src/mujoco_ros2_control/include/mujoco_visualization/mujoco_visualization.hpp",
+      "contentHash": "b13d3a629952e556e6ffe5c13d8a5f4a625bf645bb728cc640e535543f0c38be",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 265,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/scripts/__init__.py": {
+      "filePath": "src/mujoco_ros2_control/scripts/__init__.py",
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/scripts/run_coacd.py": {
+      "filePath": "src/mujoco_ros2_control/scripts/run_coacd.py",
+      "contentHash": "451ee3faf01284996e872d46ac4659ba0f710788055c121b0303f3bcc42039db",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "argparse",
+          "specifiers": [
+            "argparse"
+          ]
+        },
+        {
+          "source": "coacd",
+          "specifiers": [
+            "coacd"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 139,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/scripts/urdf2mjcf.py": {
+      "filePath": "src/mujoco_ros2_control/scripts/urdf2mjcf.py",
+      "contentHash": "d175641f4b6574a88c9670ab40545f1e756326b47e423d10f344c98845ea603c",
+      "functions": [
+        {
+          "name": "build_joint_link_tree",
+          "params": [
+            "robot"
+          ],
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "create_mjcf",
+          "params": [
+            "robot",
+            "robot_tree",
+            "mujoco_element"
+          ],
+          "exported": true,
+          "lineCount": 174
+        },
+        {
+          "name": "create_mjcf_from_urdf",
+          "params": [
+            "input_file",
+            "output_file"
+          ],
+          "exported": true,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "urdf_parser_py",
+          "specifiers": [
+            "urdf"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "sys",
+          "specifiers": [
+            "sys"
+          ]
+        },
+        {
+          "source": "xml.etree.ElementTree",
+          "specifiers": [
+            "ET"
+          ]
+        },
+        {
+          "source": "numpy",
+          "specifiers": [
+            "np"
+          ]
+        },
+        {
+          "source": "scipy.spatial.transform",
+          "specifiers": [
+            "R"
+          ]
+        }
+      ],
+      "exports": [
+        "build_joint_link_tree",
+        "create_mjcf",
+        "create_mjcf_from_urdf"
+      ],
+      "totalLines": 258,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/scripts/xacro2mjcf.py": {
+      "filePath": "src/mujoco_ros2_control/scripts/xacro2mjcf.py",
+      "contentHash": "750cc95882c632b77a4c368b8c11aa48090b1713b1a642fe77199e94a8b59170",
+      "functions": [
+        {
+          "name": "main",
+          "params": [
+            "args"
+          ],
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [
+        {
+          "name": "Xacro2Mjcf",
+          "methods": [
+            "__init__",
+            "add_composite_collisions",
+            "get_elements",
+            "create_symlinks",
+            "move_assets_to_root_xml",
+            "convert_camera_links",
+            "correct_visual_mesh"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 411
+        }
+      ],
+      "imports": [
+        {
+          "source": "subprocess",
+          "specifiers": [
+            "subprocess"
+          ]
+        },
+        {
+          "source": "rclpy",
+          "specifiers": [
+            "rclpy"
+          ]
+        },
+        {
+          "source": "ament_index_python.packages",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "rclpy.node",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "xml.etree.ElementTree",
+          "specifiers": [
+            "ET"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "uuid",
+          "specifiers": [
+            "uuid"
+          ]
+        },
+        {
+          "source": "collections",
+          "specifiers": [
+            "collections"
+          ]
+        },
+        {
+          "source": "copy",
+          "specifiers": [
+            "copy"
+          ]
+        },
+        {
+          "source": "urdf2mjcf",
+          "specifiers": [
+            "create_mjcf_from_urdf"
+          ]
+        }
+      ],
+      "exports": [
+        "Xacro2Mjcf",
+        "main"
+      ],
+      "totalLines": 506,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/imu_sensor.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/imu_sensor.cpp",
+      "contentHash": "6672eed7f1fc51fb61934b6796855a807c6a8be355b6ec3c0fb3c1412053ffe5",
+      "functions": [
+        {
+          "name": "ImuSensor",
+          "params": [
+            "node",
+            "model",
+            "data",
+            "sensor",
+            "stop",
+            "frequency"
+          ],
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_ros2_sensors/imu_sensor.hpp",
+          "specifiers": [
+            "mujoco_ros2_sensors/imu_sensor.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "ImuSensor",
+        "update"
+      ],
+      "totalLines": 72,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_depth_camera.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_depth_camera.cpp",
+      "contentHash": "8e8d075caac539237028477fe7c518051df52856ce8142708740a39f42c941ff",
+      "functions": [
+        {
+          "name": "MujocoDepthCamera",
+          "params": [
+            "node",
+            "model",
+            "data",
+            "id",
+            "name",
+            "stop"
+          ],
+          "exported": true,
+          "lineCount": 62
+        },
+        {
+          "name": "~MujocoDepthCamera",
+          "params": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "linearize_depth",
+          "params": [
+            "depth"
+          ],
+          "returnType": "cv::Mat",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "set_camera_intrinsics",
+          "params": [
+            "viewport"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "get_RGBD_buffer",
+          "params": [
+            "viewport"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "generate_color_point_cloud",
+          "params": [],
+          "returnType": "pcl::PointCloud<pcl::PointXYZRGB>",
+          "exported": true,
+          "lineCount": 33
+        },
+        {
+          "name": "publish_camera_info",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 28
+        },
+        {
+          "name": "publish_images",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "publish_point_cloud",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_rgbd_camera/mujoco_depth_camera.hpp",
+          "specifiers": [
+            "mujoco_rgbd_camera/mujoco_depth_camera.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "MujocoDepthCamera",
+        "~MujocoDepthCamera",
+        "update",
+        "linearize_depth",
+        "set_camera_intrinsics",
+        "get_RGBD_buffer",
+        "generate_color_point_cloud",
+        "publish_camera_info",
+        "publish_images",
+        "publish_point_cloud"
+      ],
+      "totalLines": 299,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "contentHash": "f5a810ded53d35f137a44370d19a8ebb32d4dc8da73a2450c1c8cc7fd2b7fa72",
+      "functions": [
+        {
+          "name": "MujocoRos2Control",
+          "params": [
+            "node"
+          ],
+          "exported": true,
+          "lineCount": 47
+        },
+        {
+          "name": "~MujocoRos2Control",
+          "params": [],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 36
+        },
+        {
+          "name": "publish_sim_time",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "init_mujoco",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 30
+        },
+        {
+          "name": "init_controller_manager",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 92
+        },
+        {
+          "name": "registerSensors",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+          "specifiers": [
+            "mujoco_ros2_control/mujoco_ros2_control_plugin.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "MujocoRos2Control",
+        "~MujocoRos2Control",
+        "update",
+        "publish_sim_time",
+        "init_mujoco",
+        "init_controller_manager",
+        "registerSensors",
+        "main"
+      ],
+      "totalLines": 358,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_ros2_sensors.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_ros2_sensors.cpp",
+      "contentHash": "4ad716ce31ff8e3c87f08cb110f347b34c344c0af0a07471d55f407bf40137b0",
+      "functions": [
+        {
+          "name": "MujocoRos2Sensors",
+          "params": [
+            "executor",
+            "model",
+            "data",
+            "sensors"
+          ],
+          "exported": true,
+          "lineCount": 92
+        },
+        {
+          "name": "~MujocoRos2Sensors",
+          "params": [],
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "get_frame_id",
+          "params": [
+            "sensor_id"
+          ],
+          "returnType": "std::string",
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "register_pose_sensors",
+          "params": [
+            "sensors"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "register_wrench_sensors",
+          "params": [
+            "sensors"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "register_imu_sensors",
+          "params": [
+            "sensors"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 24
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "utility",
+          "specifiers": [
+            "utility"
+          ]
+        },
+        {
+          "source": "mujoco_ros2_sensors/mujoco_ros2_sensors.hpp",
+          "specifiers": [
+            "mujoco_ros2_sensors/mujoco_ros2_sensors.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "MujocoRos2Sensors",
+        "~MujocoRos2Sensors",
+        "get_frame_id",
+        "register_pose_sensors",
+        "register_wrench_sensors",
+        "register_imu_sensors"
+      ],
+      "totalLines": 237,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_system.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "contentHash": "1b3e0642beff7a0430d67c06f6aa064fb6ef52d8abbc993fea4a126089fcbdb4",
+      "functions": [
+        {
+          "name": "initSim",
+          "params": [
+            "mujoco_model",
+            "mujoco_data",
+            "hardware_info",
+            "urdf_model_ptr"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "registerJoints",
+          "params": [
+            "hardware_info",
+            "joints"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 243
+        },
+        {
+          "name": "on_init",
+          "params": [
+            "system_info"
+          ],
+          "returnType": "CallbackReturn",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "export_state_interfaces",
+          "params": [],
+          "returnType": "std::vector<hardware_interface::StateInterface>",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "export_command_interfaces",
+          "params": [],
+          "returnType": "std::vector<hardware_interface::CommandInterface>",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "on_activate",
+          "params": [
+            "previous_state"
+          ],
+          "returnType": "CallbackReturn",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "on_deactivate",
+          "params": [
+            "previous_state"
+          ],
+          "returnType": "CallbackReturn",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "perform_command_mode_switch",
+          "params": [
+            "start_interfaces",
+            "stop_interfaces"
+          ],
+          "returnType": "hardware_interface::return_type",
+          "exported": true,
+          "lineCount": 49
+        },
+        {
+          "name": "read",
+          "params": [
+            "time",
+            "period"
+          ],
+          "returnType": "hardware_interface::return_type",
+          "exported": true,
+          "lineCount": 13
+        },
+        {
+          "name": "write",
+          "params": [
+            "time",
+            "period"
+          ],
+          "returnType": "hardware_interface::return_type",
+          "exported": true,
+          "lineCount": 123
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_ros2_control/mujoco_system.hpp",
+          "specifiers": [
+            "mujoco_ros2_control/mujoco_system.hpp"
+          ]
+        },
+        {
+          "source": "pluginlib/class_list_macros.hpp",
+          "specifiers": [
+            "pluginlib/class_list_macros.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "initSim",
+        "registerJoints",
+        "on_init",
+        "export_state_interfaces",
+        "export_command_interfaces",
+        "on_activate",
+        "on_deactivate",
+        "perform_command_mode_switch",
+        "read",
+        "write"
+      ],
+      "totalLines": 538,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_visualization.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_visualization.cpp",
+      "contentHash": "dc2947f0b815583b90c0ad5d87e6c5ba420e7e954da96c0e7d85bbcf2e475d99",
+      "functions": [
+        {
+          "name": "init",
+          "params": [
+            "model",
+            "data",
+            "show_vis"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 39
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "keyboard",
+          "params": [
+            "window",
+            "key",
+            "scancode",
+            "act",
+            "mods"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "mouse_button",
+          "params": [
+            "window",
+            "button",
+            "act",
+            "mods"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "mouse_move",
+          "params": [
+            "window",
+            "xpos",
+            "ypos"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "scroll",
+          "params": [
+            "window",
+            "xoffset",
+            "yoffset"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "scroll_cb",
+          "params": [
+            "window",
+            "xoffset",
+            "yoffset"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "mouse_move_cb",
+          "params": [
+            "window",
+            "xpos",
+            "ypos"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "mouse_button_cb",
+          "params": [
+            "window",
+            "button",
+            "act",
+            "mods"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "keyboard_cb",
+          "params": [
+            "window",
+            "key",
+            "scancode",
+            "act",
+            "mods"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "terminate",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_visualization/mujoco_visualization.hpp",
+          "specifiers": [
+            "mujoco_visualization/mujoco_visualization.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "init",
+        "update",
+        "keyboard",
+        "mouse_button",
+        "mouse_move",
+        "scroll",
+        "scroll_cb",
+        "mouse_move_cb",
+        "mouse_button_cb",
+        "keyboard_cb",
+        "terminate"
+      ],
+      "totalLines": 198,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/pose_sensor.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/pose_sensor.cpp",
+      "contentHash": "5cec27f0ce08942ce0a5efd5f7f58c7a8ca91d78c01706b0e8599f1f89b5ce27",
+      "functions": [
+        {
+          "name": "PoseSensor",
+          "params": [
+            "node",
+            "model",
+            "data",
+            "sensor",
+            "stop",
+            "frequency"
+          ],
+          "exported": true,
+          "lineCount": 22
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 46
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_ros2_sensors/pose_sensor.hpp",
+          "specifiers": [
+            "mujoco_ros2_sensors/pose_sensor.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "PoseSensor",
+        "update"
+      ],
+      "totalLines": 105,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/simulate_gui.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/simulate_gui.cpp",
+      "contentHash": "0474eb7ed655d152ac93123495a925af0302a5774c5683fd6603dea9f0ea7c2c",
+      "functions": [
+        {
+          "name": "init",
+          "params": [
+            "model",
+            "data"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 86
+        },
+        {
+          "name": "terminate",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_ros2_control_simulate_gui/simulate_gui.hpp",
+          "specifiers": [
+            "mujoco_ros2_control_simulate_gui/simulate_gui.hpp"
+          ]
+        },
+        {
+          "source": "simulate.cc",
+          "specifiers": [
+            "simulate.cc"
+          ]
+        }
+      ],
+      "exports": [
+        "init",
+        "terminate",
+        "update"
+      ],
+      "totalLines": 154,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/wrench_sensor.cpp": {
+      "filePath": "src/mujoco_ros2_control/src/wrench_sensor.cpp",
+      "contentHash": "18d8ec4e1c3fd5f86ad7336cf4936646edfec9b8072866d1123449996837931b",
+      "functions": [
+        {
+          "name": "WrenchSensor",
+          "params": [
+            "node",
+            "model",
+            "data",
+            "sensor",
+            "stop",
+            "frequency"
+          ],
+          "exported": true,
+          "lineCount": 16
+        },
+        {
+          "name": "update",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 18
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "mujoco_ros2_sensors/wrench_sensor.hpp",
+          "specifiers": [
+            "mujoco_ros2_sensors/wrench_sensor.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "WrenchSensor",
+        "update"
+      ],
+      "totalLines": 71,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_rgbd_camera_parameters.yaml": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_rgbd_camera_parameters.yaml",
+      "contentHash": "4e2ff9f408a58ba2d15af0cf35a616fb9c3d6b4a872163ae1c88a804d928e932",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/src/mujoco_ros2_control_parameters.yaml": {
+      "filePath": "src/mujoco_ros2_control/src/mujoco_ros2_control_parameters.yaml",
+      "contentHash": "414374614ff904278d09c5ea05b5aff145a2f62e30c4812d9363c14c16c25ebf",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 51,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/test/simple_launch.py": {
+      "filePath": "src/mujoco_ros2_control/test/simple_launch.py",
+      "contentHash": "8d920476dccf90ef8952ef3b7dd4b1614f81e12204f804e7075c2e46276f0103",
+      "functions": [
+        {
+          "name": "create_nodes",
+          "params": [
+            "context"
+          ],
+          "exported": true,
+          "lineCount": 116
+        },
+        {
+          "name": "generate_launch_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "unittest",
+          "specifiers": [
+            "unittest"
+          ]
+        },
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchContext",
+            "LaunchDescription"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "launch.actions"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "launch_testing.actions",
+          "specifiers": [
+            "launch_testing.actions"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "PathJoinSubstitution",
+            "Command",
+            "FindExecutable"
+          ]
+        },
+        {
+          "source": "launch_ros.substitutions",
+          "specifiers": [
+            "FindPackageShare"
+          ]
+        },
+        {
+          "source": "pytest",
+          "specifiers": [
+            "pytest"
+          ]
+        },
+        {
+          "source": "rclpy",
+          "specifiers": [
+            "rclpy"
+          ]
+        },
+        {
+          "source": "rclpy.node",
+          "specifiers": [
+            "rclpy.node"
+          ]
+        },
+        {
+          "source": "ament_index_python",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "LogInfo",
+            "RegisterEventHandler",
+            "OpaqueFunction"
+          ]
+        },
+        {
+          "source": "launch.event_handlers",
+          "specifiers": [
+            "OnProcessStart",
+            "OnProcessExit"
+          ]
+        },
+        {
+          "source": "xacro",
+          "specifiers": [
+            "xacro"
+          ]
+        }
+      ],
+      "exports": [
+        "create_nodes",
+        "generate_launch_description"
+      ],
+      "totalLines": 152,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/test/simple_launch.test.py": {
+      "filePath": "src/mujoco_ros2_control/test/simple_launch.test.py",
+      "contentHash": "36f43184ab1e201d5050e5f76b8d9e3abe0bab503c78e12b066ac2d985029cb1",
+      "functions": [
+        {
+          "name": "create_nodes",
+          "params": [
+            "context"
+          ],
+          "exported": true,
+          "lineCount": 116
+        },
+        {
+          "name": "generate_test_description",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [
+        {
+          "name": "TestNode",
+          "methods": [
+            "__init__",
+            "wait_for_node",
+            "wait_for_topic",
+            "wait_for_message"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "TestBringup",
+          "methods": [
+            "test_node_start"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 25
+        }
+      ],
+      "imports": [
+        {
+          "source": "typing",
+          "specifiers": [
+            "List"
+          ]
+        },
+        {
+          "source": "os",
+          "specifiers": [
+            "os"
+          ]
+        },
+        {
+          "source": "time",
+          "specifiers": [
+            "time"
+          ]
+        },
+        {
+          "source": "unittest",
+          "specifiers": [
+            "unittest"
+          ]
+        },
+        {
+          "source": "launch",
+          "specifiers": [
+            "LaunchContext"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "launch.actions"
+          ]
+        },
+        {
+          "source": "launch_ros.actions",
+          "specifiers": [
+            "Node"
+          ]
+        },
+        {
+          "source": "launch_testing.actions",
+          "specifiers": [
+            "launch_testing.actions"
+          ]
+        },
+        {
+          "source": "launch.substitutions",
+          "specifiers": [
+            "PathJoinSubstitution",
+            "Command",
+            "FindExecutable"
+          ]
+        },
+        {
+          "source": "launch_ros.substitutions",
+          "specifiers": [
+            "FindPackageShare"
+          ]
+        },
+        {
+          "source": "pytest",
+          "specifiers": [
+            "pytest"
+          ]
+        },
+        {
+          "source": "rclpy",
+          "specifiers": [
+            "rclpy"
+          ]
+        },
+        {
+          "source": "rclpy.node",
+          "specifiers": [
+            "rclpy.node"
+          ]
+        },
+        {
+          "source": "ament_index_python",
+          "specifiers": [
+            "get_package_share_directory"
+          ]
+        },
+        {
+          "source": "launch.actions",
+          "specifiers": [
+            "LogInfo",
+            "RegisterEventHandler",
+            "OpaqueFunction"
+          ]
+        },
+        {
+          "source": "launch.event_handlers",
+          "specifiers": [
+            "OnProcessStart",
+            "OnProcessExit"
+          ]
+        },
+        {
+          "source": "sensor_msgs.msg",
+          "specifiers": [
+            "Imu"
+          ]
+        },
+        {
+          "source": "geometry_msgs.msg",
+          "specifiers": [
+            "WrenchStamped",
+            "PoseStamped"
+          ]
+        },
+        {
+          "source": "xacro",
+          "specifiers": [
+            "xacro"
+          ]
+        }
+      ],
+      "exports": [
+        "create_nodes",
+        "generate_test_description",
+        "TestNode",
+        "TestBringup"
+      ],
+      "totalLines": 222,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/test/data/double_pendulum_controllers.yaml": {
+      "filePath": "src/mujoco_ros2_control/test/data/double_pendulum_controllers.yaml",
+      "contentHash": "d07c57ff579a8547d047e00914337740b1ee3b796cfa3069c3af97a61b9030aa",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "src/mujoco_ros2_control/test/data/double_pendulum.urdf.xacro": {
+      "filePath": "src/mujoco_ros2_control/test/data/double_pendulum.urdf.xacro",
+      "contentHash": "dc591c1bd3efb13c64b657d3aca98726531a345af32d8a9d8471c53095b4f1e1",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 159,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_driver/CMakeLists.txt": {
+      "filePath": "src/robot_driver/CMakeLists.txt",
+      "contentHash": "ba56894150c62a3b9936b914eed2959a9cd2a999853dff20636a22d37221adbd",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 76,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_driver/package.xml": {
+      "filePath": "src/robot_driver/package.xml",
+      "contentHash": "35f5d86fb134bbb4d25df846d4031ce6722e6b72417b9d0631ced9cee15d0399",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 23,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_driver/include/robot_driver/cdc_trans.hpp": {
+      "filePath": "src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "contentHash": "de64bee3b71ca6a2fb80a2c1f6b87dcff1165b415ddc3242e50755f0b22045ce",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 139,
+      "hasStructuralAnalysis": true
+    },
+    "src/robot_driver/include/robot_driver/data_pack.h": {
+      "filePath": "src/robot_driver/include/robot_driver/data_pack.h",
+      "contentHash": "1b0a2969f784a04b0308db26485e82c7c4e220c69ea29435ece81122678dda66",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 36,
+      "hasStructuralAnalysis": true
+    },
+    "src/robot_driver/include/robot_driver/serialnode.hpp": {
+      "filePath": "src/robot_driver/include/robot_driver/serialnode.hpp",
+      "contentHash": "dc04776427c17112abb1b768c385376fe42472bc32c87c7be795c07e3fb389af",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 133,
+      "hasStructuralAnalysis": true
+    },
+    "src/robot_driver/src/cdc_trans.cpp": {
+      "filePath": "src/robot_driver/src/cdc_trans.cpp",
+      "contentHash": "75a9219ddf25eabf9e3285106818f8a639f7b6cd15088132535062a419aa6036",
+      "functions": [
+        {
+          "name": "CDCTrans",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "~CDCTrans",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "open",
+          "params": [
+            "vid",
+            "pid"
+          ],
+          "returnType": "bool",
+          "exported": true,
+          "lineCount": 88
+        },
+        {
+          "name": "close",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "send",
+          "params": [
+            "data",
+            "size",
+            "time_out"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 20
+        },
+        {
+          "name": "process_once",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "register_recv_cb",
+          "params": [
+            "recv_cb"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "on_hotplug",
+          "params": [
+            "event"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "cdc_trans.hpp",
+          "specifiers": [
+            "cdc_trans.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "CDCTrans",
+        "~CDCTrans",
+        "open",
+        "close",
+        "send",
+        "process_once",
+        "register_recv_cb",
+        "on_hotplug"
+      ],
+      "totalLines": 182,
+      "hasStructuralAnalysis": true
+    },
+    "src/robot_driver/src/main.cpp": {
+      "filePath": "src/robot_driver/src/main.cpp",
+      "contentHash": "b18384d171f9e8a476255f706cd278faf21cace5afc5300a31659d5e7c4abc6e",
+      "functions": [
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "serialnode.hpp",
+          "specifiers": [
+            "serialnode.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "main"
+      ],
+      "totalLines": 10,
+      "hasStructuralAnalysis": true
+    },
+    "src/robot_driver/src/serialnode.cpp": {
+      "filePath": "src/robot_driver/src/serialnode.cpp",
+      "contentHash": "8bda2bee65c4e60bcf52b8de3d9ce9bd29928f4f5975b6a481406c1858ae04ca",
+      "functions": [
+        {
+          "name": "SerialNode",
+          "params": [],
+          "exported": true,
+          "lineCount": 87
+        },
+        {
+          "name": "~SerialNode",
+          "params": [],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "publishLegState",
+          "params": [
+            "arm_state"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 24
+        },
+        {
+          "name": "legsSubscribCb",
+          "params": [
+            "msg"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "handleGraspIt",
+          "params": [
+            "arm_state"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "robot_interfaces/msg/arm.hpp",
+          "specifiers": [
+            "robot_interfaces/msg/arm.hpp"
+          ]
+        },
+        {
+          "source": "sensor_msgs/msg/joint_state.hpp",
+          "specifiers": [
+            "sensor_msgs/msg/joint_state.hpp"
+          ]
+        },
+        {
+          "source": "chrono",
+          "specifiers": [
+            "chrono"
+          ]
+        },
+        {
+          "source": "rclcpp/logging.hpp",
+          "specifiers": [
+            "rclcpp/logging.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/parameter.hpp",
+          "specifiers": [
+            "rclcpp/parameter.hpp"
+          ]
+        },
+        {
+          "source": "rclcpp/time.hpp",
+          "specifiers": [
+            "rclcpp/time.hpp"
+          ]
+        },
+        {
+          "source": "serialnode.hpp",
+          "specifiers": [
+            "serialnode.hpp"
+          ]
+        }
+      ],
+      "exports": [
+        "SerialNode",
+        "~SerialNode",
+        "publishLegState",
+        "legsSubscribCb",
+        "handleGraspIt"
+      ],
+      "totalLines": 187,
+      "hasStructuralAnalysis": true
+    },
+    "src/robot_interfaces/CMakeLists.txt": {
+      "filePath": "src/robot_interfaces/CMakeLists.txt",
+      "contentHash": "aede54b6430d465770ac80fcb89eb4bcbedc89f90e74701839830622482ed09f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 42,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_interfaces/package.xml": {
+      "filePath": "src/robot_interfaces/package.xml",
+      "contentHash": "c2c5eb0f6e64dd93f2302104c9f00b0314b1637f2e44f4d1f107b162569416ce",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_interfaces/action/ArmTask.action": {
+      "filePath": "src/robot_interfaces/action/ArmTask.action",
+      "contentHash": "b5d084f7ed018d6b97d54dde7079e40765a4becf8835e8d9d444243991f4e595",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 10,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_interfaces/msg/Arm.msg": {
+      "filePath": "src/robot_interfaces/msg/Arm.msg",
+      "contentHash": "0cb074010e4bf208622b243f2b7a94836d0c5161e29e626862021db973ff9b33",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_interfaces/msg/Joint.msg": {
+      "filePath": "src/robot_interfaces/msg/Joint.msg",
+      "contentHash": "19fe81c82fcca83b4e1abc7a6d690d1445ee6cb71ce017c9c7b58ef4e03889b6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 3,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_interfaces/srv/ForwardKinematics.srv": {
+      "filePath": "src/robot_interfaces/srv/ForwardKinematics.srv",
+      "contentHash": "d4745a64502dcf8b6b676696f0461a8edecfc1ed1fb62ab949ac73e12b88dd08",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 5,
+      "hasStructuralAnalysis": false
+    },
+    "src/robot_interfaces/srv/GetCurrentEndPose.srv": {
+      "filePath": "src/robot_interfaces/srv/GetCurrentEndPose.srv",
+      "contentHash": "4200fe74d1ea88b7c18a8941284ebe819bf8c362e86cc6ce75f2a577e1f2c705",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 5,
+      "hasStructuralAnalysis": false
+    },
+    "src/vision/CMakeLists.txt": {
+      "filePath": "src/vision/CMakeLists.txt",
+      "contentHash": "d0a584995a3b020632d3ee6a8e5aceb1ce4cf1cc7013ed645f2ba371666249ad",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 43,
+      "hasStructuralAnalysis": false
+    },
+    "src/vision/package.xml": {
+      "filePath": "src/vision/package.xml",
+      "contentHash": "44dc9618863d0dc6609cca54434cb527cc2481fe4915fcb8d988f58e01c428f9",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 25,
+      "hasStructuralAnalysis": false
+    },
+    "src/vision/vision.cpp": {
+      "filePath": "src/vision/vision.cpp",
+      "contentHash": "dfc2f1220835cdce7a75be21d0da1378f65748b1c904758b03700fd5308d2c2a",
+      "functions": [
+        {
+          "name": "KalmanFilter2D",
+          "params": [],
+          "exported": true,
+          "lineCount": 11
+        },
+        {
+          "name": "initialize",
+          "params": [
+            "pt"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 17
+        },
+        {
+          "name": "reset",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "RedSegmentation",
+          "params": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "process",
+          "params": [
+            "input",
+            "mask"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "VisionPositionPublisher",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "~VisionPositionPublisher",
+          "params": [],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "visionLoop",
+          "params": [],
+          "returnType": "void",
+          "exported": false,
+          "lineCount": 351
+        },
+        {
+          "name": "main",
+          "params": [
+            "argc",
+            "argv"
+          ],
+          "returnType": "int",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [
+        {
+          "name": "KalmanFilter2D",
+          "methods": [
+            "KalmanFilter2D",
+            "initialize",
+            "reset"
+          ],
+          "properties": [
+            "pos_noise",
+            "vel_noise",
+            "meas_noise",
+            "kf",
+            "initialized"
+          ],
+          "exported": true,
+          "lineCount": 44
+        },
+        {
+          "name": "RedSegmentation",
+          "methods": [
+            "RedSegmentation",
+            "process"
+          ],
+          "properties": [
+            "p",
+            "kernel"
+          ],
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "VisionPositionPublisher",
+          "methods": [
+            "VisionPositionPublisher",
+            "~VisionPositionPublisher",
+            "visionLoop"
+          ],
+          "properties": [
+            "is_running_",
+            "show_visualization_",
+            "vision_thread_",
+            "tf_broadcaster_"
+          ],
+          "exported": true,
+          "lineCount": 379
+        }
+      ],
+      "imports": [
+        {
+          "source": "rclcpp/rclcpp.hpp",
+          "specifiers": [
+            "rclcpp/rclcpp.hpp"
+          ]
+        },
+        {
+          "source": "tf2_ros/transform_broadcaster.h",
+          "specifiers": [
+            "tf2_ros/transform_broadcaster.h"
+          ]
+        },
+        {
+          "source": "geometry_msgs/msg/transform_stamped.hpp",
+          "specifiers": [
+            "geometry_msgs/msg/transform_stamped.hpp"
+          ]
+        },
+        {
+          "source": "Eigen/Dense",
+          "specifiers": [
+            "Eigen/Dense"
+          ]
+        },
+        {
+          "source": "opencv2/opencv.hpp",
+          "specifiers": [
+            "opencv2/opencv.hpp"
+          ]
+        },
+        {
+          "source": "librealsense2/rs.hpp",
+          "specifiers": [
+            "librealsense2/rs.hpp"
+          ]
+        },
+        {
+          "source": "iostream",
+          "specifiers": [
+            "iostream"
+          ]
+        },
+        {
+          "source": "vector",
+          "specifiers": [
+            "vector"
+          ]
+        },
+        {
+          "source": "algorithm",
+          "specifiers": [
+            "algorithm"
+          ]
+        },
+        {
+          "source": "cmath",
+          "specifiers": [
+            "cmath"
+          ]
+        },
+        {
+          "source": "thread",
+          "specifiers": [
+            "thread"
+          ]
+        },
+        {
+          "source": "sstream",
+          "specifiers": [
+            "sstream"
+          ]
+        },
+        {
+          "source": "iomanip",
+          "specifiers": [
+            "iomanip"
+          ]
+        }
+      ],
+      "exports": [
+        "KalmanFilter2D",
+        "initialize",
+        "reset",
+        "KalmanFilter2D",
+        "RedSegmentation",
+        "process",
+        "RedSegmentation",
+        "VisionPositionPublisher",
+        "~VisionPositionPublisher",
+        "VisionPositionPublisher",
+        "main"
+      ],
+      "totalLines": 493,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

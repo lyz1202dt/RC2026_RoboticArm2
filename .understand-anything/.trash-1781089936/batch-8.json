@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "type": "file",
+      "name": "arm_task_move_test.launch.py",
+      "filePath": "src/launch_pack/launch/arm_task_move_test.launch.py",
+      "summary": "启动机械臂运动测试的launch文件，包含仿真环境和move_kfs_test节点，用于测试机械臂的基本运动功能",
+      "tags": ["launch", "test", "simulation", "arm-task"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "file",
+      "name": "arm_task_sim.launch.py",
+      "filePath": "src/launch_pack/launch/arm_task_sim.launch.py",
+      "summary": "启动MuJoCo仿真环境的launch文件，包含机械臂仿真、RViz可视化和相机TF坐标变换发布",
+      "tags": ["launch", "simulation", "mujoco", "rviz"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "type": "file",
+      "name": "arm_task_target_test.launch.py",
+      "filePath": "src/launch_pack/launch/arm_task_target_test.launch.py",
+      "summary": "启动视觉伺服目标测试的launch文件，发布静态目标TF坐标，模拟视觉检测结果用于测试抓取任务",
+      "tags": ["launch", "test", "vision", "target", "tf"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_real.launch.py",
+      "type": "file",
+      "name": "arm_real.launch.py",
+      "filePath": "src/launch_pack/launch/arm_real.launch.py",
+      "summary": "启动真实机械臂硬件的launch文件，包含robot_driver、arm_calc、arm_task、vision节点和RViz可视化",
+      "tags": ["launch", "hardware", "real", "production"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/config/ros2_controller.yaml",
+      "type": "config",
+      "name": "ros2_controller.yaml",
+      "filePath": "src/launch_pack/config/ros2_controller.yaml",
+      "summary": "ros2_control控制器配置文件，定义6个关节的PD控制参数（kp、kd）、力矩限制和滤波器设置",
+      "tags": ["config", "controller", "ros2-control", "pd-gains"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/config/arm_position.yaml",
+      "type": "config",
+      "name": "arm_position.yaml",
+      "filePath": "src/launch_pack/config/arm_position.yaml",
+      "summary": "机械臂命名位姿配置文件，定义各种预定义关节位置（如起始位姿、准备位姿、KFS步骤位姿等）",
+      "tags": ["config", "positions", "joint-states", "named-poses"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/rviz/display_config.rviz",
+      "type": "config",
+      "name": "display_config.rviz",
+      "filePath": "src/launch_pack/rviz/display_config.rviz",
+      "summary": "RViz2可视化配置文件，设置机器人模型、TF坐标系、MarkerArray显示和相机视角参数",
+      "tags": ["config", "rviz", "visualization", "display"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_task/config/arm_position.yaml",
+      "type": "config",
+      "name": "arm_position.yaml",
+      "filePath": "src/arm_task/config/arm_position.yaml",
+      "summary": "arm_task包专用的机械臂命名位姿配置，包含抓取任务相关的关节位置（如抓取准备位、分离位、货架放置位等）",
+      "tags": ["config", "arm-task", "grasp", "positions"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_calc/config/arm_calc_params.yaml",
+      "type": "config",
+      "name": "arm_calc_params.yaml",
+      "filePath": "src/arm_calc/config/arm_calc_params.yaml",
+      "summary": "arm_calc包的运动学解算参数配置文件（文件不存在，可能尚未创建或在其他位置）",
+      "tags": ["config", "arm-calc", "kinematics", "missing"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "target": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "target": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/launch/arm_real.launch.py",
+      "target": "file:src/launch_pack/rviz/display_config.rviz",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/config/ros2_controller.yaml",
+      "target": "file:src/launch_pack/launch/arm_real.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/config/ros2_controller.yaml",
+      "target": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/config/arm_position.yaml",
+      "target": "file:src/launch_pack/launch/arm_real.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm_task/config/arm_position.yaml",
+      "target": "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm_task/config/arm_position.yaml",
+      "target": "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "reviewTimestamp": "2026-06-10",
+  "inputNodeCount": 97,
+  "inputEdgeCount": 87,
+  "outputNodeCount": 100,
+  "outputEdgeCount": 91,
+  "issuesIdentified": 4,
+  "issuesResolved": 4,
+  "issues": [
+    {
+      "issue": "missing-target",
+      "edge": "file:src/arm_task/src/robot.cpp -> file:src/arm_task/include/task/idel.hpp (imports)",
+      "resolution": "added-missing-node",
+      "nodeAdded": "file:src/arm_task/include/task/idel.hpp",
+      "edgeRestored": true
+    },
+    {
+      "issue": "missing-target",
+      "edge": "file:src/arm_task/src/robot.cpp -> file:src/arm_task/include/task/place_kfs.hpp (imports)",
+      "resolution": "added-missing-node",
+      "nodeAdded": "file:src/arm_task/include/task/place_kfs.hpp",
+      "edgeRestored": true
+    },
+    {
+      "issue": "missing-target",
+      "edge": "file:src/arm_calc/src/arm_ctrl.cpp -> file:src/arm_calc/include/arm_action/basic_moves.hpp (imports)",
+      "resolution": "added-missing-node",
+      "nodeAdded": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "edgeRestored": true
+    },
+    {
+      "issue": "missing-target",
+      "edge": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp -> file:src/arm_calc/include/arm_action/basic_moves.hpp (imports)",
+      "resolution": "added-missing-node",
+      "nodeAdded": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "edgeRestored": true
+    }
+  ],
+  "summary": {
+    "missingHeaders": [
+      {
+        "file": "src/arm_task/include/task/idel.hpp",
+        "class": "IdelTask",
+        "baseClass": "BaseTask",
+        "summary": "空闲任务类，机械臂等待状态"
+      },
+      {
+        "file": "src/arm_task/include/task/place_kfs.hpp",
+        "class": "PlaceKFS",
+        "baseClass": "BaseTask",
+        "summary": "放置任务类，将物体放置到货架"
+      },
+      {
+        "file": "src/arm_calc/include/arm_action/basic_moves.hpp",
+        "classes": ["JointSpaceMove", "JCartesianSpaceMove", "VisualServoMove"],
+        "namespace": "arm_action",
+        "summary": "三种基本运动动作类（关节空间、笛卡尔空间、视觉伺服）"
+      }
+    ]
+  },
+  "crossBatchEdgeVerification": {
+    "note": "Import map was empty (no resolved imports in scan result). Cross-batch import edges verified against batch data. No additional cross-batch edges needed beyond the 4 restored.",
+    "additionalEdgesAdded": 0
+  },
+  "validation": {
+    "jsonValid": true,
+    "danglingEdges": 0,
+    "missingNodes": 0
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/arm/launch/arm_rviz.launch.py",
+      "type": "file",
+      "name": "arm_rviz.launch.py",
+      "filePath": "src/arm/launch/arm_rviz.launch.py",
+      "summary": "RViz2 可视化启动文件，用于在 RViz 中显示机械臂模型和运动状态",
+      "tags": ["launch", "visualization", "rviz", "robot-model"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm/model/robotic_arm.urdf",
+      "type": "file",
+      "name": "robotic_arm.urdf",
+      "filePath": "src/arm/model/robotic_arm.urdf",
+      "summary": "六轴机械臂 URDF 模型文件，定义机器人连杆、关节、惯性参数和 ros2_control 接口配置",
+      "tags": ["robot-model", "urdf", "kinematics", "dynamics", "ros2-control"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm/model/meshes/base_link.stl",
+      "type": "file",
+      "name": "base_link.stl",
+      "filePath": "src/arm/model/meshes/base_link.stl",
+      "summary": "机械臂基座连杆的 STL 网格文件，用于 RViz 可视化和碰撞检测",
+      "tags": ["mesh", "visualization", "collision", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link1.stl",
+      "type": "file",
+      "name": "link1.stl",
+      "filePath": "src/arm/model/meshes/link1.stl",
+      "summary": "机械臂连杆1的 STL 网格文件，对应关节1旋转部件",
+      "tags": ["mesh", "visualization", "collision", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link2.stl",
+      "type": "file",
+      "name": "link2.stl",
+      "filePath": "src/arm/model/meshes/link2.stl",
+      "summary": "机械臂连杆2的 STL 网格文件，对应关节2旋转部件",
+      "tags": ["mesh", "visualization", "collision", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link3.stl",
+      "type": "file",
+      "name": "link3.stl",
+      "filePath": "src/arm/model/meshes/link3.stl",
+      "summary": "机械臂连杆3的 STL 网格文件，对应关节3旋转部件",
+      "tags": ["mesh", "visualization", "collision", "3d-model"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/arm/launch/arm_rviz.launch.py",
+      "target": "file:src/arm/model/robotic_arm.urdf",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/base_link.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/link1.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/link2.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/link3.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

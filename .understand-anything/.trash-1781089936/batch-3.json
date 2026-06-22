@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/arm/include/arm/robotic_arm_ros2_control.hpp",
+      "type": "file",
+      "name": "robotic_arm_ros2_control.hpp",
+      "filePath": "src/arm/include/arm/robotic_arm_ros2_control.hpp",
+      "summary": "机械臂ros2_control接口头文件，声明机械臂硬件接口类和ros2_control插件接口，用于与MuJoCo仿真和实际硬件通信",
+      "tags": ["header", "ros2-control", "hardware-interface", "arm-control"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp",
+      "type": "file",
+      "name": "robotic_arm_ros2_control_plugin.hpp",
+      "filePath": "src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp",
+      "summary": "机械臂ros2_control插件头文件，声明ros2_control插件的注册接口和插件加载函数，使机械臂控制器能被ros2_control框架识别",
+      "tags": ["header", "ros2-control", "plugin", "arm-control"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp",
+      "type": "file",
+      "name": "robotic_arm_ros2_control.hpp",
+      "filePath": "src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp",
+      "summary": "机械臂ros2_control实现头文件，声明具体的机械臂控制器类，实现ros2_control::SystemInterface接口，负责与机械臂硬件或仿真通信",
+      "tags": ["header", "ros2-control", "system-interface", "arm-control"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

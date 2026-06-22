@@ -1,0 +1,276 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "type": "file",
+      "name": "serialnode.hpp",
+      "filePath": "src/robot_driver/include/robot_driver/serialnode.hpp",
+      "summary": "ROS2 节点类，负责上位机与下位机之间的双向数据通信，通过 USB CDC 协议传输机械臂目标状态和接收实际状态",
+      "tags": ["ros2-node", "usb-communication", "hardware-interface", "serial-port", "data-acquisition"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "type": "file",
+      "name": "cdc_trans.hpp",
+      "filePath": "src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "summary": "USB CDC 传输类，提供异步双向通信、热插拔检测和自动重连功能，基于 libusb 库实现",
+      "tags": ["usb-driver", "communication", "libusb", "hot-plug", "async-transmission"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/robot_driver/src/serialnode.cpp",
+      "type": "file",
+      "name": "serialnode.cpp",
+      "filePath": "src/robot_driver/src/serialnode.cpp",
+      "summary": "SerialNode 类的实现，包含 USB CDC 初始化、ROS2 发布订阅、参数回调和抓取任务同步逻辑",
+      "tags": ["ros2-implementation", "usb-communication", "parameter-server", "grasp-sync"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/robot_driver/src/cdc_trans.cpp",
+      "type": "file",
+      "name": "cdc_trans.cpp",
+      "filePath": "src/robot_driver/src/cdc_trans.cpp",
+      "summary": "CDCTrans 类的实现，包含 USB 设备打开关闭、异步数据传输、热插拔事件处理和自动重连机制",
+      "tags": ["usb-implementation", "async-io", "hot-plug-handling", "auto-reconnect"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/vision/vision.cpp",
+      "type": "file",
+      "name": "vision.cpp",
+      "filePath": "src/vision/vision.cpp",
+      "summary": "视觉节点实现，集成 RealSense 相机、红色目标检测、卡尔曼滤波跟踪和 TF 坐标变换发布功能",
+      "tags": ["computer-vision", "realsense", "object-detection", "kalman-filter", "tf-broadcaster"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "type": "file",
+      "name": "mujoco_ros2_control_plugin.hpp",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "summary": "MuJoCo ROS2 控制插件主类，负责初始化 MuJoCo 仿真环境、控制器管理器和硬件接口",
+      "tags": ["mujoco", "ros2-control", "simulation", "controller-manager", "physics-engine"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "type": "file",
+      "name": "mujoco_system.hpp",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "summary": "MuJoCo 系统接口实现类，提供关节状态读取、命令写入、PID 控制和多种控制模式支持",
+      "tags": ["hardware-interface", "joint-control", "pid-controller", "mujoco-integration"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "type": "file",
+      "name": "mujoco_ros2_control_plugin.cpp",
+      "filePath": "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "summary": "MuJoCo ROS2 控制插件实现，包含仿真循环、控制器更新、传感器注册和时间同步逻辑",
+      "tags": ["simulation-loop", "controller-update", "sensor-management", "time-sync"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "type": "file",
+      "name": "mujoco_system.cpp",
+      "filePath": "src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "summary": "MuJoCo 系统接口实现，包含关节注册、状态接口导出、PID 控制算法和多种控制模式切换",
+      "tags": ["joint-registration", "pid-implementation", "control-modes", "hardware-abstraction"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "type": "class",
+      "name": "SerialNode",
+      "filePath": "src/robot_driver/include/robot_driver/serialnode.hpp",
+      "lineRange": [42, 131],
+      "summary": "ROS2 节点类，负责通过 USB CDC 与下位机通信，订阅机械臂目标状态并发布实际状态",
+      "tags": ["ros2-node", "data-communication", "parameter-server"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "class",
+      "name": "CDCTrans",
+      "filePath": "src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "lineRange": [32, 137],
+      "summary": "USB CDC 传输类，提供异步双向通信、热插拔检测和自动重连功能",
+      "tags": ["usb-driver", "async-communication", "hot-plug"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/vision/vision.cpp:VisionPositionPublisher",
+      "type": "class",
+      "name": "VisionPositionPublisher",
+      "filePath": "src/vision/vision.cpp",
+      "lineRange": [107, 485],
+      "summary": "视觉位置发布器节点，负责 RealSense 相机数据采集、红色目标检测和 TF 坐标发布",
+      "tags": ["vision-node", "object-tracking", "tf-broadcaster"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/vision/vision.cpp:RedSegmentation",
+      "type": "class",
+      "name": "RedSegmentation",
+      "filePath": "src/vision/vision.cpp",
+      "lineRange": [65, 102],
+      "summary": "红色目标分割类，使用 HSV 色彩空间进行红色杆状目标检测",
+      "tags": ["color-detection", "image-segmentation", "opencv"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/vision/vision.cpp:KalmanFilter2D",
+      "type": "class",
+      "name": "KalmanFilter2D",
+      "filePath": "src/vision/vision.cpp",
+      "lineRange": [20, 63],
+      "summary": "2D 卡尔曼滤波器，用于目标位置预测和平滑跟踪",
+      "tags": ["kalman-filter", "target-tracking", "prediction"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "type": "class",
+      "name": "MujocoRos2Control",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "lineRange": [137, 261],
+      "summary": "MuJoCo ROS2 控制插件主类，管理仿真环境、控制器和硬件接口",
+      "tags": ["mujoco-plugin", "ros2-control", "simulation-manager"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "class",
+      "name": "MujocoSystem",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "lineRange": [91, 325],
+      "summary": "MuJoCo 系统接口实现，提供关节控制、状态读取和 PID 控制算法",
+      "tags": ["hardware-interface", "joint-control", "pid-controller"],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/robot_driver/src/serialnode.cpp",
+      "target": "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_driver/src/cdc_trans.cpp",
+      "target": "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "target": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "target": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "target": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "target": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/vision/vision.cpp",
+      "target": "class:src/vision/vision.cpp:VisionPositionPublisher",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/vision/vision.cpp",
+      "target": "class:src/vision/vision.cpp:RedSegmentation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/vision/vision.cpp",
+      "target": "class:src/vision/vision.cpp:KalmanFilter2D",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "target": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/robot_driver/src/serialnode.cpp",
+      "target": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/robot_driver/src/cdc_trans.cpp",
+      "target": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    }
+  ]
+}

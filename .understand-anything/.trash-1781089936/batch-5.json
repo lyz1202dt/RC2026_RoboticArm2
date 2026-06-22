@@ -1,0 +1,435 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "type": "file",
+      "name": "arm_calc.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "summary": "KDL运动学解算器核心类，提供正运动学、逆运动学、速度/加速度/力矩计算等功能，支持关节限制和PD控制参数配置。",
+      "tags": ["kinematics", "kdl", "motion-planning", "robotics"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "type": "file",
+      "name": "trajectory_calc.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "summary": "五次多项式轨迹生成器，用于关节空间轨迹插值，支持位置、速度和加速度的平滑规划。",
+      "tags": ["trajectory", "motion-planning", "interpolation", "quintic-polynomial"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "type": "file",
+      "name": "arm_ctrl.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "summary": "arm_calc ROS2节点主类，集成运动学解算、轨迹规划和四种运动模式（空闲、关节空间、笛卡尔空间、视觉伺服）。",
+      "tags": ["ros2-node", "arm-control", "motion-modes", "visual-servo"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "file",
+      "name": "common_types.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/common_types.hpp",
+      "summary": "通用类型定义文件，定义了关节向量、笛卡尔位姿、关节状态、轨迹点等核心数据结构。",
+      "tags": ["data-types", "eigen", "joint-vectors", "cartesian-pose"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "type": "file",
+      "name": "arm_calc.cpp",
+      "filePath": "src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "summary": "ArmCalc类实现文件，包含KDL运动学解算的具体实现，包括正逆运动学、雅可比矩阵、动力学计算等核心算法。",
+      "tags": ["kinematics-implementation", "kdl-solvers", "inverse-kinematics", "dynamics"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "type": "file",
+      "name": "trajectory_calc.cpp",
+      "filePath": "src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "summary": "TrajectoryCalc类实现文件，实现五次多项式轨迹生成和采样功能，支持位置、速度和加速度计算。",
+      "tags": ["trajectory-implementation", "quintic-polynomial", "motion-planning"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "type": "file",
+      "name": "arm_ctrl.cpp",
+      "filePath": "src/arm_calc/src/arm_ctrl.cpp",
+      "summary": "ArmCtrlNode节点实现文件，包含ROS2接口、参数管理、运动模式切换、控制循环等完整节点逻辑。",
+      "tags": ["ros2-node-implementation", "control-loop", "parameter-management", "motion-control"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_test_node.cpp",
+      "type": "file",
+      "name": "arm_test_node.cpp",
+      "filePath": "src/arm_calc/src/arm_test_node.cpp",
+      "summary": "测试节点，通过参数配置发布关节空间或笛卡尔空间目标，用于调试和验证运动学解算功能。",
+      "tags": ["test-node", "debugging", "parameter-testing", "joint-target"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/robot.hpp",
+      "type": "file",
+      "name": "robot.hpp",
+      "filePath": "src/arm_task/include/robot.hpp",
+      "summary": "Robot核心类定义，管理机械臂状态、任务调度、TF变换、参数配置和与arm_calc节点的通信接口。",
+      "tags": ["robot-class", "task-management", "tf2", "action-server"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "file",
+      "name": "base_task.hpp",
+      "filePath": "src/arm_task/include/task/base_task.hpp",
+      "summary": "任务基类，定义任务接口和通用属性，所有具体任务类（移动、抓取、放置等）的父类。",
+      "tags": ["task-base", "polymorphism", "task-interface", "state-machine"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/task/move_kfs.hpp",
+      "type": "file",
+      "name": "move_kfs.hpp",
+      "filePath": "src/arm_task/include/task/move_kfs.hpp",
+      "summary": "移动任务类声明，支持关节空间和笛卡尔空间两种运动模式，继承自BaseTask。",
+      "tags": ["move-task", "joint-space", "cartesian-space", "task-implementation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "type": "file",
+      "name": "catch_kfs.hpp",
+      "filePath": "src/arm_task/include/task/catch_kfs.hpp",
+      "summary": "抓取任务类声明，实现视觉伺服抓取流程，包括目标检测、视觉伺服、夹爪控制等功能。",
+      "tags": ["catch-task", "visual-servo", "grasping", "task-implementation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/src/robot.cpp",
+      "type": "file",
+      "name": "robot.cpp",
+      "filePath": "src/arm_task/src/robot.cpp",
+      "summary": "Robot类实现文件，包含机械臂控制逻辑、任务管理、TF变换处理、参数回调和与arm_calc的通信。",
+      "tags": ["robot-implementation", "action-server", "tf-listener", "task-scheduler"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_task/src/task/move_kfs.cpp",
+      "type": "file",
+      "name": "move_kfs.cpp",
+      "filePath": "src/arm_task/src/task/move_kfs.cpp",
+      "summary": "移动任务实现，解析任务数据并执行关节空间或笛卡尔空间轨迹，支持气泵开关和错误处理。",
+      "tags": ["move-implementation", "trajectory-execution", "error-handling", "air-pump"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_task/src/task/catch_kfs.cpp",
+      "type": "file",
+      "name": "catch_kfs.cpp",
+      "filePath": "src/arm_task/src/task/catch_kfs.cpp",
+      "summary": "抓取任务完整实现，包括准备位置移动、视觉伺服定位、夹爪控制、放置到货架等完整抓取流程。",
+      "tags": ["catch-implementation", "visual-servo", "grasping-sequence", "shelf-placement"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_calc/include/arm_calc/arm_calc.hpp:ArmCalc",
+      "type": "class",
+      "name": "ArmCalc",
+      "filePath": "src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "lineRange": [18, 83],
+      "summary": "KDL运动学解算器核心类，封装了正运动学、逆运动学、速度/加速度/力矩计算等功能。",
+      "tags": ["kinematics-solver", "kdl-chain", "fk-ik", "dynamics-calculator"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_calc/include/arm_calc/trajectory_calc.hpp:TrajectoryCalc",
+      "type": "class",
+      "name": "TrajectoryCalc",
+      "filePath": "src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "lineRange": [7, 51],
+      "summary": "五次多项式轨迹生成器类，用于关节空间轨迹规划和插值。",
+      "tags": ["trajectory-generator", "quintic-polynomial", "motion-planning"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/arm_calc/include/arm_calc/arm_ctrl.hpp:ArmCtrlNode",
+      "type": "class",
+      "name": "ArmCtrlNode",
+      "filePath": "src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "lineRange": [22, 107],
+      "summary": "arm_calc ROS2节点主类，集成运动学解算、轨迹规划和多种运动模式控制。",
+      "tags": ["ros2-node", "arm-controller", "multi-mode", "visual-servo"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_task/include/robot.hpp:Robot",
+      "type": "class",
+      "name": "Robot",
+      "filePath": "src/arm_task/include/robot.hpp",
+      "lineRange": [31, 100],
+      "summary": "机械臂核心控制类，管理状态、任务、TF变换和与arm_calc的通信。",
+      "tags": ["robot-controller", "task-manager", "tf2-buffer", "action-server"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "class",
+      "name": "BaseTask",
+      "filePath": "src/arm_task/include/task/base_task.hpp",
+      "lineRange": [7, 14],
+      "summary": "任务基类，定义任务处理的通用接口和属性。",
+      "tags": ["abstract-base", "task-interface", "polymorphism"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/arm_task/include/task/move_kfs.hpp:MoveKFS",
+      "type": "class",
+      "name": "MoveKFS",
+      "filePath": "src/arm_task/include/task/move_kfs.hpp",
+      "lineRange": [8, 15],
+      "summary": "移动任务类，支持关节空间和笛卡尔空间运动。",
+      "tags": ["move-task", "joint-space", "cartesian-space"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/arm_task/include/task/catch_kfs.hpp:CatchKFS",
+      "type": "class",
+      "name": "CatchKFS",
+      "filePath": "src/arm_task/include/task/catch_kfs.hpp",
+      "lineRange": [8, 15],
+      "summary": "抓取任务类，实现视觉伺服抓取功能。",
+      "tags": ["catch-task", "visual-servo", "grasping"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "target": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "target": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "target": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_test_node.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/include/robot.hpp",
+      "target": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/include/task/move_kfs.hpp",
+      "target": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "target": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/robot.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/move_kfs.cpp",
+      "target": "file:src/arm_task/include/task/move_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/catch_kfs.cpp",
+      "target": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "target": "class:src/arm_calc/include/arm_calc/arm_calc.hpp:ArmCalc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "target": "class:src/arm_calc/include/arm_calc/trajectory_calc.hpp:TrajectoryCalc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "target": "class:src/arm_calc/include/arm_calc/arm_ctrl.hpp:ArmCtrlNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/arm_task/include/robot.hpp",
+      "target": "class:src/arm_task/include/robot.hpp:Robot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/arm_task/include/task/base_task.hpp",
+      "target": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/arm_task/include/task/move_kfs.hpp",
+      "target": "class:src/arm_task/include/task/move_kfs.hpp:MoveKFS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "target": "class:src/arm_task/include/task/catch_kfs.hpp:CatchKFS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "class:src/arm_task/include/task/move_kfs.hpp:MoveKFS",
+      "target": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:src/arm_task/include/task/catch_kfs.hpp:CatchKFS",
+      "target": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/idel.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/move_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/place_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/move_kfs.cpp",
+      "target": "file:src/arm_task/include/robot.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/catch_kfs.cpp",
+      "target": "file:src/arm_task/include/robot.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "target": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

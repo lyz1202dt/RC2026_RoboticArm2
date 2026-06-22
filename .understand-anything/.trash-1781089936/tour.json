@@ -1,0 +1,110 @@
+[
+  {
+    "order": 1,
+    "title": "项目概览",
+    "description": "了解项目的整体架构和数据流。从README和项目文档开始。",
+    "nodeIds": [
+      "document:README.md",
+      "document:CLAUDE.md"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "机器人接口定义",
+    "description": "学习ROS2自定义消息、服务和动作接口，这是模块间通信的契约。",
+    "nodeIds": [
+      "config:src/robot_interfaces/CMakeLists.txt",
+      "config:src/robot_interfaces/package.xml",
+      "file:src/robot_interfaces/msg/Arm.msg",
+      "file:src/robot_interfaces/msg/Joint.msg"
+    ]
+  },
+  {
+    "order": 3,
+    "title": "机器人模型",
+    "description": "了解六轴机械臂的URDF模型和STL网格，以及ros2_control配置。",
+    "nodeIds": [
+      "config:src/arm/CMakeLists.txt",
+      "config:src/arm/package.xml",
+      "file:src/arm/include/arm/robotic_arm_ros2_control.hpp",
+      "file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp"
+    ]
+  },
+  {
+    "order": 4,
+    "title": "KDL运动学解算",
+    "description": "深入KDL运动学求解器，理解FK/IK的核心算法实现。",
+    "nodeIds": [
+      "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "file:src/arm_calc/include/arm_calc/common_types.hpp"
+    ]
+  },
+  {
+    "order": 5,
+    "title": "任务状态机",
+    "description": "学习高层任务调度机制，包括状态机和任务切换逻辑。",
+    "nodeIds": [
+      "config:src/arm_task/CMakeLists.txt",
+      "config:src/arm_task/package.xml",
+      "file:src/arm_task/include/robot.hpp",
+      "file:src/arm_task/include/task/base_task.hpp"
+    ]
+  },
+  {
+    "order": 6,
+    "title": "视觉系统",
+    "description": "了解RealSense相机集成、红色目标检测和卡尔曼滤波。",
+    "nodeIds": [
+      "config:src/vision/CMakeLists.txt",
+      "config:src/vision/package.xml",
+      "file:src/vision/vision.cpp",
+      "class:src/vision/vision.cpp:VisionPositionPublisher"
+    ]
+  },
+  {
+    "order": 7,
+    "title": "硬件接口",
+    "description": "学习USB CDC串口通信驱动，了解与STM32的通信协议。",
+    "nodeIds": [
+      "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "file:src/robot_driver/src/serialnode.cpp",
+      "file:src/robot_driver/src/cdc_trans.cpp"
+    ]
+  },
+  {
+    "order": 8,
+    "title": "关节PD控制器",
+    "description": "了解ros2_control框架下的关节PD控制器实现。",
+    "nodeIds": [
+      "config:src/dog_controller/CMakeLists.txt",
+      "config:src/dog_controller/package.xml",
+      "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "file:src/dog_controller/src/dog_controller.cpp"
+    ]
+  },
+  {
+    "order": 9,
+    "title": "MuJoCo仿真",
+    "description": "了解MuJoCo物理仿真环境和ros2_control集成。",
+    "nodeIds": [
+      "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "file:src/mujoco_ros2_control/src/mujoco_system.cpp"
+    ]
+  },
+  {
+    "order": 10,
+    "title": "启动配置",
+    "description": "学习ROS2启动文件和参数配置，了解系统如何组装和运行。",
+    "nodeIds": [
+      "config:src/launch_pack/CMakeLists.txt",
+      "config:src/launch_pack/package.xml",
+      "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "file:src/launch_pack/launch/arm_task_sim.launch.py"
+    ]
+  }
+]

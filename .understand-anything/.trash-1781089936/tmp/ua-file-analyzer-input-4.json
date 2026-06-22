@@ -1,0 +1,19 @@
+{
+  "projectRoot": "/home/kyy/Desktop/111111/RC2026_RoboticArm2_gan",
+  "batchFiles": [
+    {"path": "src/arm/launch/arm_rviz.launch.py", "language": "python", "sizeLines": 100, "fileCategory": "script"},
+    {"path": "src/arm/model/robotic_arm.urdf", "language": "urdf", "sizeLines": 500, "fileCategory": "data"},
+    {"path": "src/arm/model/meshes/base_link.stl", "language": "stl", "sizeLines": 100, "fileCategory": "data"},
+    {"path": "src/arm/model/meshes/link1.stl", "language": "stl", "sizeLines": 100, "fileCategory": "data"},
+    {"path": "src/arm/model/meshes/link2.stl", "language": "stl", "sizeLines": 100, "fileCategory": "data"},
+    {"path": "src/arm/model/meshes/link3.stl", "language": "stl", "sizeLines": 100, "fileCategory": "data"}
+  ],
+  "batchImportData": {
+    "src/arm/launch/arm_rviz.launch.py": ["src/arm/launch/arm_rviz.launch.py"],
+    "src/arm/model/robotic_arm.urdf": [],
+    "src/arm/model/meshes/base_link.stl": [],
+    "src/arm/model/meshes/link1.stl": [],
+    "src/arm/model/meshes/link2.stl": [],
+    "src/arm/model/meshes/link3.stl": []
+  }
+}

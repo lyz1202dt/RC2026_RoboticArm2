@@ -1,0 +1,291 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "type": "file",
+      "name": "dog_controller.hpp",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "summary": "dog_controller 类的头文件，定义了基于 ros2_control 的机械臂关节 PD 控制器，包含 6 个关节的 PID 参数、滤波器系数和力矩限制等配置。",
+      "tags": ["controller", "ros2_control", "joint_control", "pd_controller", "header"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/dog_controller/src/dog_controller.cpp",
+      "type": "file",
+      "name": "dog_controller.cpp",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "summary": "dog_controller 类的实现文件，实现了关节 PD 控制器的生命周期管理、参数配置、状态订阅和力矩控制输出等功能。",
+      "tags": ["controller", "ros2_control", "joint_control", "pd_controller", "implementation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/dog_controller/include/dog_controller/dog_controller.hpp:DogController",
+      "type": "class",
+      "name": "DogController",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [14, 46],
+      "summary": "继承自 controller_interface::ControllerInterface 的机械臂关节控制器类，实现 6 个关节的 PD 控制和状态发布。",
+      "tags": ["controller", "ros2_control", "joint_control", "pd_controller"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_init",
+      "type": "function",
+      "name": "on_init",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [18, 18],
+      "summary": "初始化回调函数声明。",
+      "tags": ["lifecycle", "callback", "initialization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_configure",
+      "type": "function",
+      "name": "on_configure",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [19, 19],
+      "summary": "配置回调函数声明。",
+      "tags": ["lifecycle", "callback", "configuration"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_activate",
+      "type": "function",
+      "name": "on_activate",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [20, 20],
+      "summary": "激活回调函数声明。",
+      "tags": ["lifecycle", "callback", "activation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_deactivate",
+      "type": "function",
+      "name": "on_deactivate",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [21, 21],
+      "summary": "停用回调函数声明。",
+      "tags": ["lifecycle", "callback", "deactivation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:update",
+      "type": "function",
+      "name": "update",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [23, 23],
+      "summary": "周期性更新函数声明。",
+      "tags": ["control_loop", "periodic_update"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_init",
+      "type": "function",
+      "name": "DogController::on_init",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [20, 84],
+      "summary": "初始化控制器，创建状态发布器和目标订阅器，声明和初始化 PID 参数、滤波器系数等。",
+      "tags": ["initialization", "publisher", "subscriber", "parameter_declaration"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_configure",
+      "type": "function",
+      "name": "DogController::on_configure",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [86, 97],
+      "summary": "从参数服务器读取 PID 增益和滤波器系数等配置。",
+      "tags": ["configuration", "parameter_read"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::update",
+      "type": "function",
+      "name": "DogController::update",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [110, 149],
+      "summary": "主控制循环：读取关节状态，应用滤波器，计算 PD 控制量并输出力矩指令。",
+      "tags": ["control_loop", "pd_control", "filter", "torque_output"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::command_interface_configuration",
+      "type": "function",
+      "name": "DogController::command_interface_configuration",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [151, 159],
+      "summary": "配置命令接口，声明 6 个关节的力矩控制接口。",
+      "tags": ["interface_configuration", "command_interface"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::state_interface_configuration",
+      "type": "function",
+      "name": "DogController::state_interface_configuration",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [161, 171],
+      "summary": "配置状态接口，声明 6 个关节的位置、速度和力矩反馈接口。",
+      "tags": ["interface_configuration", "state_interface"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/msg/Arm.msg",
+      "type": "file",
+      "name": "Arm.msg",
+      "filePath": "src/robot_interfaces/msg/Arm.msg",
+      "summary": "定义机械臂状态消息类型，包含 6 个 Joint 类型的电机状态数组。",
+      "tags": ["message", "ros2_interface", "arm_state", "joint_state"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/msg/Joint.msg",
+      "type": "file",
+      "name": "Joint.msg",
+      "filePath": "src/robot_interfaces/msg/Joint.msg",
+      "summary": "定义单个关节状态消息类型，包含角度、角速度和力矩三个 float32 字段。",
+      "tags": ["message", "ros2_interface", "joint_state", "motor_state"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/srv/ForwardKinematics.srv",
+      "type": "file",
+      "name": "ForwardKinematics.srv",
+      "filePath": "src/robot_interfaces/srv/ForwardKinematics.srv",
+      "summary": "定义正运动学求解服务，输入 6 个关节角度，输出末端执行器位姿、成功标志和消息。",
+      "tags": ["service", "ros2_interface", "forward_kinematics", "ik"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/srv/GetCurrentEndPose.srv",
+      "type": "file",
+      "name": "GetCurrentEndPose.srv",
+      "filePath": "src/robot_interfaces/srv/GetCurrentEndPose.srv",
+      "summary": "定义获取当前末端位姿服务，无输入参数，输出当前末端执行器位姿、成功标志和消息。",
+      "tags": ["service", "ros2_interface", "end_pose", "forward_kinematics"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/action/ArmTask.action",
+      "type": "file",
+      "name": "ArmTask.action",
+      "filePath": "src/robot_interfaces/action/ArmTask.action",
+      "summary": "定义机械臂任务动作接口，包含目标 ID 和数据输入，返回错误码、原因和反馈描述。",
+      "tags": ["action", "ros2_interface", "arm_task", "task_management"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "class:src/dog_controller/include/dog_controller/dog_controller.hpp:DogController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_configure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_activate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_deactivate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:update",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_configure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::update",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::command_interface_configuration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::state_interface_configuration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "file:src/robot_interfaces/msg/Arm.msg",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "file:src/robot_interfaces/msg/Arm.msg",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_interfaces/msg/Arm.msg",
+      "target": "file:src/robot_interfaces/msg/Joint.msg",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "class:src/dog_controller/include/dog_controller/dog_controller.hpp:DogController",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    }
+  ]
+}

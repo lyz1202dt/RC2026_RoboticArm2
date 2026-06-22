@@ -1,0 +1,186 @@
+{
+  "nodes": [
+    {
+      "id": "document:memory-bank/rules.md",
+      "type": "document",
+      "name": "rules.md",
+      "filePath": "memory-bank/rules.md",
+      "summary": "项目编码规范文档，定义了编码前的思考原则、简单优先、外科手术式修改、更改记录和验证等开发规则。",
+      "tags": ["documentation", "coding-standards", "guidelines"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/arm/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/arm/CMakeLists.txt",
+      "summary": "arm包的CMake构建配置文件，安装model和config目录到共享目录，配置ament_cmake构建系统。",
+      "tags": ["build-system", "cmake", "configuration"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/arm/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/arm/package.xml",
+      "summary": "arm包的ROS2包描述文件，定义了URDF机器人描述包的元数据和运行时依赖（robot_state_publisher、joint_state_publisher_gui、rviz2）。",
+      "tags": ["package-definition", "ros2", "metadata"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/arm_task/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/arm_task/CMakeLists.txt",
+      "summary": "arm_task包的CMake构建配置文件，编译arm_task主节点和多个测试节点，依赖rclcpp、tf2_ros、yaml-cpp、Qt5等库。",
+      "tags": ["build-system", "cmake", "configuration"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:src/arm_task/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/arm_task/package.xml",
+      "summary": "arm_task包的ROS2包描述文件，定义了机械臂任务执行包的元数据和依赖项（rclcpp、tf2_ros、yaml-cpp、robot_interfaces、Qt5等）。",
+      "tags": ["package-definition", "ros2", "metadata"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/robot_interfaces/CMakeLists.txt",
+      "summary": "robot_interfaces包的CMake构建配置文件，使用rosidl生成自定义消息、服务和动作接口（Joint.msg、Arm.msg、ForwardKinematics.srv等）。",
+      "tags": ["build-system", "cmake", "rosidl"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/robot_interfaces/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/robot_interfaces/package.xml",
+      "summary": "robot_interfaces包的ROS2包描述文件，定义了自定义接口包的元数据和依赖项（rosidl_default_generators、builtin_interfaces、geometry_msgs等）。",
+      "tags": ["package-definition", "ros2", "interfaces"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/launch_pack/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/launch_pack/CMakeLists.txt",
+      "summary": "launch_pack包的CMake构建配置文件，安装launch、config和rviz目录到共享目录。",
+      "tags": ["build-system", "cmake", "configuration"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/launch_pack/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/launch_pack/package.xml",
+      "summary": "launch_pack包的ROS2包描述文件，定义了启动文件集合包的元数据和依赖项（launch、launch_ros）。",
+      "tags": ["package-definition", "ros2", "launch"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/vision/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/vision/CMakeLists.txt",
+      "summary": "vision包的CMake构建配置文件，编译vision_node节点，依赖rclcpp、OpenCV、tf2、realsense2等库。",
+      "tags": ["build-system", "cmake", "configuration"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/vision/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/vision/package.xml",
+      "summary": "vision包的ROS2包描述文件，定义了视觉检测和TF发布节点的元数据和依赖项（rclcpp、OpenCV、tf2、realsense2等）。",
+      "tags": ["package-definition", "ros2", "vision"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/dog_controller/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/dog_controller/CMakeLists.txt",
+      "summary": "dog_controller包的CMake构建配置文件，编译dog_controller共享库，依赖rclcpp、controller_interface、pluginlib等库。",
+      "tags": ["build-system", "cmake", "controller"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/dog_controller/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/dog_controller/package.xml",
+      "summary": "dog_controller包的ROS2包描述文件，定义了关节PD控制器插件包的元数据和依赖项（rclcpp、controller_interface、hardware_interface、pluginlib等）。",
+      "tags": ["package-definition", "ros2", "controller"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:src/arm_task/CMakeLists.txt",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:src/dog_controller/CMakeLists.txt",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:src/vision/CMakeLists.txt",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/arm/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/arm_task/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/launch_pack/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/vision/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/dog_controller/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

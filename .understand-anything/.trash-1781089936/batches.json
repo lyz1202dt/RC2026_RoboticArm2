@@ -1,0 +1,1506 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "louvain",
+  "totalFiles": 131,
+  "totalBatches": 9,
+  "exportsByPath": {
+    "joint_catch.cpp": [
+      "CatchKFS",
+      "~CatchKFS",
+      "process"
+    ],
+    "src/arm_calc/include/arm_action/basic_moves.hpp": [
+      "set_start_state",
+      "set_goal_state",
+      "start",
+      "sample",
+      "active",
+      "started",
+      "JointSpaceMove",
+      "set_start_state",
+      "set_goal_state",
+      "start",
+      "sample",
+      "active",
+      "started",
+      "JCartesianSpaceMove",
+      "start",
+      "set_current_joint_state",
+      "set_target_pose",
+      "set_kp",
+      "set_max_linear_acceleration",
+      "sample",
+      "VisualServoMove"
+    ],
+    "src/arm_calc/include/arm_calc/arm_calc.hpp": [
+      "~ArmCalc",
+      "joint_pos",
+      "joint_pos",
+      "joint_vel",
+      "joint_acc",
+      "joint_torque_dynamic",
+      "joint_torque_inverse_dynamics",
+      "joint_torque_cartesian_wrench",
+      "end_pose",
+      "end_state",
+      "jacobian",
+      "set_joint_pd",
+      "get_joint_pd",
+      "set_joint_limits",
+      "clamp_to_joint_limits",
+      "signal_arm_calc",
+      "signal_arm_calc",
+      "ArmCalc"
+    ],
+    "src/arm_calc/include/arm_calc/arm_ctrl.hpp": [
+      "ArmCtrlNode"
+    ],
+    "src/arm_calc/include/arm_calc/common_types.hpp": [
+      "JointState",
+      "JointTrajectoryPoint",
+      "CartesianPose",
+      "CartesianState",
+      "CartesianTrajectoryPoint",
+      "NormalizeQuaternion"
+    ],
+    "src/arm_calc/include/arm_calc/trajectory_calc.hpp": [
+      "TrajectoryCalc",
+      "set_start_state",
+      "set_goal_state",
+      "sample",
+      "duration",
+      "is_ready",
+      "TrajectoryCalc"
+    ],
+    "src/arm_calc/src/arm_action/basic_moves.cpp": [
+      "VisualServoLogger",
+      "QuaternionToRotationVectorWorld",
+      "ClampVectorNorm",
+      "FixedVisualServoOrientation",
+      "BuildJointPoint",
+      "JointSpaceMove",
+      "set_start_state",
+      "set_goal_state",
+      "start",
+      "sample",
+      "active",
+      "started",
+      "JCartesianSpaceMove",
+      "set_start_state",
+      "set_goal_state",
+      "start",
+      "sample",
+      "active",
+      "started",
+      "build_cartesian_target",
+      "VisualServoMove",
+      "start",
+      "set_current_joint_state",
+      "set_target_pose",
+      "set_kp",
+      "set_max_linear_acceleration",
+      "sample"
+    ],
+    "src/arm_calc/src/arm_calc/arm_calc.cpp": [
+      "ToCartesianVector",
+      "ArmCalc",
+      "set_joint_limits",
+      "clamp_to_joint_limits",
+      "joint_pos",
+      "joint_pos",
+      "joint_vel",
+      "joint_acc",
+      "joint_torque_dynamic",
+      "joint_torque_inverse_dynamics",
+      "joint_torque_cartesian_wrench",
+      "end_pose",
+      "end_state",
+      "jacobian",
+      "set_joint_pd",
+      "get_joint_pd",
+      "signal_arm_calc",
+      "signal_arm_calc",
+      "to_kdl_frame",
+      "from_kdl_frame",
+      "to_kdl_joints",
+      "from_kdl_joints",
+      "twist_to_vector"
+    ],
+    "src/arm_calc/src/arm_calc/trajectory_calc.cpp": [
+      "set_start_state",
+      "set_goal_state",
+      "sample",
+      "build_segment",
+      "eval_position",
+      "eval_velocity",
+      "eval_acceleration"
+    ],
+    "src/arm_calc/src/arm_ctrl.cpp": [
+      "ToPoint",
+      "ToMsgQuaternion",
+      "BuildStaticJointTarget",
+      "ArmCtrlNode",
+      "declare_parameters",
+      "create_interfaces",
+      "on_forward_kinematics_request",
+      "on_get_current_end_pose_request",
+      "load_robot_description_and_build_solver",
+      "fetch_robot_description",
+      "load_local_urdf",
+      "refresh_plan",
+      "capture_idle_hold_from_current_state",
+      "set_idle_hold_point",
+      "apply_requested_mode",
+      "enter_idle_mode",
+      "is_trajectory_running",
+      "can_switch_mode_immediately",
+      "set_execute_trajectory_flag",
+      "build_preview_target",
+      "publish_control_loop",
+      "publish_joint_target",
+      "publish_visualization",
+      "on_joint_state",
+      "on_visual_target",
+      "on_joint_space_target",
+      "on_parameters_changed",
+      "parse_motion_mode",
+      "from_arm_message",
+      "to_arm_message",
+      "to_joint_state_msg",
+      "get_double_array_param"
+    ],
+    "src/arm_calc/src/arm_test_node.cpp": [
+      "ArmTestNode",
+      "ArmTestNode",
+      "main"
+    ],
+    "src/arm_calc/src/main.cpp": [
+      "main"
+    ],
+    "src/arm_task/include/robot.hpp": [
+      "on_handle_goal",
+      "on_cancel_goal",
+      "on_handle_accepted",
+      "wait_for_idle_signal",
+      "take_pending_task",
+      "get_active_task_context",
+      "finish_current_task",
+      "porcess_task",
+      "register_task",
+      "init_task_manager",
+      "stop_arm_motion",
+      "execute_joint_space_trajectory",
+      "execute_cartesian_space_trajectory",
+      "forward_kinematics",
+      "execute_visual_servo",
+      "is_visual_servo_active",
+      "is_visual_servo_converged",
+      "start_visual_servo",
+      "wait_for_visual_servo_convergence",
+      "stop_visual_servo",
+      "set_air_pump",
+      "set_grasp_state",
+      "set_trajectory_mode",
+      "get_named_joint_position",
+      "load_named_joint_positions_from_yaml",
+      "get_current_joint_positions",
+      "on_parameters_changed",
+      "calculate_duration",
+      "calculate_duration",
+      "calculate_duration",
+      "get_current_end_pose_from_arm_calc",
+      "Robot"
+    ],
+    "src/arm_task/include/task/base_task.hpp": [
+      "Robot",
+      "BaseTask",
+      "~BaseTask",
+      "process",
+      "BaseTask"
+    ],
+    "src/arm_task/include/task/catch_kfs.hpp": [
+      "process",
+      "CatchKFS"
+    ],
+    "src/arm_task/include/task/idel.hpp": [
+      "process",
+      "IdelTask"
+    ],
+    "src/arm_task/include/task/move_kfs.hpp": [
+      "process",
+      "MoveKFS"
+    ],
+    "src/arm_task/include/task/place_kfs.hpp": [
+      "process",
+      "PlaceKFS"
+    ],
+    "src/arm_task/include/task/visual_serve.hpp": [
+      "process",
+      "VisualServe"
+    ],
+    "src/arm_task/src/main.cpp": [
+      "main"
+    ],
+    "src/arm_task/src/robot.cpp": [
+      "Robot",
+      "~Robot",
+      "on_handle_goal",
+      "on_cancel_goal",
+      "on_handle_accepted",
+      "wait_for_idle_signal",
+      "take_pending_task",
+      "get_active_task_context",
+      "finish_current_task",
+      "load_arm_positions_from_yaml",
+      "joint_states_callback",
+      "get_current_joint_positions",
+      "porcess_task",
+      "register_task",
+      "init_task_manager",
+      "on_parameters_changed",
+      "stop_arm_motion",
+      "execute_joint_space_trajectory",
+      "execute_cartesian_space_trajectory",
+      "execute_visual_servo",
+      "is_visual_servo_active",
+      "is_visual_servo_converged",
+      "start_visual_servo",
+      "wait_for_visual_servo_convergence",
+      "stop_visual_servo",
+      "visual_servo_publish_thread",
+      "set_air_pump",
+      "set_grasp_state",
+      "get_named_joint_position",
+      "load_named_joint_positions_from_yaml",
+      "get_current_end_pose",
+      "get_current_end_pose_from_arm_calc",
+      "forward_kinematics",
+      "calculate_duration",
+      "calculate_duration",
+      "calculate_duration"
+    ],
+    "src/arm_task/src/catch_kfs_test.cpp": [
+      "CatchKfsTestNode",
+      "CatchKfsTestNode",
+      "main"
+    ],
+    "src/arm_task/src/move_kfs_test.cpp": [
+      "MoveKfsGui",
+      "~MoveKfsGui",
+      "MoveKfsGui",
+      "main"
+    ],
+    "src/arm_task/src/place_kfs_test.cpp": [
+      "PlaceKfsTestNode",
+      "PlaceKfsTestNode",
+      "main"
+    ],
+    "src/arm_task/src/task/catch_kfs.cpp": [
+      "CatchKFS",
+      "~CatchKFS",
+      "process"
+    ],
+    "src/arm_task/src/task/idel.cpp": [
+      "IdelTask",
+      "~IdelTask",
+      "process"
+    ],
+    "src/arm_task/src/task/move_kfs.cpp": [
+      "MoveKFS",
+      "~MoveKFS",
+      "process"
+    ],
+    "src/arm_task/src/task/place_kfs.cpp": [
+      "PlaceKFS",
+      "~PlaceKFS",
+      "process"
+    ],
+    "src/arm_task/src/task/visual_serve.cpp": [
+      "VisualServe",
+      "~VisualServe",
+      "process",
+      "is_camera_data_locked",
+      "query_current_distance"
+    ],
+    "src/dog_controller/include/dog_controller/dog_controller.hpp": [
+      "on_init",
+      "on_configure",
+      "on_activate",
+      "on_deactivate",
+      "update",
+      "command_interface_configuration",
+      "state_interface_configuration",
+      "DogController"
+    ],
+    "src/dog_controller/src/dog_controller.cpp": [
+      "DogController",
+      "on_init",
+      "on_configure",
+      "on_activate",
+      "on_deactivate",
+      "update",
+      "command_interface_configuration",
+      "state_interface_configuration"
+    ],
+    "src/launch_pack/launch/arm_mujoco_sim.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_real.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_real_target_test.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_static_display.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_task_catch_test.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_task_move_test.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_task_place_test.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_task_sim.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/arm_task_target_test.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/launch_pack/launch/vision_tf_test.launch.py": [
+      "generate_launch_description"
+    ],
+    "src/mujoco_ros2_control/include/mujoco_rgbd_camera/mujoco_depth_camera.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system_interface.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_control/simulate_gui/simulate_gui.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/imu_sensor.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/mujoco_ros2_sensors.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/pose_sensor.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_ros2_sensors/wrench_sensor.hpp": [],
+    "src/mujoco_ros2_control/include/mujoco_visualization/mujoco_visualization.hpp": [],
+    "src/mujoco_ros2_control/scripts/__init__.py": [],
+    "src/mujoco_ros2_control/scripts/run_coacd.py": [],
+    "src/mujoco_ros2_control/scripts/urdf2mjcf.py": [
+      "build_joint_link_tree",
+      "create_mjcf",
+      "create_mjcf_from_urdf"
+    ],
+    "src/mujoco_ros2_control/scripts/xacro2mjcf.py": [
+      "Xacro2Mjcf",
+      "main"
+    ],
+    "src/mujoco_ros2_control/src/imu_sensor.cpp": [
+      "ImuSensor",
+      "update"
+    ],
+    "src/mujoco_ros2_control/src/mujoco_depth_camera.cpp": [
+      "MujocoDepthCamera",
+      "~MujocoDepthCamera",
+      "update",
+      "linearize_depth",
+      "set_camera_intrinsics",
+      "get_RGBD_buffer",
+      "generate_color_point_cloud",
+      "publish_camera_info",
+      "publish_images",
+      "publish_point_cloud"
+    ],
+    "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp": [
+      "MujocoRos2Control",
+      "~MujocoRos2Control",
+      "update",
+      "publish_sim_time",
+      "init_mujoco",
+      "init_controller_manager",
+      "registerSensors",
+      "main"
+    ],
+    "src/mujoco_ros2_control/src/mujoco_ros2_sensors.cpp": [
+      "MujocoRos2Sensors",
+      "~MujocoRos2Sensors",
+      "get_frame_id",
+      "register_pose_sensors",
+      "register_wrench_sensors",
+      "register_imu_sensors"
+    ],
+    "src/mujoco_ros2_control/src/mujoco_system.cpp": [
+      "initSim",
+      "registerJoints",
+      "on_init",
+      "export_state_interfaces",
+      "export_command_interfaces",
+      "on_activate",
+      "on_deactivate",
+      "perform_command_mode_switch",
+      "read",
+      "write"
+    ],
+    "src/mujoco_ros2_control/src/mujoco_visualization.cpp": [
+      "init",
+      "update",
+      "keyboard",
+      "mouse_button",
+      "mouse_move",
+      "scroll",
+      "scroll_cb",
+      "mouse_move_cb",
+      "mouse_button_cb",
+      "keyboard_cb",
+      "terminate"
+    ],
+    "src/mujoco_ros2_control/src/pose_sensor.cpp": [
+      "PoseSensor",
+      "update"
+    ],
+    "src/mujoco_ros2_control/src/simulate_gui.cpp": [
+      "init",
+      "terminate",
+      "update"
+    ],
+    "src/mujoco_ros2_control/src/wrench_sensor.cpp": [
+      "WrenchSensor",
+      "update"
+    ],
+    "src/mujoco_ros2_control/test/simple_launch.py": [
+      "create_nodes",
+      "generate_launch_description"
+    ],
+    "src/mujoco_ros2_control/test/simple_launch.test.py": [
+      "create_nodes",
+      "generate_test_description",
+      "TestNode",
+      "TestBringup"
+    ],
+    "src/robot_driver/include/robot_driver/cdc_trans.hpp": [],
+    "src/robot_driver/include/robot_driver/data_pack.h": [],
+    "src/robot_driver/include/robot_driver/serialnode.hpp": [],
+    "src/robot_driver/src/cdc_trans.cpp": [
+      "CDCTrans",
+      "~CDCTrans",
+      "open",
+      "close",
+      "send",
+      "process_once",
+      "register_recv_cb",
+      "on_hotplug"
+    ],
+    "src/robot_driver/src/main.cpp": [
+      "main"
+    ],
+    "src/robot_driver/src/serialnode.cpp": [
+      "SerialNode",
+      "~SerialNode",
+      "publishLegState",
+      "legsSubscribCb",
+      "handleGraspIt"
+    ],
+    "src/vision/vision.cpp": [
+      "KalmanFilter2D",
+      "initialize",
+      "reset",
+      "KalmanFilter2D",
+      "RedSegmentation",
+      "process",
+      "RedSegmentation",
+      "VisionPositionPublisher",
+      "~VisionPositionPublisher",
+      "VisionPositionPublisher",
+      "main"
+    ]
+  },
+  "batches": [
+    {
+      "batchIndex": 1,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "language": "markdown",
+          "sizeLines": 56,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "CLAUDE.md",
+          "language": "markdown",
+          "sizeLines": 75,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "README.md",
+          "language": "markdown",
+          "sizeLines": 78,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "log.txt",
+          "language": "text",
+          "sizeLines": 281,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "vision_log.txt",
+          "language": "text",
+          "sizeLines": 108,
+          "fileCategory": "docs"
+        }
+      ],
+      "batchImportData": {
+        "AGENTS.md": [],
+        "CLAUDE.md": [],
+        "README.md": [],
+        "log.txt": [],
+        "vision_log.txt": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 2,
+      "files": [
+        {
+          "path": "src/arm/model/Link1.STL",
+          "language": "stl",
+          "sizeLines": 11553,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/Link2.STL",
+          "language": "stl",
+          "sizeLines": 32703,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/Link3.STL",
+          "language": "stl",
+          "sizeLines": 42674,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/Link4.STL",
+          "language": "stl",
+          "sizeLines": 883,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/Link5.STL",
+          "language": "stl",
+          "sizeLines": 871,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/Link6.STL",
+          "language": "stl",
+          "sizeLines": 117,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/Link7.STL",
+          "language": "stl",
+          "sizeLines": 436,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/base_link.STL",
+          "language": "stl",
+          "sizeLines": 16120,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/robotic_arm.csv",
+          "language": "csv",
+          "sizeLines": 10,
+          "fileCategory": "data"
+        },
+        {
+          "path": "src/arm/model/robotic_arm.urdf",
+          "language": "urdf",
+          "sizeLines": 508,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm/model/robotic_arm.xml",
+          "language": "xml",
+          "sizeLines": 99,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm/model/scene.xml",
+          "language": "xml",
+          "sizeLines": 36,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "src/arm/model/Link1.STL": [],
+        "src/arm/model/Link2.STL": [],
+        "src/arm/model/Link3.STL": [],
+        "src/arm/model/Link4.STL": [],
+        "src/arm/model/Link5.STL": [],
+        "src/arm/model/Link6.STL": [],
+        "src/arm/model/Link7.STL": [],
+        "src/arm/model/base_link.STL": [],
+        "src/arm/model/robotic_arm.csv": [],
+        "src/arm/model/robotic_arm.urdf": [],
+        "src/arm/model/robotic_arm.xml": [],
+        "src/arm/model/scene.xml": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 3,
+      "files": [
+        {
+          "path": "src/dog_controller/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 67,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/dog_controller/package.xml",
+          "language": "xml",
+          "sizeLines": 26,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/dog_controller/plugin.xml",
+          "language": "xml",
+          "sizeLines": 7,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "src/dog_controller/CMakeLists.txt": [],
+        "src/dog_controller/package.xml": [],
+        "src/dog_controller/plugin.xml": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 4,
+      "files": [
+        {
+          "path": "src/mujoco_ros2_control/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 274,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/Doxyfile",
+          "language": "text",
+          "sizeLines": 356,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/LICENSE",
+          "language": "text",
+          "sizeLines": 29,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "src/mujoco_ros2_control/README.md",
+          "language": "markdown",
+          "sizeLines": 143,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "src/mujoco_ros2_control/mujoco_system_plugins.xml",
+          "language": "xml",
+          "sizeLines": 10,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/package.xml",
+          "language": "xml",
+          "sizeLines": 45,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "src/mujoco_ros2_control/CMakeLists.txt": [],
+        "src/mujoco_ros2_control/Doxyfile": [],
+        "src/mujoco_ros2_control/LICENSE": [],
+        "src/mujoco_ros2_control/README.md": [],
+        "src/mujoco_ros2_control/mujoco_system_plugins.xml": [],
+        "src/mujoco_ros2_control/package.xml": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 5,
+      "files": [
+        {
+          "path": "joint_catch.cpp",
+          "language": "cpp",
+          "sizeLines": 209,
+          "fileCategory": "code"
+        },
+        {
+          "path": "memory-bank/progress.md",
+          "language": "markdown",
+          "sizeLines": 7,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "memory-bank/rules.md",
+          "language": "markdown",
+          "sizeLines": 43,
+          "fileCategory": "docs"
+        },
+        {
+          "path": "src/arm_calc/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 116,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm_calc/include/arm_action/basic_moves.hpp",
+          "language": "cpp",
+          "sizeLines": 104,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/include/arm_calc/arm_calc.hpp",
+          "language": "cpp",
+          "sizeLines": 86,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+          "language": "cpp",
+          "sizeLines": 110,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/include/arm_calc/common_types.hpp",
+          "language": "cpp",
+          "sizeLines": 57,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+          "language": "cpp",
+          "sizeLines": 54,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/package.xml",
+          "language": "xml",
+          "sizeLines": 34,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm_calc/src/arm_action/basic_moves.cpp",
+          "language": "cpp",
+          "sizeLines": 356,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/src/arm_calc/arm_calc.cpp",
+          "language": "cpp",
+          "sizeLines": 228,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+          "language": "cpp",
+          "sizeLines": 87,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/src/arm_ctrl.cpp",
+          "language": "cpp",
+          "sizeLines": 790,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/src/arm_test_node.cpp",
+          "language": "cpp",
+          "sizeLines": 114,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_calc/src/main.cpp",
+          "language": "cpp",
+          "sizeLines": 13,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 119,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm_task/config/arm_position.yaml",
+          "language": "yaml",
+          "sizeLines": 135,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm_task/include/robot.hpp",
+          "language": "cpp",
+          "sizeLines": 280,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/include/task/base_task.hpp",
+          "language": "cpp",
+          "sizeLines": 15,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/include/task/catch_kfs.hpp",
+          "language": "cpp",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/include/task/idel.hpp",
+          "language": "cpp",
+          "sizeLines": 15,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/include/task/move_kfs.hpp",
+          "language": "cpp",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/include/task/place_kfs.hpp",
+          "language": "cpp",
+          "sizeLines": 16,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/include/task/visual_serve.hpp",
+          "language": "cpp",
+          "sizeLines": 32,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "joint_catch.cpp": [],
+        "memory-bank/progress.md": [],
+        "memory-bank/rules.md": [],
+        "src/arm_calc/CMakeLists.txt": [],
+        "src/arm_calc/include/arm_action/basic_moves.hpp": [],
+        "src/arm_calc/include/arm_calc/arm_calc.hpp": [],
+        "src/arm_calc/include/arm_calc/arm_ctrl.hpp": [],
+        "src/arm_calc/include/arm_calc/common_types.hpp": [],
+        "src/arm_calc/include/arm_calc/trajectory_calc.hpp": [],
+        "src/arm_calc/package.xml": [],
+        "src/arm_calc/src/arm_action/basic_moves.cpp": [],
+        "src/arm_calc/src/arm_calc/arm_calc.cpp": [],
+        "src/arm_calc/src/arm_calc/trajectory_calc.cpp": [],
+        "src/arm_calc/src/arm_ctrl.cpp": [],
+        "src/arm_calc/src/arm_test_node.cpp": [],
+        "src/arm_calc/src/main.cpp": [],
+        "src/arm_task/CMakeLists.txt": [],
+        "src/arm_task/config/arm_position.yaml": [],
+        "src/arm_task/include/robot.hpp": [],
+        "src/arm_task/include/task/base_task.hpp": [],
+        "src/arm_task/include/task/catch_kfs.hpp": [],
+        "src/arm_task/include/task/idel.hpp": [],
+        "src/arm_task/include/task/move_kfs.hpp": [],
+        "src/arm_task/include/task/place_kfs.hpp": [],
+        "src/arm_task/include/task/visual_serve.hpp": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 6,
+      "files": [
+        {
+          "path": "src/arm_task/package.xml",
+          "language": "xml",
+          "sizeLines": 32,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm_task/src/catch_kfs_test.cpp",
+          "language": "cpp",
+          "sizeLines": 242,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/main.cpp",
+          "language": "cpp",
+          "sizeLines": 13,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/move_kfs_test.cpp",
+          "language": "cpp",
+          "sizeLines": 448,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/place_kfs_test.cpp",
+          "language": "cpp",
+          "sizeLines": 239,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/robot.cpp",
+          "language": "cpp",
+          "sizeLines": 1196,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/task/catch_kfs.cpp",
+          "language": "cpp",
+          "sizeLines": 252,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/task/idel.cpp",
+          "language": "cpp",
+          "sizeLines": 91,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/task/move_kfs.cpp",
+          "language": "cpp",
+          "sizeLines": 161,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/task/place_kfs.cpp",
+          "language": "cpp",
+          "sizeLines": 182,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm_task/src/task/visual_serve.cpp",
+          "language": "cpp",
+          "sizeLines": 190,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/arm/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 36,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm/config/joint_names_robotic_arm.yaml",
+          "language": "yaml",
+          "sizeLines": 2,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/arm/package.xml",
+          "language": "xml",
+          "sizeLines": 22,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+          "language": "cpp",
+          "sizeLines": 49,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/dog_controller/src/dog_controller.cpp",
+          "language": "cpp",
+          "sizeLines": 176,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 32,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/launch_pack/config/ros2_controller.yaml",
+          "language": "yaml",
+          "sizeLines": 39,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_mujoco_sim.launch.py",
+          "language": "python",
+          "sizeLines": 122,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_real_target_test.launch.py",
+          "language": "python",
+          "sizeLines": 91,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_real.launch.py",
+          "language": "python",
+          "sizeLines": 75,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_static_display.launch.py",
+          "language": "python",
+          "sizeLines": 40,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_task_catch_test.launch.py",
+          "language": "python",
+          "sizeLines": 59,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_task_move_test.launch.py",
+          "language": "python",
+          "sizeLines": 51,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_task_place_test.launch.py",
+          "language": "python",
+          "sizeLines": 62,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/arm_task/package.xml": [],
+        "src/arm_task/src/catch_kfs_test.cpp": [],
+        "src/arm_task/src/main.cpp": [],
+        "src/arm_task/src/move_kfs_test.cpp": [],
+        "src/arm_task/src/place_kfs_test.cpp": [],
+        "src/arm_task/src/robot.cpp": [],
+        "src/arm_task/src/task/catch_kfs.cpp": [],
+        "src/arm_task/src/task/idel.cpp": [],
+        "src/arm_task/src/task/move_kfs.cpp": [],
+        "src/arm_task/src/task/place_kfs.cpp": [],
+        "src/arm_task/src/task/visual_serve.cpp": [],
+        "src/arm/CMakeLists.txt": [],
+        "src/arm/config/joint_names_robotic_arm.yaml": [],
+        "src/arm/package.xml": [],
+        "src/dog_controller/include/dog_controller/dog_controller.hpp": [],
+        "src/dog_controller/src/dog_controller.cpp": [],
+        "src/launch_pack/CMakeLists.txt": [],
+        "src/launch_pack/config/ros2_controller.yaml": [],
+        "src/launch_pack/launch/arm_mujoco_sim.launch.py": [],
+        "src/launch_pack/launch/arm_real_target_test.launch.py": [],
+        "src/launch_pack/launch/arm_real.launch.py": [],
+        "src/launch_pack/launch/arm_static_display.launch.py": [],
+        "src/launch_pack/launch/arm_task_catch_test.launch.py": [],
+        "src/launch_pack/launch/arm_task_move_test.launch.py": [],
+        "src/launch_pack/launch/arm_task_place_test.launch.py": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 7,
+      "files": [
+        {
+          "path": "src/launch_pack/launch/arm_task_sim.launch.py",
+          "language": "python",
+          "sizeLines": 56,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/arm_task_target_test.launch.py",
+          "language": "python",
+          "sizeLines": 90,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/launch/vision_tf_test.launch.py",
+          "language": "python",
+          "sizeLines": 67,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/launch_pack/package.xml",
+          "language": "xml",
+          "sizeLines": 22,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/launch_pack/rviz/arm_display_config.rviz",
+          "language": "yaml",
+          "sizeLines": 79,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/launch_pack/rviz/display_config.rviz",
+          "language": "yaml",
+          "sizeLines": 348,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/cmake/config.h.in",
+          "language": "cmake",
+          "sizeLines": 1,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_rgbd_camera/mujoco_depth_camera.hpp",
+          "language": "cpp",
+          "sizeLines": 314,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+          "language": "cpp",
+          "sizeLines": 265,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system_interface.hpp",
+          "language": "cpp",
+          "sizeLines": 105,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+          "language": "cpp",
+          "sizeLines": 330,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_control/simulate_gui/simulate_gui.hpp",
+          "language": "cpp",
+          "sizeLines": 0,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/imu_sensor.hpp",
+          "language": "cpp",
+          "sizeLines": 86,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/mujoco_ros2_sensors.hpp",
+          "language": "cpp",
+          "sizeLines": 101,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/pose_sensor.hpp",
+          "language": "cpp",
+          "sizeLines": 93,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_ros2_sensors/wrench_sensor.hpp",
+          "language": "cpp",
+          "sizeLines": 87,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/include/mujoco_visualization/mujoco_visualization.hpp",
+          "language": "cpp",
+          "sizeLines": 265,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/mjcf/scene.xml",
+          "language": "xml",
+          "sizeLines": 23,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/scripts/__init__.py",
+          "language": "python",
+          "sizeLines": 1,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/scripts/run_coacd.py",
+          "language": "python",
+          "sizeLines": 139,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/scripts/urdf2mjcf.py",
+          "language": "python",
+          "sizeLines": 258,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/scripts/xacro2mjcf.py",
+          "language": "python",
+          "sizeLines": 506,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/imu_sensor.cpp",
+          "language": "cpp",
+          "sizeLines": 72,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_depth_camera.cpp",
+          "language": "cpp",
+          "sizeLines": 299,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_rgbd_camera_parameters.yaml",
+          "language": "yaml",
+          "sizeLines": 51,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "src/launch_pack/launch/arm_task_sim.launch.py": [],
+        "src/launch_pack/launch/arm_task_target_test.launch.py": [],
+        "src/launch_pack/launch/vision_tf_test.launch.py": [],
+        "src/launch_pack/package.xml": [],
+        "src/launch_pack/rviz/arm_display_config.rviz": [],
+        "src/launch_pack/rviz/display_config.rviz": [],
+        "src/mujoco_ros2_control/cmake/config.h.in": [],
+        "src/mujoco_ros2_control/include/mujoco_rgbd_camera/mujoco_depth_camera.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system_interface.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_control/simulate_gui/simulate_gui.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_sensors/imu_sensor.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_sensors/mujoco_ros2_sensors.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_sensors/pose_sensor.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_ros2_sensors/wrench_sensor.hpp": [],
+        "src/mujoco_ros2_control/include/mujoco_visualization/mujoco_visualization.hpp": [],
+        "src/mujoco_ros2_control/mjcf/scene.xml": [],
+        "src/mujoco_ros2_control/scripts/__init__.py": [],
+        "src/mujoco_ros2_control/scripts/run_coacd.py": [],
+        "src/mujoco_ros2_control/scripts/urdf2mjcf.py": [],
+        "src/mujoco_ros2_control/scripts/xacro2mjcf.py": [],
+        "src/mujoco_ros2_control/src/imu_sensor.cpp": [],
+        "src/mujoco_ros2_control/src/mujoco_depth_camera.cpp": [],
+        "src/mujoco_ros2_control/src/mujoco_rgbd_camera_parameters.yaml": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 8,
+      "files": [
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_ros2_control_parameters.yaml",
+          "language": "yaml",
+          "sizeLines": 51,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+          "language": "cpp",
+          "sizeLines": 358,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_ros2_sensors.cpp",
+          "language": "cpp",
+          "sizeLines": 237,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_system.cpp",
+          "language": "cpp",
+          "sizeLines": 538,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/mujoco_visualization.cpp",
+          "language": "cpp",
+          "sizeLines": 198,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/pose_sensor.cpp",
+          "language": "cpp",
+          "sizeLines": 105,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/simulate_gui.cpp",
+          "language": "cpp",
+          "sizeLines": 154,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/src/wrench_sensor.cpp",
+          "language": "cpp",
+          "sizeLines": 71,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/test/data/double_pendulum_controllers.yaml",
+          "language": "yaml",
+          "sizeLines": 31,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/test/data/double_pendulum.urdf.xacro",
+          "language": "xml",
+          "sizeLines": 159,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/mujoco_ros2_control/test/simple_launch.py",
+          "language": "python",
+          "sizeLines": 152,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/mujoco_ros2_control/test/simple_launch.test.py",
+          "language": "python",
+          "sizeLines": 222,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_driver/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 76,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_driver/include/robot_driver/cdc_trans.hpp",
+          "language": "cpp",
+          "sizeLines": 139,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_driver/include/robot_driver/data_pack.h",
+          "language": "cpp",
+          "sizeLines": 36,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_driver/include/robot_driver/serialnode.hpp",
+          "language": "cpp",
+          "sizeLines": 133,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_driver/package.xml",
+          "language": "xml",
+          "sizeLines": 23,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_driver/src/cdc_trans.cpp",
+          "language": "cpp",
+          "sizeLines": 182,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_driver/src/main.cpp",
+          "language": "cpp",
+          "sizeLines": 10,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_driver/src/serialnode.cpp",
+          "language": "cpp",
+          "sizeLines": 187,
+          "fileCategory": "code"
+        },
+        {
+          "path": "src/robot_interfaces/action/ArmTask.action",
+          "language": "ros2_interface",
+          "sizeLines": 10,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_interfaces/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 42,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_interfaces/msg/Arm.msg",
+          "language": "ros2_interface",
+          "sizeLines": 2,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_interfaces/msg/Joint.msg",
+          "language": "ros2_interface",
+          "sizeLines": 3,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_interfaces/package.xml",
+          "language": "xml",
+          "sizeLines": 29,
+          "fileCategory": "config"
+        }
+      ],
+      "batchImportData": {
+        "src/mujoco_ros2_control/src/mujoco_ros2_control_parameters.yaml": [],
+        "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp": [],
+        "src/mujoco_ros2_control/src/mujoco_ros2_sensors.cpp": [],
+        "src/mujoco_ros2_control/src/mujoco_system.cpp": [],
+        "src/mujoco_ros2_control/src/mujoco_visualization.cpp": [],
+        "src/mujoco_ros2_control/src/pose_sensor.cpp": [],
+        "src/mujoco_ros2_control/src/simulate_gui.cpp": [],
+        "src/mujoco_ros2_control/src/wrench_sensor.cpp": [],
+        "src/mujoco_ros2_control/test/data/double_pendulum_controllers.yaml": [],
+        "src/mujoco_ros2_control/test/data/double_pendulum.urdf.xacro": [],
+        "src/mujoco_ros2_control/test/simple_launch.py": [],
+        "src/mujoco_ros2_control/test/simple_launch.test.py": [],
+        "src/robot_driver/CMakeLists.txt": [],
+        "src/robot_driver/include/robot_driver/cdc_trans.hpp": [],
+        "src/robot_driver/include/robot_driver/data_pack.h": [],
+        "src/robot_driver/include/robot_driver/serialnode.hpp": [],
+        "src/robot_driver/package.xml": [],
+        "src/robot_driver/src/cdc_trans.cpp": [],
+        "src/robot_driver/src/main.cpp": [],
+        "src/robot_driver/src/serialnode.cpp": [],
+        "src/robot_interfaces/action/ArmTask.action": [],
+        "src/robot_interfaces/CMakeLists.txt": [],
+        "src/robot_interfaces/msg/Arm.msg": [],
+        "src/robot_interfaces/msg/Joint.msg": [],
+        "src/robot_interfaces/package.xml": []
+      },
+      "neighborMap": {}
+    },
+    {
+      "batchIndex": 9,
+      "files": [
+        {
+          "path": "src/robot_interfaces/srv/ForwardKinematics.srv",
+          "language": "ros2_interface",
+          "sizeLines": 5,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/robot_interfaces/srv/GetCurrentEndPose.srv",
+          "language": "ros2_interface",
+          "sizeLines": 5,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/vision/CMakeLists.txt",
+          "language": "cmake",
+          "sizeLines": 43,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/vision/package.xml",
+          "language": "xml",
+          "sizeLines": 25,
+          "fileCategory": "config"
+        },
+        {
+          "path": "src/vision/vision.cpp",
+          "language": "cpp",
+          "sizeLines": 493,
+          "fileCategory": "code"
+        }
+      ],
+      "batchImportData": {
+        "src/robot_interfaces/srv/ForwardKinematics.srv": [],
+        "src/robot_interfaces/srv/GetCurrentEndPose.srv": [],
+        "src/vision/CMakeLists.txt": [],
+        "src/vision/package.xml": [],
+        "src/vision/vision.cpp": []
+      },
+      "neighborMap": {}
+    }
+  ]
+}

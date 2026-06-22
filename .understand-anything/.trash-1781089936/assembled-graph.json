@@ -1,0 +1,2404 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "RC2026_RoboticArm2_gan",
+    "languages": [
+      "cpp",
+      "python",
+      "yaml",
+      "xml",
+      "urdf",
+      "stl",
+      "csv"
+    ],
+    "frameworks": [
+      "ROS2",
+      "KDL",
+      "MuJoCo",
+      "OpenCV",
+      "RealSense",
+      "rviz",
+      "rqt"
+    ],
+    "description": "河北科技大学2026 RC Robocon 六轴机械臂比赛项目，基于ROS2 + KDL运动学解算 + MuJoCo仿真的机械臂控制系统",
+    "analyzedAt": "2026-06-10T11:08:24.196Z",
+    "gitCommitHash": "1e32a56a128d160696a536e9d6d606acb0b12065"
+  },
+  "nodes": [
+    {
+      "id": "document:AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "AGENTS.md",
+      "summary": "AI 编程代理快速指南，提供 ROS2 工作区开发任务的上下文信息，包括构建、运行、测试命令、关键目录、代码约定和常见陷阱。",
+      "tags": [
+        "documentation",
+        "guide",
+        "ai-agent",
+        "ros2",
+        "development"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "项目规则文档，定义代码探索限制、项目结构、包列表、关键节点与数据流、TF坐标系、任务系统和回复风格。",
+      "tags": [
+        "documentation",
+        "project-rules",
+        "architecture",
+        "data-flow",
+        "task-system"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "项目主文档，包含河北科技大学2026 RC Robocon六轴机械臂方案的架构原则、接口设计、约束分层和测试数据记录。",
+      "tags": [
+        "documentation",
+        "architecture",
+        "interface-design",
+        "project-overview"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:log/COLCON_IGNORE",
+      "type": "config",
+      "name": "COLCON_IGNORE",
+      "filePath": "log/COLCON_IGNORE",
+      "summary": "Colcon 构建系统忽略文件，用于排除 log 目录被包含到构建过程中。",
+      "tags": [
+        "configuration",
+        "build-system",
+        "colcon"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:memory-bank/progress.md",
+      "type": "document",
+      "name": "progress.md",
+      "filePath": "memory-bank/progress.md",
+      "summary": "开发进度记录，记录了2026年5月9日至11日间 move_kfs 和 catch_kfs 功能开发、测试和修复的关键里程碑。",
+      "tags": [
+        "documentation",
+        "progress",
+        "changelog",
+        "development-history"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:memory-bank/rules.md",
+      "type": "document",
+      "name": "rules.md",
+      "filePath": "memory-bank/rules.md",
+      "summary": "项目编码规范文档，定义了编码前的思考原则、简单优先、外科手术式修改、更改记录和验证等开发规则。",
+      "tags": [
+        "documentation",
+        "coding-standards",
+        "guidelines"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/arm/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/arm/CMakeLists.txt",
+      "summary": "arm包的CMake构建配置文件，安装model和config目录到共享目录，配置ament_cmake构建系统。",
+      "tags": [
+        "build-system",
+        "cmake",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/arm/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/arm/package.xml",
+      "summary": "arm包的ROS2包描述文件，定义了URDF机器人描述包的元数据和运行时依赖（robot_state_publisher、joint_state_publisher_gui、rviz2）。",
+      "tags": [
+        "package-definition",
+        "ros2",
+        "metadata"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/arm_task/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/arm_task/CMakeLists.txt",
+      "summary": "arm_task包的CMake构建配置文件，编译arm_task主节点和多个测试节点，依赖rclcpp、tf2_ros、yaml-cpp、Qt5等库。",
+      "tags": [
+        "build-system",
+        "cmake",
+        "configuration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:src/arm_task/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/arm_task/package.xml",
+      "summary": "arm_task包的ROS2包描述文件，定义了机械臂任务执行包的元数据和依赖项（rclcpp、tf2_ros、yaml-cpp、robot_interfaces、Qt5等）。",
+      "tags": [
+        "package-definition",
+        "ros2",
+        "metadata"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/robot_interfaces/CMakeLists.txt",
+      "summary": "robot_interfaces包的CMake构建配置文件，使用rosidl生成自定义消息、服务和动作接口（Joint.msg、Arm.msg、ForwardKinematics.srv等）。",
+      "tags": [
+        "build-system",
+        "cmake",
+        "rosidl"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/robot_interfaces/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/robot_interfaces/package.xml",
+      "summary": "robot_interfaces包的ROS2包描述文件，定义了自定义接口包的元数据和依赖项（rosidl_default_generators、builtin_interfaces、geometry_msgs等）。",
+      "tags": [
+        "package-definition",
+        "ros2",
+        "interfaces"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/launch_pack/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/launch_pack/CMakeLists.txt",
+      "summary": "launch_pack包的CMake构建配置文件，安装launch、config和rviz目录到共享目录。",
+      "tags": [
+        "build-system",
+        "cmake",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/launch_pack/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/launch_pack/package.xml",
+      "summary": "launch_pack包的ROS2包描述文件，定义了启动文件集合包的元数据和依赖项（launch、launch_ros）。",
+      "tags": [
+        "package-definition",
+        "ros2",
+        "launch"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/vision/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/vision/CMakeLists.txt",
+      "summary": "vision包的CMake构建配置文件，编译vision_node节点，依赖rclcpp、OpenCV、tf2、realsense2等库。",
+      "tags": [
+        "build-system",
+        "cmake",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/vision/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/vision/package.xml",
+      "summary": "vision包的ROS2包描述文件，定义了视觉检测和TF发布节点的元数据和依赖项（rclcpp、OpenCV、tf2、realsense2等）。",
+      "tags": [
+        "package-definition",
+        "ros2",
+        "vision"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/dog_controller/CMakeLists.txt",
+      "type": "config",
+      "name": "CMakeLists.txt",
+      "filePath": "src/dog_controller/CMakeLists.txt",
+      "summary": "dog_controller包的CMake构建配置文件，编译dog_controller共享库，依赖rclcpp、controller_interface、pluginlib等库。",
+      "tags": [
+        "build-system",
+        "cmake",
+        "controller"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:src/dog_controller/package.xml",
+      "type": "config",
+      "name": "package.xml",
+      "filePath": "src/dog_controller/package.xml",
+      "summary": "dog_controller包的ROS2包描述文件，定义了关节PD控制器插件包的元数据和依赖项（rclcpp、controller_interface、hardware_interface、pluginlib等）。",
+      "tags": [
+        "package-definition",
+        "ros2",
+        "controller"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/include/arm/robotic_arm_ros2_control.hpp",
+      "type": "file",
+      "name": "robotic_arm_ros2_control.hpp",
+      "filePath": "src/arm/include/arm/robotic_arm_ros2_control.hpp",
+      "summary": "机械臂ros2_control接口头文件，声明机械臂硬件接口类和ros2_control插件接口，用于与MuJoCo仿真和实际硬件通信",
+      "tags": [
+        "header",
+        "ros2-control",
+        "hardware-interface",
+        "arm-control"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp",
+      "type": "file",
+      "name": "robotic_arm_ros2_control_plugin.hpp",
+      "filePath": "src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp",
+      "summary": "机械臂ros2_control插件头文件，声明ros2_control插件的注册接口和插件加载函数，使机械臂控制器能被ros2_control框架识别",
+      "tags": [
+        "header",
+        "ros2-control",
+        "plugin",
+        "arm-control"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp",
+      "type": "file",
+      "name": "robotic_arm_ros2_control.hpp",
+      "filePath": "src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp",
+      "summary": "机械臂ros2_control实现头文件，声明具体的机械臂控制器类，实现ros2_control::SystemInterface接口，负责与机械臂硬件或仿真通信",
+      "tags": [
+        "header",
+        "ros2-control",
+        "system-interface",
+        "arm-control"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/launch/arm_rviz.launch.py",
+      "type": "file",
+      "name": "arm_rviz.launch.py",
+      "filePath": "src/arm/launch/arm_rviz.launch.py",
+      "summary": "RViz2 可视化启动文件，用于在 RViz 中显示机械臂模型和运动状态",
+      "tags": [
+        "launch",
+        "visualization",
+        "rviz",
+        "robot-model"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm/model/robotic_arm.urdf",
+      "type": "file",
+      "name": "robotic_arm.urdf",
+      "filePath": "src/arm/model/robotic_arm.urdf",
+      "summary": "六轴机械臂 URDF 模型文件，定义机器人连杆、关节、惯性参数和 ros2_control 接口配置",
+      "tags": [
+        "robot-model",
+        "urdf",
+        "kinematics",
+        "dynamics",
+        "ros2-control"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm/model/meshes/base_link.stl",
+      "type": "file",
+      "name": "base_link.stl",
+      "filePath": "src/arm/model/meshes/base_link.stl",
+      "summary": "机械臂基座连杆的 STL 网格文件，用于 RViz 可视化和碰撞检测",
+      "tags": [
+        "mesh",
+        "visualization",
+        "collision",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link1.stl",
+      "type": "file",
+      "name": "link1.stl",
+      "filePath": "src/arm/model/meshes/link1.stl",
+      "summary": "机械臂连杆1的 STL 网格文件，对应关节1旋转部件",
+      "tags": [
+        "mesh",
+        "visualization",
+        "collision",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link2.stl",
+      "type": "file",
+      "name": "link2.stl",
+      "filePath": "src/arm/model/meshes/link2.stl",
+      "summary": "机械臂连杆2的 STL 网格文件，对应关节2旋转部件",
+      "tags": [
+        "mesh",
+        "visualization",
+        "collision",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link3.stl",
+      "type": "file",
+      "name": "link3.stl",
+      "filePath": "src/arm/model/meshes/link3.stl",
+      "summary": "机械臂连杆3的 STL 网格文件，对应关节3旋转部件",
+      "tags": [
+        "mesh",
+        "visualization",
+        "collision",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "type": "file",
+      "name": "arm_calc.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "summary": "KDL运动学解算器核心类，提供正运动学、逆运动学、速度/加速度/力矩计算等功能，支持关节限制和PD控制参数配置。",
+      "tags": [
+        "kinematics",
+        "kdl",
+        "motion-planning",
+        "robotics"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "type": "file",
+      "name": "trajectory_calc.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "summary": "五次多项式轨迹生成器，用于关节空间轨迹插值，支持位置、速度和加速度的平滑规划。",
+      "tags": [
+        "trajectory",
+        "motion-planning",
+        "interpolation",
+        "quintic-polynomial"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "type": "file",
+      "name": "arm_ctrl.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "summary": "arm_calc ROS2节点主类，集成运动学解算、轨迹规划和四种运动模式（空闲、关节空间、笛卡尔空间、视觉伺服）。",
+      "tags": [
+        "ros2-node",
+        "arm-control",
+        "motion-modes",
+        "visual-servo"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "file",
+      "name": "common_types.hpp",
+      "filePath": "src/arm_calc/include/arm_calc/common_types.hpp",
+      "summary": "通用类型定义文件，定义了关节向量、笛卡尔位姿、关节状态、轨迹点等核心数据结构。",
+      "tags": [
+        "data-types",
+        "eigen",
+        "joint-vectors",
+        "cartesian-pose"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "type": "file",
+      "name": "arm_calc.cpp",
+      "filePath": "src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "summary": "ArmCalc类实现文件，包含KDL运动学解算的具体实现，包括正逆运动学、雅可比矩阵、动力学计算等核心算法。",
+      "tags": [
+        "kinematics-implementation",
+        "kdl-solvers",
+        "inverse-kinematics",
+        "dynamics"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "type": "file",
+      "name": "trajectory_calc.cpp",
+      "filePath": "src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "summary": "TrajectoryCalc类实现文件，实现五次多项式轨迹生成和采样功能，支持位置、速度和加速度计算。",
+      "tags": [
+        "trajectory-implementation",
+        "quintic-polynomial",
+        "motion-planning"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "type": "file",
+      "name": "arm_ctrl.cpp",
+      "filePath": "src/arm_calc/src/arm_ctrl.cpp",
+      "summary": "ArmCtrlNode节点实现文件，包含ROS2接口、参数管理、运动模式切换、控制循环等完整节点逻辑。",
+      "tags": [
+        "ros2-node-implementation",
+        "control-loop",
+        "parameter-management",
+        "motion-control"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_calc/src/arm_test_node.cpp",
+      "type": "file",
+      "name": "arm_test_node.cpp",
+      "filePath": "src/arm_calc/src/arm_test_node.cpp",
+      "summary": "测试节点，通过参数配置发布关节空间或笛卡尔空间目标，用于调试和验证运动学解算功能。",
+      "tags": [
+        "test-node",
+        "debugging",
+        "parameter-testing",
+        "joint-target"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/robot.hpp",
+      "type": "file",
+      "name": "robot.hpp",
+      "filePath": "src/arm_task/include/robot.hpp",
+      "summary": "Robot核心类定义，管理机械臂状态、任务调度、TF变换、参数配置和与arm_calc节点的通信接口。",
+      "tags": [
+        "robot-class",
+        "task-management",
+        "tf2",
+        "action-server"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "file",
+      "name": "base_task.hpp",
+      "filePath": "src/arm_task/include/task/base_task.hpp",
+      "summary": "任务基类，定义任务接口和通用属性，所有具体任务类（移动、抓取、放置等）的父类。",
+      "tags": [
+        "task-base",
+        "polymorphism",
+        "task-interface",
+        "state-machine"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/task/move_kfs.hpp",
+      "type": "file",
+      "name": "move_kfs.hpp",
+      "filePath": "src/arm_task/include/task/move_kfs.hpp",
+      "summary": "移动任务类声明，支持关节空间和笛卡尔空间两种运动模式，继承自BaseTask。",
+      "tags": [
+        "move-task",
+        "joint-space",
+        "cartesian-space",
+        "task-implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "type": "file",
+      "name": "catch_kfs.hpp",
+      "filePath": "src/arm_task/include/task/catch_kfs.hpp",
+      "summary": "抓取任务类声明，实现视觉伺服抓取流程，包括目标检测、视觉伺服、夹爪控制等功能。",
+      "tags": [
+        "catch-task",
+        "visual-servo",
+        "grasping",
+        "task-implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/src/robot.cpp",
+      "type": "file",
+      "name": "robot.cpp",
+      "filePath": "src/arm_task/src/robot.cpp",
+      "summary": "Robot类实现文件，包含机械臂控制逻辑、任务管理、TF变换处理、参数回调和与arm_calc的通信。",
+      "tags": [
+        "robot-implementation",
+        "action-server",
+        "tf-listener",
+        "task-scheduler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/arm_task/src/task/move_kfs.cpp",
+      "type": "file",
+      "name": "move_kfs.cpp",
+      "filePath": "src/arm_task/src/task/move_kfs.cpp",
+      "summary": "移动任务实现，解析任务数据并执行关节空间或笛卡尔空间轨迹，支持气泵开关和错误处理。",
+      "tags": [
+        "move-implementation",
+        "trajectory-execution",
+        "error-handling",
+        "air-pump"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_task/src/task/catch_kfs.cpp",
+      "type": "file",
+      "name": "catch_kfs.cpp",
+      "filePath": "src/arm_task/src/task/catch_kfs.cpp",
+      "summary": "抓取任务完整实现，包括准备位置移动、视觉伺服定位、夹爪控制、放置到货架等完整抓取流程。",
+      "tags": [
+        "catch-implementation",
+        "visual-servo",
+        "grasping-sequence",
+        "shelf-placement"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_calc/include/arm_calc/arm_calc.hpp:ArmCalc",
+      "type": "class",
+      "name": "ArmCalc",
+      "filePath": "src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "lineRange": [
+        18,
+        83
+      ],
+      "summary": "KDL运动学解算器核心类，封装了正运动学、逆运动学、速度/加速度/力矩计算等功能。",
+      "tags": [
+        "kinematics-solver",
+        "kdl-chain",
+        "fk-ik",
+        "dynamics-calculator"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_calc/include/arm_calc/trajectory_calc.hpp:TrajectoryCalc",
+      "type": "class",
+      "name": "TrajectoryCalc",
+      "filePath": "src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "lineRange": [
+        7,
+        51
+      ],
+      "summary": "五次多项式轨迹生成器类，用于关节空间轨迹规划和插值。",
+      "tags": [
+        "trajectory-generator",
+        "quintic-polynomial",
+        "motion-planning"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/arm_calc/include/arm_calc/arm_ctrl.hpp:ArmCtrlNode",
+      "type": "class",
+      "name": "ArmCtrlNode",
+      "filePath": "src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "lineRange": [
+        22,
+        107
+      ],
+      "summary": "arm_calc ROS2节点主类，集成运动学解算、轨迹规划和多种运动模式控制。",
+      "tags": [
+        "ros2-node",
+        "arm-controller",
+        "multi-mode",
+        "visual-servo"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_task/include/robot.hpp:Robot",
+      "type": "class",
+      "name": "Robot",
+      "filePath": "src/arm_task/include/robot.hpp",
+      "lineRange": [
+        31,
+        100
+      ],
+      "summary": "机械臂核心控制类，管理状态、任务、TF变换和与arm_calc的通信。",
+      "tags": [
+        "robot-controller",
+        "task-manager",
+        "tf2-buffer",
+        "action-server"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "class",
+      "name": "BaseTask",
+      "filePath": "src/arm_task/include/task/base_task.hpp",
+      "lineRange": [
+        7,
+        14
+      ],
+      "summary": "任务基类，定义任务处理的通用接口和属性。",
+      "tags": [
+        "abstract-base",
+        "task-interface",
+        "polymorphism"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/arm_task/include/task/move_kfs.hpp:MoveKFS",
+      "type": "class",
+      "name": "MoveKFS",
+      "filePath": "src/arm_task/include/task/move_kfs.hpp",
+      "lineRange": [
+        8,
+        15
+      ],
+      "summary": "移动任务类，支持关节空间和笛卡尔空间运动。",
+      "tags": [
+        "move-task",
+        "joint-space",
+        "cartesian-space"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:src/arm_task/include/task/catch_kfs.hpp:CatchKFS",
+      "type": "class",
+      "name": "CatchKFS",
+      "filePath": "src/arm_task/include/task/catch_kfs.hpp",
+      "lineRange": [
+        8,
+        15
+      ],
+      "summary": "抓取任务类，实现视觉伺服抓取功能。",
+      "tags": [
+        "catch-task",
+        "visual-servo",
+        "grasping"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "type": "file",
+      "name": "serialnode.hpp",
+      "filePath": "src/robot_driver/include/robot_driver/serialnode.hpp",
+      "summary": "ROS2 节点类，负责上位机与下位机之间的双向数据通信，通过 USB CDC 协议传输机械臂目标状态和接收实际状态",
+      "tags": [
+        "ros2-node",
+        "usb-communication",
+        "hardware-interface",
+        "serial-port",
+        "data-acquisition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "type": "file",
+      "name": "cdc_trans.hpp",
+      "filePath": "src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "summary": "USB CDC 传输类，提供异步双向通信、热插拔检测和自动重连功能，基于 libusb 库实现",
+      "tags": [
+        "usb-driver",
+        "communication",
+        "libusb",
+        "hot-plug",
+        "async-transmission"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/robot_driver/src/serialnode.cpp",
+      "type": "file",
+      "name": "serialnode.cpp",
+      "filePath": "src/robot_driver/src/serialnode.cpp",
+      "summary": "SerialNode 类的实现，包含 USB CDC 初始化、ROS2 发布订阅、参数回调和抓取任务同步逻辑",
+      "tags": [
+        "ros2-implementation",
+        "usb-communication",
+        "parameter-server",
+        "grasp-sync"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/robot_driver/src/cdc_trans.cpp",
+      "type": "file",
+      "name": "cdc_trans.cpp",
+      "filePath": "src/robot_driver/src/cdc_trans.cpp",
+      "summary": "CDCTrans 类的实现，包含 USB 设备打开关闭、异步数据传输、热插拔事件处理和自动重连机制",
+      "tags": [
+        "usb-implementation",
+        "async-io",
+        "hot-plug-handling",
+        "auto-reconnect"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/vision/vision.cpp",
+      "type": "file",
+      "name": "vision.cpp",
+      "filePath": "src/vision/vision.cpp",
+      "summary": "视觉节点实现，集成 RealSense 相机、红色目标检测、卡尔曼滤波跟踪和 TF 坐标变换发布功能",
+      "tags": [
+        "computer-vision",
+        "realsense",
+        "object-detection",
+        "kalman-filter",
+        "tf-broadcaster"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "type": "file",
+      "name": "mujoco_ros2_control_plugin.hpp",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "summary": "MuJoCo ROS2 控制插件主类，负责初始化 MuJoCo 仿真环境、控制器管理器和硬件接口",
+      "tags": [
+        "mujoco",
+        "ros2-control",
+        "simulation",
+        "controller-manager",
+        "physics-engine"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "type": "file",
+      "name": "mujoco_system.hpp",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "summary": "MuJoCo 系统接口实现类，提供关节状态读取、命令写入、PID 控制和多种控制模式支持",
+      "tags": [
+        "hardware-interface",
+        "joint-control",
+        "pid-controller",
+        "mujoco-integration"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "type": "file",
+      "name": "mujoco_ros2_control_plugin.cpp",
+      "filePath": "src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "summary": "MuJoCo ROS2 控制插件实现，包含仿真循环、控制器更新、传感器注册和时间同步逻辑",
+      "tags": [
+        "simulation-loop",
+        "controller-update",
+        "sensor-management",
+        "time-sync"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "type": "file",
+      "name": "mujoco_system.cpp",
+      "filePath": "src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "summary": "MuJoCo 系统接口实现，包含关节注册、状态接口导出、PID 控制算法和多种控制模式切换",
+      "tags": [
+        "joint-registration",
+        "pid-implementation",
+        "control-modes",
+        "hardware-abstraction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "type": "class",
+      "name": "SerialNode",
+      "filePath": "src/robot_driver/include/robot_driver/serialnode.hpp",
+      "lineRange": [
+        42,
+        131
+      ],
+      "summary": "ROS2 节点类，负责通过 USB CDC 与下位机通信，订阅机械臂目标状态并发布实际状态",
+      "tags": [
+        "ros2-node",
+        "data-communication",
+        "parameter-server"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "class",
+      "name": "CDCTrans",
+      "filePath": "src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "lineRange": [
+        32,
+        137
+      ],
+      "summary": "USB CDC 传输类，提供异步双向通信、热插拔检测和自动重连功能",
+      "tags": [
+        "usb-driver",
+        "async-communication",
+        "hot-plug"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/vision/vision.cpp:VisionPositionPublisher",
+      "type": "class",
+      "name": "VisionPositionPublisher",
+      "filePath": "src/vision/vision.cpp",
+      "lineRange": [
+        107,
+        485
+      ],
+      "summary": "视觉位置发布器节点，负责 RealSense 相机数据采集、红色目标检测和 TF 坐标发布",
+      "tags": [
+        "vision-node",
+        "object-tracking",
+        "tf-broadcaster"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/vision/vision.cpp:RedSegmentation",
+      "type": "class",
+      "name": "RedSegmentation",
+      "filePath": "src/vision/vision.cpp",
+      "lineRange": [
+        65,
+        102
+      ],
+      "summary": "红色目标分割类，使用 HSV 色彩空间进行红色杆状目标检测",
+      "tags": [
+        "color-detection",
+        "image-segmentation",
+        "opencv"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/vision/vision.cpp:KalmanFilter2D",
+      "type": "class",
+      "name": "KalmanFilter2D",
+      "filePath": "src/vision/vision.cpp",
+      "lineRange": [
+        20,
+        63
+      ],
+      "summary": "2D 卡尔曼滤波器，用于目标位置预测和平滑跟踪",
+      "tags": [
+        "kalman-filter",
+        "target-tracking",
+        "prediction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "type": "class",
+      "name": "MujocoRos2Control",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "lineRange": [
+        137,
+        261
+      ],
+      "summary": "MuJoCo ROS2 控制插件主类，管理仿真环境、控制器和硬件接口",
+      "tags": [
+        "mujoco-plugin",
+        "ros2-control",
+        "simulation-manager"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "class",
+      "name": "MujocoSystem",
+      "filePath": "src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "lineRange": [
+        91,
+        325
+      ],
+      "summary": "MuJoCo 系统接口实现，提供关节控制、状态读取和 PID 控制算法",
+      "tags": [
+        "hardware-interface",
+        "joint-control",
+        "pid-controller"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "type": "file",
+      "name": "dog_controller.hpp",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "summary": "dog_controller 类的头文件，定义了基于 ros2_control 的机械臂关节 PD 控制器，包含 6 个关节的 PID 参数、滤波器系数和力矩限制等配置。",
+      "tags": [
+        "controller",
+        "ros2_control",
+        "joint_control",
+        "pd_controller",
+        "header"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/dog_controller/src/dog_controller.cpp",
+      "type": "file",
+      "name": "dog_controller.cpp",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "summary": "dog_controller 类的实现文件，实现了关节 PD 控制器的生命周期管理、参数配置、状态订阅和力矩控制输出等功能。",
+      "tags": [
+        "controller",
+        "ros2_control",
+        "joint_control",
+        "pd_controller",
+        "implementation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:src/dog_controller/include/dog_controller/dog_controller.hpp:DogController",
+      "type": "class",
+      "name": "DogController",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [
+        14,
+        46
+      ],
+      "summary": "继承自 controller_interface::ControllerInterface 的机械臂关节控制器类，实现 6 个关节的 PD 控制和状态发布。",
+      "tags": [
+        "controller",
+        "ros2_control",
+        "joint_control",
+        "pd_controller"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_init",
+      "type": "function",
+      "name": "on_init",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [
+        18,
+        18
+      ],
+      "summary": "初始化回调函数声明。",
+      "tags": [
+        "lifecycle",
+        "callback",
+        "initialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_configure",
+      "type": "function",
+      "name": "on_configure",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [
+        19,
+        19
+      ],
+      "summary": "配置回调函数声明。",
+      "tags": [
+        "lifecycle",
+        "callback",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_activate",
+      "type": "function",
+      "name": "on_activate",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [
+        20,
+        20
+      ],
+      "summary": "激活回调函数声明。",
+      "tags": [
+        "lifecycle",
+        "callback",
+        "activation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_deactivate",
+      "type": "function",
+      "name": "on_deactivate",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [
+        21,
+        21
+      ],
+      "summary": "停用回调函数声明。",
+      "tags": [
+        "lifecycle",
+        "callback",
+        "deactivation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:update",
+      "type": "function",
+      "name": "update",
+      "filePath": "src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "lineRange": [
+        23,
+        23
+      ],
+      "summary": "周期性更新函数声明。",
+      "tags": [
+        "control_loop",
+        "periodic_update"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_init",
+      "type": "function",
+      "name": "DogController::on_init",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [
+        20,
+        84
+      ],
+      "summary": "初始化控制器，创建状态发布器和目标订阅器，声明和初始化 PID 参数、滤波器系数等。",
+      "tags": [
+        "initialization",
+        "publisher",
+        "subscriber",
+        "parameter_declaration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_configure",
+      "type": "function",
+      "name": "DogController::on_configure",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [
+        86,
+        97
+      ],
+      "summary": "从参数服务器读取 PID 增益和滤波器系数等配置。",
+      "tags": [
+        "configuration",
+        "parameter_read"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::update",
+      "type": "function",
+      "name": "DogController::update",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [
+        110,
+        149
+      ],
+      "summary": "主控制循环：读取关节状态，应用滤波器，计算 PD 控制量并输出力矩指令。",
+      "tags": [
+        "control_loop",
+        "pd_control",
+        "filter",
+        "torque_output"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::command_interface_configuration",
+      "type": "function",
+      "name": "DogController::command_interface_configuration",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [
+        151,
+        159
+      ],
+      "summary": "配置命令接口，声明 6 个关节的力矩控制接口。",
+      "tags": [
+        "interface_configuration",
+        "command_interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:src/dog_controller/src/dog_controller.cpp:DogController::state_interface_configuration",
+      "type": "function",
+      "name": "DogController::state_interface_configuration",
+      "filePath": "src/dog_controller/src/dog_controller.cpp",
+      "lineRange": [
+        161,
+        171
+      ],
+      "summary": "配置状态接口，声明 6 个关节的位置、速度和力矩反馈接口。",
+      "tags": [
+        "interface_configuration",
+        "state_interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/msg/Arm.msg",
+      "type": "file",
+      "name": "Arm.msg",
+      "filePath": "src/robot_interfaces/msg/Arm.msg",
+      "summary": "定义机械臂状态消息类型，包含 6 个 Joint 类型的电机状态数组。",
+      "tags": [
+        "message",
+        "ros2_interface",
+        "arm_state",
+        "joint_state"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/msg/Joint.msg",
+      "type": "file",
+      "name": "Joint.msg",
+      "filePath": "src/robot_interfaces/msg/Joint.msg",
+      "summary": "定义单个关节状态消息类型，包含角度、角速度和力矩三个 float32 字段。",
+      "tags": [
+        "message",
+        "ros2_interface",
+        "joint_state",
+        "motor_state"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/srv/ForwardKinematics.srv",
+      "type": "file",
+      "name": "ForwardKinematics.srv",
+      "filePath": "src/robot_interfaces/srv/ForwardKinematics.srv",
+      "summary": "定义正运动学求解服务，输入 6 个关节角度，输出末端执行器位姿、成功标志和消息。",
+      "tags": [
+        "service",
+        "ros2_interface",
+        "forward_kinematics",
+        "ik"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/srv/GetCurrentEndPose.srv",
+      "type": "file",
+      "name": "GetCurrentEndPose.srv",
+      "filePath": "src/robot_interfaces/srv/GetCurrentEndPose.srv",
+      "summary": "定义获取当前末端位姿服务，无输入参数，输出当前末端执行器位姿、成功标志和消息。",
+      "tags": [
+        "service",
+        "ros2_interface",
+        "end_pose",
+        "forward_kinematics"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/robot_interfaces/action/ArmTask.action",
+      "type": "file",
+      "name": "ArmTask.action",
+      "filePath": "src/robot_interfaces/action/ArmTask.action",
+      "summary": "定义机械臂任务动作接口，包含目标 ID 和数据输入，返回错误码、原因和反馈描述。",
+      "tags": [
+        "action",
+        "ros2_interface",
+        "arm_task",
+        "task_management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "type": "file",
+      "name": "arm_task_move_test.launch.py",
+      "filePath": "src/launch_pack/launch/arm_task_move_test.launch.py",
+      "summary": "启动机械臂运动测试的launch文件，包含仿真环境和move_kfs_test节点，用于测试机械臂的基本运动功能",
+      "tags": [
+        "launch",
+        "test",
+        "simulation",
+        "arm-task"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "file",
+      "name": "arm_task_sim.launch.py",
+      "filePath": "src/launch_pack/launch/arm_task_sim.launch.py",
+      "summary": "启动MuJoCo仿真环境的launch文件，包含机械臂仿真、RViz可视化和相机TF坐标变换发布",
+      "tags": [
+        "launch",
+        "simulation",
+        "mujoco",
+        "rviz"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "type": "file",
+      "name": "arm_task_target_test.launch.py",
+      "filePath": "src/launch_pack/launch/arm_task_target_test.launch.py",
+      "summary": "启动视觉伺服目标测试的launch文件，发布静态目标TF坐标，模拟视觉检测结果用于测试抓取任务",
+      "tags": [
+        "launch",
+        "test",
+        "vision",
+        "target",
+        "tf"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/launch/arm_real.launch.py",
+      "type": "file",
+      "name": "arm_real.launch.py",
+      "filePath": "src/launch_pack/launch/arm_real.launch.py",
+      "summary": "启动真实机械臂硬件的launch文件，包含robot_driver、arm_calc、arm_task、vision节点和RViz可视化",
+      "tags": [
+        "launch",
+        "hardware",
+        "real",
+        "production"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/config/ros2_controller.yaml",
+      "type": "config",
+      "name": "ros2_controller.yaml",
+      "filePath": "src/launch_pack/config/ros2_controller.yaml",
+      "summary": "ros2_control控制器配置文件，定义6个关节的PD控制参数（kp、kd）、力矩限制和滤波器设置",
+      "tags": [
+        "config",
+        "controller",
+        "ros2-control",
+        "pd-gains"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/config/arm_position.yaml",
+      "type": "config",
+      "name": "arm_position.yaml",
+      "filePath": "src/launch_pack/config/arm_position.yaml",
+      "summary": "机械臂命名位姿配置文件，定义各种预定义关节位置（如起始位姿、准备位姿、KFS步骤位姿等）",
+      "tags": [
+        "config",
+        "positions",
+        "joint-states",
+        "named-poses"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/launch_pack/rviz/display_config.rviz",
+      "type": "config",
+      "name": "display_config.rviz",
+      "filePath": "src/launch_pack/rviz/display_config.rviz",
+      "summary": "RViz2可视化配置文件，设置机器人模型、TF坐标系、MarkerArray显示和相机视角参数",
+      "tags": [
+        "config",
+        "rviz",
+        "visualization",
+        "display"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:src/arm_task/config/arm_position.yaml",
+      "type": "config",
+      "name": "arm_position.yaml",
+      "filePath": "src/arm_task/config/arm_position.yaml",
+      "summary": "arm_task包专用的机械臂命名位姿配置，包含抓取任务相关的关节位置（如抓取准备位、分离位、货架放置位等）",
+      "tags": [
+        "config",
+        "arm-task",
+        "grasp",
+        "positions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_calc/config/arm_calc_params.yaml",
+      "type": "config",
+      "name": "arm_calc_params.yaml",
+      "filePath": "src/arm_calc/config/arm_calc_params.yaml",
+      "summary": "arm_calc包的运动学解算参数配置文件（文件不存在，可能尚未创建或在其他位置）",
+      "tags": [
+        "config",
+        "arm-calc",
+        "kinematics",
+        "missing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link4.stl",
+      "type": "file",
+      "name": "link4.stl",
+      "filePath": "src/arm/model/meshes/link4.stl",
+      "summary": "机械臂 Link4 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": [
+        "mesh",
+        "stl",
+        "visualization",
+        "link4",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link5.stl",
+      "type": "file",
+      "name": "link5.stl",
+      "filePath": "src/arm/model/meshes/link5.stl",
+      "summary": "机械臂 Link5 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": [
+        "mesh",
+        "stl",
+        "visualization",
+        "link5",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link6.stl",
+      "type": "file",
+      "name": "link6.stl",
+      "filePath": "src/arm/model/meshes/link6.stl",
+      "summary": "机械臂 Link6 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": [
+        "mesh",
+        "stl",
+        "visualization",
+        "link6",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link7.stl",
+      "type": "file",
+      "name": "link7.stl",
+      "filePath": "src/arm/model/meshes/link7.stl",
+      "summary": "机械臂 Link7 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": [
+        "mesh",
+        "stl",
+        "visualization",
+        "link7",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/ee_link.stl",
+      "type": "file",
+      "name": "ee_link.stl",
+      "filePath": "src/arm/model/meshes/ee_link.stl",
+      "summary": "机械臂末端执行器（End Effector）的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": [
+        "mesh",
+        "stl",
+        "visualization",
+        "end-effector",
+        "3d-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/task/idel.hpp",
+      "type": "file",
+      "name": "idel.hpp",
+      "filePath": "src/arm_task/include/task/idel.hpp",
+      "summary": "空闲任务类声明，继承自 BaseTask，实现机械臂空闲等待状态。",
+      "tags": [
+        "task",
+        "idle",
+        "header",
+        "arm-task"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_task/include/task/place_kfs.hpp",
+      "type": "file",
+      "name": "place_kfs.hpp",
+      "filePath": "src/arm_task/include/task/place_kfs.hpp",
+      "summary": "放置任务类声明，继承自 BaseTask，实现机械臂将物体放置到货架的功能。",
+      "tags": [
+        "task",
+        "place",
+        "header",
+        "arm-task"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "type": "file",
+      "name": "basic_moves.hpp",
+      "filePath": "src/arm_calc/include/arm_action/basic_moves.hpp",
+      "summary": "基本运动动作类声明，包含 JointSpaceMove、JCartesianSpaceMove 和 VisualServoMove 三种运动模式类。",
+      "tags": [
+        "action",
+        "motion",
+        "joint-space",
+        "cartesian-space",
+        "visual-servo",
+        "arm-calc"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:AGENTS.md",
+      "target": "document:README.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:README.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:AGENTS.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:memory-bank/progress.md",
+      "target": "document:CLAUDE.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:src/arm_task/CMakeLists.txt",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:src/dog_controller/CMakeLists.txt",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:src/vision/CMakeLists.txt",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/arm/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/arm_task/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/robot_interfaces/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/launch_pack/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/vision/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:memory-bank/rules.md",
+      "target": "config:src/dog_controller/CMakeLists.txt",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:src/arm/launch/arm_rviz.launch.py",
+      "target": "file:src/arm/model/robotic_arm.urdf",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/base_link.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/link1.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/link2.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm/model/robotic_arm.urdf",
+      "target": "file:src/arm/model/meshes/link3.stl",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "target": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "target": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "target": "file:src/arm_calc/include/arm_calc/common_types.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_calc/arm_calc.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_test_node.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/include/robot.hpp",
+      "target": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/include/task/move_kfs.hpp",
+      "target": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "target": "file:src/arm_task/include/task/base_task.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/robot.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/move_kfs.cpp",
+      "target": "file:src/arm_task/include/task/move_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/catch_kfs.cpp",
+      "target": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "target": "class:src/arm_calc/include/arm_calc/arm_calc.hpp:ArmCalc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "target": "class:src/arm_calc/include/arm_calc/trajectory_calc.hpp:TrajectoryCalc",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "target": "class:src/arm_calc/include/arm_calc/arm_ctrl.hpp:ArmCtrlNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/arm_task/include/robot.hpp",
+      "target": "class:src/arm_task/include/robot.hpp:Robot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/arm_task/include/task/base_task.hpp",
+      "target": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/arm_task/include/task/move_kfs.hpp",
+      "target": "class:src/arm_task/include/task/move_kfs.hpp:MoveKFS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "target": "class:src/arm_task/include/task/catch_kfs.hpp:CatchKFS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "class:src/arm_task/include/task/move_kfs.hpp:MoveKFS",
+      "target": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:src/arm_task/include/task/catch_kfs.hpp:CatchKFS",
+      "target": "class:src/arm_task/include/task/base_task.hpp:BaseTask",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/catch_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/move_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/move_kfs.cpp",
+      "target": "file:src/arm_task/include/robot.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/task/catch_kfs.cpp",
+      "target": "file:src/arm_task/include/robot.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_driver/src/serialnode.cpp",
+      "target": "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_driver/src/cdc_trans.cpp",
+      "target": "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "target": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "target": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+      "target": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+      "target": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/vision/vision.cpp",
+      "target": "class:src/vision/vision.cpp:VisionPositionPublisher",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/vision/vision.cpp",
+      "target": "class:src/vision/vision.cpp:RedSegmentation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/vision/vision.cpp",
+      "target": "class:src/vision/vision.cpp:KalmanFilter2D",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "target": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/robot_driver/src/serialnode.cpp",
+      "target": "class:src/robot_driver/include/robot_driver/serialnode.hpp:SerialNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/robot_driver/src/cdc_trans.cpp",
+      "target": "class:src/robot_driver/include/robot_driver/cdc_trans.hpp:CDCTrans",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp:MujocoRos2Control",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/mujoco_ros2_control/src/mujoco_system.cpp",
+      "target": "class:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp:MujocoSystem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "class:src/dog_controller/include/dog_controller/dog_controller.hpp:DogController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_configure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_activate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:on_deactivate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "function:src/dog_controller/include/dog_controller/dog_controller.hpp:update",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::on_configure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::update",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::command_interface_configuration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "function:src/dog_controller/src/dog_controller.cpp:DogController::state_interface_configuration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+      "target": "file:src/robot_interfaces/msg/Arm.msg",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "file:src/robot_interfaces/msg/Arm.msg",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/robot_interfaces/msg/Arm.msg",
+      "target": "file:src/robot_interfaces/msg/Joint.msg",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/dog_controller/src/dog_controller.cpp",
+      "target": "class:src/dog_controller/include/dog_controller/dog_controller.hpp:DogController",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "target": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "target": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/launch/arm_real.launch.py",
+      "target": "file:src/launch_pack/rviz/display_config.rviz",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/config/ros2_controller.yaml",
+      "target": "file:src/launch_pack/launch/arm_real.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/config/ros2_controller.yaml",
+      "target": "file:src/launch_pack/launch/arm_task_sim.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/launch_pack/config/arm_position.yaml",
+      "target": "file:src/launch_pack/launch/arm_real.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm_task/config/arm_position.yaml",
+      "target": "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm_task/config/arm_position.yaml",
+      "target": "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/idel.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_task/src/robot.cpp",
+      "target": "file:src/arm_task/include/task/place_kfs.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/src/arm_ctrl.cpp",
+      "target": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+      "target": "file:src/arm_calc/include/arm_action/basic_moves.hpp",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:documentation",
+      "name": "Documentation",
+      "description": "项目文档和AI代理指南",
+      "nodeIds": [
+        "document:AGENTS.md",
+        "document:CLAUDE.md",
+        "document:README.md",
+        "config:log/COLCON_IGNORE",
+        "document:memory-bank/progress.md",
+        "document:memory-bank/rules.md"
+      ]
+    },
+    {
+      "id": "layer:interfaces",
+      "name": "Robot Interfaces",
+      "description": "自定义ROS2消息/服务/动作定义",
+      "nodeIds": [
+        "config:src/robot_interfaces/CMakeLists.txt",
+        "config:src/robot_interfaces/package.xml",
+        "file:src/robot_interfaces/msg/Arm.msg",
+        "file:src/robot_interfaces/msg/Joint.msg",
+        "file:src/robot_interfaces/srv/ForwardKinematics.srv",
+        "file:src/robot_interfaces/srv/GetCurrentEndPose.srv",
+        "file:src/robot_interfaces/action/ArmTask.action"
+      ]
+    },
+    {
+      "id": "layer:model",
+      "name": "Robot Model",
+      "description": "URDF模型、STL网格和ros2_control插件",
+      "nodeIds": [
+        "config:src/arm/CMakeLists.txt",
+        "config:src/arm/package.xml",
+        "file:src/arm/include/arm/robotic_arm_ros2_control.hpp",
+        "file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp",
+        "file:src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp",
+        "file:src/arm/launch/arm_rviz.launch.py",
+        "file:src/arm/model/robotic_arm.urdf",
+        "file:src/arm/model/meshes/base_link.stl",
+        "file:src/arm/model/meshes/link1.stl",
+        "file:src/arm/model/meshes/link2.stl",
+        "file:src/arm/model/meshes/link3.stl",
+        "file:src/arm/model/meshes/link4.stl",
+        "file:src/arm/model/meshes/link5.stl",
+        "file:src/arm/model/meshes/link6.stl",
+        "file:src/arm/model/meshes/link7.stl",
+        "file:src/arm/model/meshes/ee_link.stl"
+      ]
+    },
+    {
+      "id": "layer:kinematics",
+      "name": "Kinematics & Motion Planning",
+      "description": "KDL求解器和轨迹规划",
+      "nodeIds": [
+        "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+        "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+        "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+        "file:src/arm_calc/include/arm_calc/common_types.hpp",
+        "file:src/arm_calc/src/arm_calc/arm_calc.cpp",
+        "file:src/arm_calc/src/arm_calc/trajectory_calc.cpp",
+        "file:src/arm_calc/src/arm_ctrl.cpp",
+        "file:src/arm_calc/src/arm_test_node.cpp",
+        "file:src/arm_calc/config/arm_calc_params.yaml",
+        "file:src/arm_calc/include/arm_action/basic_moves.hpp"
+      ]
+    },
+    {
+      "id": "layer:task",
+      "name": "Task State Machine",
+      "description": "高层任务调度和状态管理",
+      "nodeIds": [
+        "config:src/arm_task/CMakeLists.txt",
+        "config:src/arm_task/package.xml",
+        "file:src/arm_task/include/robot.hpp",
+        "file:src/arm_task/include/task/base_task.hpp",
+        "file:src/arm_task/include/task/move_kfs.hpp",
+        "file:src/arm_task/include/task/catch_kfs.hpp",
+        "file:src/arm_task/src/robot.cpp",
+        "file:src/arm_task/src/task/move_kfs.cpp",
+        "file:src/arm_task/src/task/catch_kfs.cpp",
+        "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+        "file:src/launch_pack/launch/arm_task_sim.launch.py",
+        "file:src/launch_pack/launch/arm_task_target_test.launch.py",
+        "file:src/arm_task/config/arm_position.yaml",
+        "file:src/arm_task/include/task/idel.hpp",
+        "file:src/arm_task/include/task/place_kfs.hpp"
+      ]
+    },
+    {
+      "id": "layer:vision",
+      "name": "Vision System",
+      "description": "RealSense相机和颜色检测",
+      "nodeIds": [
+        "config:src/vision/CMakeLists.txt",
+        "config:src/vision/package.xml",
+        "file:src/vision/vision.cpp"
+      ]
+    },
+    {
+      "id": "layer:hardware",
+      "name": "Hardware Interface",
+      "description": "USB CDC驱动和STM32通信",
+      "nodeIds": [
+        "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+        "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+        "file:src/robot_driver/src/serialnode.cpp",
+        "file:src/robot_driver/src/cdc_trans.cpp"
+      ]
+    },
+    {
+      "id": "layer:control",
+      "name": "Joint Control",
+      "description": "关节PD控制器插件",
+      "nodeIds": [
+        "config:src/dog_controller/CMakeLists.txt",
+        "config:src/dog_controller/package.xml",
+        "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+        "file:src/dog_controller/src/dog_controller.cpp"
+      ]
+    },
+    {
+      "id": "layer:simulation",
+      "name": "Simulation",
+      "description": "MuJoCo仿真集成",
+      "nodeIds": [
+        "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+        "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+        "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+        "file:src/mujoco_ros2_control/src/mujoco_system.cpp"
+      ]
+    },
+    {
+      "id": "layer:launch",
+      "name": "Launch & Configuration",
+      "description": "启动文件和配置文件",
+      "nodeIds": [
+        "config:src/launch_pack/CMakeLists.txt",
+        "config:src/launch_pack/package.xml",
+        "file:src/launch_pack/launch/arm_real.launch.py",
+        "file:src/launch_pack/config/ros2_controller.yaml",
+        "file:src/launch_pack/config/arm_position.yaml",
+        "file:src/launch_pack/rviz/display_config.rviz"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "项目概览",
+      "description": "了解项目的整体架构和数据流。从README和项目文档开始。",
+      "nodeIds": [
+        "document:README.md",
+        "document:CLAUDE.md"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "机器人接口定义",
+      "description": "学习ROS2自定义消息、服务和动作接口，这是模块间通信的契约。",
+      "nodeIds": [
+        "config:src/robot_interfaces/CMakeLists.txt",
+        "config:src/robot_interfaces/package.xml",
+        "file:src/robot_interfaces/msg/Arm.msg",
+        "file:src/robot_interfaces/msg/Joint.msg"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "机器人模型",
+      "description": "了解六轴机械臂的URDF模型和STL网格，以及ros2_control配置。",
+      "nodeIds": [
+        "config:src/arm/CMakeLists.txt",
+        "config:src/arm/package.xml",
+        "file:src/arm/include/arm/robotic_arm_ros2_control.hpp",
+        "file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "KDL运动学解算",
+      "description": "深入KDL运动学求解器，理解FK/IK的核心算法实现。",
+      "nodeIds": [
+        "file:src/arm_calc/include/arm_calc/arm_calc.hpp",
+        "file:src/arm_calc/include/arm_calc/trajectory_calc.hpp",
+        "file:src/arm_calc/include/arm_calc/arm_ctrl.hpp",
+        "file:src/arm_calc/include/arm_calc/common_types.hpp"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "任务状态机",
+      "description": "学习高层任务调度机制，包括状态机和任务切换逻辑。",
+      "nodeIds": [
+        "config:src/arm_task/CMakeLists.txt",
+        "config:src/arm_task/package.xml",
+        "file:src/arm_task/include/robot.hpp",
+        "file:src/arm_task/include/task/base_task.hpp"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "视觉系统",
+      "description": "了解RealSense相机集成、红色目标检测和卡尔曼滤波。",
+      "nodeIds": [
+        "config:src/vision/CMakeLists.txt",
+        "config:src/vision/package.xml",
+        "file:src/vision/vision.cpp",
+        "class:src/vision/vision.cpp:VisionPositionPublisher"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "硬件接口",
+      "description": "学习USB CDC串口通信驱动，了解与STM32的通信协议。",
+      "nodeIds": [
+        "file:src/robot_driver/include/robot_driver/serialnode.hpp",
+        "file:src/robot_driver/include/robot_driver/cdc_trans.hpp",
+        "file:src/robot_driver/src/serialnode.cpp",
+        "file:src/robot_driver/src/cdc_trans.cpp"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "关节PD控制器",
+      "description": "了解ros2_control框架下的关节PD控制器实现。",
+      "nodeIds": [
+        "config:src/dog_controller/CMakeLists.txt",
+        "config:src/dog_controller/package.xml",
+        "file:src/dog_controller/include/dog_controller/dog_controller.hpp",
+        "file:src/dog_controller/src/dog_controller.cpp"
+      ]
+    },
+    {
+      "order": 9,
+      "title": "MuJoCo仿真",
+      "description": "了解MuJoCo物理仿真环境和ros2_control集成。",
+      "nodeIds": [
+        "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_ros2_control_plugin.hpp",
+        "file:src/mujoco_ros2_control/include/mujoco_ros2_control/mujoco_system.hpp",
+        "file:src/mujoco_ros2_control/src/mujoco_ros2_control_plugin.cpp",
+        "file:src/mujoco_ros2_control/src/mujoco_system.cpp"
+      ]
+    },
+    {
+      "order": 10,
+      "title": "启动配置",
+      "description": "学习ROS2启动文件和参数配置，了解系统如何组装和运行。",
+      "nodeIds": [
+        "config:src/launch_pack/CMakeLists.txt",
+        "config:src/launch_pack/package.xml",
+        "file:src/launch_pack/launch/arm_task_move_test.launch.py",
+        "file:src/launch_pack/launch/arm_task_sim.launch.py"
+      ]
+    }
+  ]
+}

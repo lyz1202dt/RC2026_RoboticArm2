@@ -1,0 +1,46 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'config:log/COLCON_IGNORE' has no edges (orphan)",
+    "Node 'config:src/arm/package.xml' has no edges (orphan)",
+    "Node 'config:src/arm_task/package.xml' has no edges (orphan)",
+    "Node 'config:src/robot_interfaces/package.xml' has no edges (orphan)",
+    "Node 'config:src/launch_pack/package.xml' has no edges (orphan)",
+    "Node 'config:src/vision/package.xml' has no edges (orphan)",
+    "Node 'config:src/dog_controller/package.xml' has no edges (orphan)",
+    "Node 'file:src/arm/include/arm/robotic_arm_ros2_control.hpp' has no edges (orphan)",
+    "Node 'file:src/arm/include/arm/robotic_arm_ros2_control_plugin.hpp' has no edges (orphan)",
+    "Node 'file:src/arm/include/arm/robotic_arm_ros2_control/robotic_arm_ros2_control.hpp' has no edges (orphan)",
+    "Node 'file:src/robot_interfaces/srv/ForwardKinematics.srv' has no edges (orphan)",
+    "Node 'file:src/robot_interfaces/srv/GetCurrentEndPose.srv' has no edges (orphan)",
+    "Node 'file:src/robot_interfaces/action/ArmTask.action' has no edges (orphan)",
+    "Node 'file:src/arm_calc/config/arm_calc_params.yaml' has no edges (orphan)",
+    "Node 'file:src/arm/model/meshes/link4.stl' has no edges (orphan)",
+    "Node 'file:src/arm/model/meshes/link5.stl' has no edges (orphan)",
+    "Node 'file:src/arm/model/meshes/link6.stl' has no edges (orphan)",
+    "Node 'file:src/arm/model/meshes/link7.stl' has no edges (orphan)",
+    "Node 'file:src/arm/model/meshes/ee_link.stl' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 100,
+    "totalEdges": 91,
+    "totalLayers": 10,
+    "tourSteps": 10,
+    "nodeTypes": {
+      "document": 5,
+      "config": 18,
+      "file": 52,
+      "class": 15,
+      "function": 10
+    },
+    "edgeTypes": {
+      "documents": 10,
+      "depends_on": 15,
+      "imports": 28,
+      "contains": 29,
+      "inherits": 2,
+      "implements": 1,
+      "configures": 6
+    }
+  }
+}

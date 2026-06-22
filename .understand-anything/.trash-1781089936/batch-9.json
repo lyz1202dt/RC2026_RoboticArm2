@@ -1,0 +1,50 @@
+{
+  "nodes": [
+    {
+      "id": "file:src/arm/model/meshes/link4.stl",
+      "type": "file",
+      "name": "link4.stl",
+      "filePath": "src/arm/model/meshes/link4.stl",
+      "summary": "机械臂 Link4 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": ["mesh", "stl", "visualization", "link4", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link5.stl",
+      "type": "file",
+      "name": "link5.stl",
+      "filePath": "src/arm/model/meshes/link5.stl",
+      "summary": "机械臂 Link5 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": ["mesh", "stl", "visualization", "link5", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link6.stl",
+      "type": "file",
+      "name": "link6.stl",
+      "filePath": "src/arm/model/meshes/link6.stl",
+      "summary": "机械臂 Link6 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": ["mesh", "stl", "visualization", "link6", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/link7.stl",
+      "type": "file",
+      "name": "link7.stl",
+      "filePath": "src/arm/model/meshes/link7.stl",
+      "summary": "机械臂 Link7 关节的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": ["mesh", "stl", "visualization", "link7", "3d-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:src/arm/model/meshes/ee_link.stl",
+      "type": "file",
+      "name": "ee_link.stl",
+      "filePath": "src/arm/model/meshes/ee_link.stl",
+      "summary": "机械臂末端执行器（End Effector）的 STL 网格模型文件，用于 RViz 可视化显示和 MuJoCo 仿真渲染。",
+      "tags": ["mesh", "stl", "visualization", "end-effector", "3d-model"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

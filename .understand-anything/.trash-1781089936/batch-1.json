@@ -1,0 +1,79 @@
+{
+  "nodes": [
+    {
+      "id": "document:AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "AGENTS.md",
+      "summary": "AI 编程代理快速指南，提供 ROS2 工作区开发任务的上下文信息，包括构建、运行、测试命令、关键目录、代码约定和常见陷阱。",
+      "tags": ["documentation", "guide", "ai-agent", "ros2", "development"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "项目规则文档，定义代码探索限制、项目结构、包列表、关键节点与数据流、TF坐标系、任务系统和回复风格。",
+      "tags": ["documentation", "project-rules", "architecture", "data-flow", "task-system"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "项目主文档，包含河北科技大学2026 RC Robocon六轴机械臂方案的架构原则、接口设计、约束分层和测试数据记录。",
+      "tags": ["documentation", "architecture", "interface-design", "project-overview"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:log/COLCON_IGNORE",
+      "type": "config",
+      "name": "COLCON_IGNORE",
+      "filePath": "log/COLCON_IGNORE",
+      "summary": "Colcon 构建系统忽略文件，用于排除 log 目录被包含到构建过程中。",
+      "tags": ["configuration", "build-system", "colcon"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:memory-bank/progress.md",
+      "type": "document",
+      "name": "progress.md",
+      "filePath": "memory-bank/progress.md",
+      "summary": "开发进度记录，记录了2026年5月9日至11日间 move_kfs 和 catch_kfs 功能开发、测试和修复的关键里程碑。",
+      "tags": ["documentation", "progress", "changelog", "development-history"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:AGENTS.md",
+      "target": "document:README.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:README.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:AGENTS.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:memory-bank/progress.md",
+      "target": "document:CLAUDE.md",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}
