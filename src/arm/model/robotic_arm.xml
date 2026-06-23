@@ -30,7 +30,12 @@
               <inertial pos="0.070676368899276 -0.0400413645185225 -0.0239463858952916" mass="0.37892648177412" fullinertia="0.000174029918781671 0.000191074267942647 0.000202618171796121 5.18282255506871e-06 -6.09003216159317e-08 -2.79403838333222e-07" />
               <joint name="joint4" pos="0 0 0" axis="0 0 -1" range="-2 2" actuatorfrcrange="-50 50" />
               <geom type="mesh" rgba="0.294117647058824 0.294117647058824 0.294117647058824 1" mesh="Link4" />
-              <camera name="camera" pos="0.1 -0.09 -0.03" xyaxes="0 -1 0 0 0 1" />
+      <body name="camera_link" pos="0.1 0.09 -0.03" xyaxes="0 0 1  0 1 0">
+        <inertial pos="0 0 0" mass="1e-3" fullinertia="1e-6 1e-6 1e-6"/>
+        <camera name="top_rgbd" mode="fixed" fovy="55"/>
+      </body>
+      
+              
               <body name="Link5" pos="0.076 -0.0 -0.070" euler="0 0 0">
                 <inertial pos="0.0451968277403802 -7.88179412723744e-06 0.0419533410672925" mass="0.112337074738347" fullinertia="2.52285225497034e-05 2.87650929013733e-05 3.6214455173519e-05 -5.91425386067044e-10 -1.35065360622416e-13 1.31696157156535e-08" />
                 <joint name="joint5" pos="0 0 0" axis="0 0 1" range="-0.4 0.4" actuatorfrcrange="-50 50" />
