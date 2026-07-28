@@ -10,10 +10,9 @@ import os
 def generate_launch_description():
     launch_pack_share = get_package_share_directory("launch_pack")
     
-    # Include arm_task_sim launch file
-    arm_task_sim_launch = IncludeLaunchDescription(
+    arm_mujoco_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(launch_pack_share, "launch", "arm_task_sim.launch.py")
+            os.path.join(launch_pack_share, "launch", "arm_mujoco_sim.launch.py")
         ),
         launch_arguments={
             'show_rviz': LaunchConfiguration('show_rviz')
@@ -26,8 +25,14 @@ def generate_launch_description():
         description="Whether to start RViz2 together with simulation",
     )
 
+    data_measure_node=Node(
+        package="arm_measure",
+        executable="parameter_measure_node",
+        output="screen"
+    )
     
     return LaunchDescription([
+        data_measure_node,
         show_rviz_arg,
-        arm_task_sim_launch,
+        arm_mujoco_sim_launch
     ])

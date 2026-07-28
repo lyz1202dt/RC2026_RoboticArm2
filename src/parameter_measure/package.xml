@@ -15,8 +15,8 @@
   <depend>geometry_msgs</depend>
   <depend>trajectory_msgs</depend>
   <depend>ament_index_cpp</depend>
-  <depend>Eigen3</depend>
   <depend>robot_interfaces</depend>
+  <depend>urdf</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

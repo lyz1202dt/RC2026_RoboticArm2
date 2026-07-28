@@ -17,19 +17,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(robot_interfaces REQUIRED)
-
-set(PINOCCHIO_VENDOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/pinocchio")
-if(EXISTS "${PINOCCHIO_VENDOR_DIR}/CMakeLists.txt")
-  set(PINOCCHIO_WITH_HPP_FCL OFF CACHE BOOL "Build Pinocchio without hpp-fcl support" FORCE)
-  set(PINOCCHIO_WITH_CASADI OFF CACHE BOOL "Build Pinocchio without CasADi support" FORCE)
-  set(PINOCCHIO_WITH_CPPAD OFF CACHE BOOL "Build Pinocchio without CppAD support" FORCE)
-  set(PINOCCHIO_WITH_OPENMP OFF CACHE BOOL "Build Pinocchio without OpenMP support" FORCE)
-  add_subdirectory("${PINOCCHIO_VENDOR_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/pinocchio")
-else()
-  find_package(pinocchio REQUIRED)
-endif()
+find_package(urdf REQUIRED)
 
 add_executable(parameter_measure_node
   src/main.cpp
@@ -52,11 +41,7 @@ ament_target_dependencies(parameter_measure_node
   trajectory_msgs
   ament_index_cpp
   robot_interfaces
-)
-
-target_link_libraries(parameter_measure_node
-  Eigen3::Eigen
-  pinocchio::pinocchio
+  urdf
 )
 
 install(TARGETS

@@ -2,10 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
 
-#include <pinocchio/multibody/model.hpp>
-#include <pinocchio/parsers/urdf.hpp>
+#include <urdf/model.h>
 
 namespace {
 
@@ -187,36 +187,64 @@ bool Trajectory::load_joint_limits()
         return true;
     }
 
-    pinocchio::Model model;
-    try {
-        pinocchio::urdf::buildModel(urdf_file_path_, model);
-    } catch (...) {
+    urdf::Model model;
+    if (!model.initFile(urdf_file_path_)) {
         return false;
     }
 
-    if (model.nq == 0) {
+    const urdf::LinkConstSharedPtr root_link = model.getRoot();
+    if (!root_link) {
         return false;
     }
 
-    lower_limits_.resize(static_cast<std::size_t>(model.nq));
-    upper_limits_.resize(static_cast<std::size_t>(model.nq));
-    velocity_limits_.resize(static_cast<std::size_t>(model.nv), 0.0);
+    lower_limits_.clear();
+    upper_limits_.clear();
+    velocity_limits_.clear();
 
-    for (Eigen::DenseIndex i = 0; i < model.nq; ++i) {
-        double lower = model.lowerPositionLimit[i];
-        double upper = model.upperPositionLimit[i];
+    const auto append_joint_limits = [this](const urdf::Joint& joint) {
+        double lower = kDefaultLowerLimit;
+        double upper = kDefaultUpperLimit;
+        double velocity = 0.0;
+
+        if (joint.limits) {
+            lower = joint.limits->lower;
+            upper = joint.limits->upper;
+            velocity = joint.limits->velocity;
+        }
 
         if (!IsFiniteLimit(lower) || !IsFiniteLimit(upper) || lower >= upper) {
             lower = kDefaultLowerLimit;
             upper = kDefaultUpperLimit;
         }
 
-        lower_limits_[static_cast<std::size_t>(i)] = lower;
-        upper_limits_[static_cast<std::size_t>(i)] = upper;
-    }
+        lower_limits_.push_back(lower);
+        upper_limits_.push_back(upper);
+        velocity_limits_.push_back(velocity);
+    };
 
-    for (Eigen::DenseIndex i = 0; i < model.nv; ++i) {
-        velocity_limits_[static_cast<std::size_t>(i)] = model.velocityLimit[i];
+    const std::function<void(const urdf::LinkConstSharedPtr&)> visit_link =
+        [&](const urdf::LinkConstSharedPtr& link) {
+            for (const auto& child_joint : link->child_joints) {
+                if (!child_joint) {
+                    continue;
+                }
+
+                if (child_joint->type == urdf::Joint::REVOLUTE || child_joint->type == urdf::Joint::CONTINUOUS ||
+                    child_joint->type == urdf::Joint::PRISMATIC) {
+                    append_joint_limits(*child_joint);
+                }
+
+                const urdf::LinkConstSharedPtr child_link = model.getLink(child_joint->child_link_name);
+                if (child_link) {
+                    visit_link(child_link);
+                }
+            }
+        };
+
+    visit_link(root_link);
+
+    if (lower_limits_.empty()) {
+        return false;
     }
 
     limits_loaded_ = true;
