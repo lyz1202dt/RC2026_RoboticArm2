@@ -5,6 +5,7 @@ arm_measure:
     joint_state_topic: "myjoints_state"
     joint_target_topic: "myjoints_target"
     csv_file_path: ""
+    trajectory_file_path: ""
     joint_dof: 6
-    trajectory_duration: 20.0
+    move_to_start_duration: 3.0
     control_period: 0.02

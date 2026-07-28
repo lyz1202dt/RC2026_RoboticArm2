@@ -7,6 +7,18 @@ data:
   decimation_factor: 10
   max_samples: 0
 
+trajectory_generation:
+  duration: 10.0
+  sample_time: 0.02
+  harmonics: 5
+  attempts: 250
+  seed: 2026
+  limit_margin_ratio: 0.12
+  velocity_limit_ratio: 0.35
+  acceleration_limit: 8.0
+  ground_clearance: 0.02
+  ground_check_links: [link2, link3, link4, link5, link6]
+
 identification:
   zero_tolerance: 1.0e-8
   qr_tolerance: 1.0e-8

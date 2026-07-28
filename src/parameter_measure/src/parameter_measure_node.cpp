@@ -32,8 +32,9 @@ ParameterMeasure::ParameterMeasure(const rclcpp::Node::SharedPtr node)
     node_->declare_parameter<std::string>("joint_state_topic", "myjoints_state");
     node_->declare_parameter<std::string>("joint_target_topic", "myjoints_target");
     node_->declare_parameter<std::string>("csv_file_path", "");
+    node_->declare_parameter<std::string>("trajectory_file_path", "");
     node_->declare_parameter<int>("joint_dof", 6);
-    node_->declare_parameter<double>("trajectory_duration", 20.0);
+    node_->declare_parameter<double>("move_to_start_duration", 3.0);
     node_->declare_parameter<double>("control_period", 0.02);
 
     model_path_ = node_->get_parameter("model_path").as_string();
@@ -43,8 +44,9 @@ ParameterMeasure::ParameterMeasure(const rclcpp::Node::SharedPtr node)
     joint_state_topic_ = node_->get_parameter("joint_state_topic").as_string();
     joint_target_topic_ = node_->get_parameter("joint_target_topic").as_string();
     csv_file_path_ = node_->get_parameter("csv_file_path").as_string();
+    trajectory_file_path_ = node_->get_parameter("trajectory_file_path").as_string();
     joint_dof_ = static_cast<int>(std::max<int64_t>(node_->get_parameter("joint_dof").as_int(), 1));
-    trajectory_duration_sec_ = std::max(node_->get_parameter("trajectory_duration").as_double(), 0.1);
+    move_to_start_duration_sec_ = std::max(node_->get_parameter("move_to_start_duration").as_double(), 0.1);
     control_period_sec_ = std::max(node_->get_parameter("control_period").as_double(), 0.005);
 
     latest_joint_pos_.assign(static_cast<std::size_t>(joint_dof_), 0.0F);
@@ -82,12 +84,14 @@ rcl_interfaces::msg::SetParametersResult ParameterMeasure::on_parameters_changed
     for (const auto& param : params) {
         if (param.get_name() == "start_measure" && param.as_bool() && !resetting_start_measure_) {
             start_measure_thread();
-        } else if (param.get_name() == "trajectory_duration") {
-            trajectory_duration_sec_ = std::max(param.as_double(), 0.1);
+        } else if (param.get_name() == "move_to_start_duration") {
+            move_to_start_duration_sec_ = std::max(param.as_double(), 0.1);
         } else if (param.get_name() == "control_period") {
             control_period_sec_ = std::max(param.as_double(), 0.005);
         } else if (param.get_name() == "csv_file_path") {
             csv_file_path_ = param.as_string();
+        } else if (param.get_name() == "trajectory_file_path") {
+            trajectory_file_path_ = param.as_string();
         }
     }
     return result;
@@ -163,38 +167,50 @@ void ParameterMeasure::measure_thread_func()
         init_pos = latest_joint_pos_;
     }
 
-    Trajectory trajectory(model_path_);
-    if (!trajectory.generate(SecondsToDuration(trajectory_duration_sec_), init_pos)) {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to generate parameter identification trajectory");
+    if (trajectory_file_path_.empty()) {
+        RCLCPP_ERROR(node_->get_logger(), "trajectory_file_path is empty; generate or provide an expected trajectory CSV first");
+        finish();
+        return;
+    }
+
+    Trajectory trajectory(trajectory_file_path_);
+    if (!trajectory.load(init_pos, move_to_start_duration_sec_)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to load expected trajectory CSV: %s", trajectory_file_path_.c_str());
         finish();
         return;
     }
 
     Record record;
     const std::string csv_file_path = build_csv_file_path();
-    if (!record.start(joint_dof_, csv_file_path)) {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to open measurement CSV: %s", csv_file_path.c_str());
-        finish();
-        return;
-    }
-
     const auto start_time = std::chrono::high_resolution_clock::now();
     trajectory.start(start_time);
     const auto period = SecondsToDuration(control_period_sec_);
     const auto end_time = start_time + SecondsToDuration(trajectory.total_duration());
+    const auto record_start_time = start_time + SecondsToDuration(trajectory.move_to_start_duration());
 
     std::vector<float> command_pos;
+    bool recording_started = false;
     while (!exit_requested_ && std::chrono::high_resolution_clock::now() <= end_time) {
         const auto now = std::chrono::high_resolution_clock::now();
         if (trajectory.sample(now, command_pos)) {
             publish_joint_target(command_pos);
         }
 
+        if (!recording_started && now >= record_start_time) {
+            if (!record.start(joint_dof_, csv_file_path)) {
+                RCLCPP_ERROR(node_->get_logger(), "Failed to open measurement CSV: %s", csv_file_path.c_str());
+                finish();
+                return;
+            }
+            recording_started = true;
+            RCLCPP_INFO(node_->get_logger(), "Started recording identification data to: %s", csv_file_path.c_str());
+        }
+
         std::vector<float> joint_pos;
         std::vector<float> joint_vel;
         std::vector<float> joint_acc;
         std::vector<float> joint_torque;
-        if (snapshot_joint_state(joint_pos, joint_vel, joint_acc, joint_torque)) {
+        if (recording_started && snapshot_joint_state(joint_pos, joint_vel, joint_acc, joint_torque)) {
             record.record(now, joint_pos, joint_vel, joint_acc, joint_torque);
         }
 
@@ -205,7 +221,7 @@ void ParameterMeasure::measure_thread_func()
         publish_joint_target(command_pos);
     }
     record.stop();
-    RCLCPP_INFO(node_->get_logger(), "Parameter measurement finished, CSV saved to: %s", csv_file_path.c_str());
+    RCLCPP_INFO(node_->get_logger(), "Parameter measurement finished, measurement CSV saved to: %s", csv_file_path.c_str());
     finish();
 }
 

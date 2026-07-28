@@ -8,8 +8,7 @@ from types import ModuleType
 
 def add_vendored_figaroh() -> Path:
     """Put the vendored FIGAROH package at the front of sys.path."""
-    repo_root = Path(__file__).resolve().parents[3]
-    figaroh_src = repo_root / "third_party" / "figaroh-plus" / "src"
+    figaroh_src = _find_vendored_figaroh_src()
     if not figaroh_src.exists():
         raise FileNotFoundError(
             f"Vendored FIGAROH not found at {figaroh_src}. "
@@ -19,6 +18,16 @@ def add_vendored_figaroh() -> Path:
     if src_text not in sys.path:
         sys.path.insert(0, src_text)
     return figaroh_src
+
+
+def _find_vendored_figaroh_src() -> Path:
+    candidates = []
+    for base in [Path(__file__).resolve(), Path.cwd().resolve()]:
+        candidates.extend(parent / "third_party" / "figaroh-plus" / "src" for parent in [base, *base.parents])
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return Path(__file__).resolve().parents[3] / "third_party" / "figaroh-plus" / "src"
 
 
 def load_vendored_figaroh_module(module_name: str, relative_path: str) -> ModuleType:

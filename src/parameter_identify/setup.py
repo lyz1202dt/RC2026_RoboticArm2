@@ -20,6 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "identify_arm = parameter_identify.identify_arm:main",
+            "generate_trajectory = parameter_identify.generate_trajectory:main",
         ],
     },
 )

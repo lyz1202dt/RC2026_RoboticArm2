@@ -180,7 +180,7 @@ def identify(
 
 
 def _parse_args() -> argparse.Namespace:
-    default_config = Path(__file__).resolve().parents[1] / "config" / "identify.yaml"
+    default_config = _default_config_path()
     parser = argparse.ArgumentParser(description="Identify arm inertial parameters and export an updated URDF.")
     parser.add_argument("--csv", required=True, help="CSV recorded by parameter_measure.")
     parser.add_argument("--urdf", required=True, help="Original URDF path.")
@@ -192,6 +192,15 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--report", default="", help="Optional report YAML path.")
     return parser.parse_args()
+
+
+def _default_config_path() -> Path:
+    try:
+        from ament_index_python.packages import get_package_share_directory
+
+        return Path(get_package_share_directory("parameter_identify")) / "config" / "identify.yaml"
+    except Exception:
+        return Path(__file__).resolve().parents[1] / "config" / "identify.yaml"
 
 
 def _load_config(path: str | Path) -> dict[str, Any]:

@@ -57,7 +57,8 @@ private:
     std::string joint_state_topic_;
     std::string joint_target_topic_;
     std::string csv_file_path_;
+    std::string trajectory_file_path_;
     int joint_dof_{6};
-    double trajectory_duration_sec_{20.0};
+    double move_to_start_duration_sec_{3.0};
     double control_period_sec_{0.02};
 };

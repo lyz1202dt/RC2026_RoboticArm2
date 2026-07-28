@@ -2,145 +2,127 @@
 
 #include <algorithm>
 #include <cmath>
-#include <functional>
-#include <limits>
-
-#include <urdf/model.h>
+#include <fstream>
+#include <sstream>
+#include <utility>
 
 namespace {
 
-constexpr std::size_t kHarmonicCount = 5;
-constexpr double kPi = 3.14159265358979323846;
-constexpr double kLimitMarginRatio = 0.1;
-constexpr double kDefaultLowerLimit = -kPi;
-constexpr double kDefaultUpperLimit = kPi;
 constexpr double kMinDurationSec = 1e-3;
-constexpr double kMinMoveToCenterDurationSec = 2.0;
-constexpr double kMoveVelocityLimitRatio = 0.35;
-constexpr double kExcitationVelocityLimitRatio = 0.8;
 
-bool IsFiniteLimit(double value)
+std::vector<std::string> SplitCsvLine(const std::string& line)
 {
-    return std::isfinite(value) && std::abs(value) < 1e8;
+    std::vector<std::string> fields;
+    std::stringstream stream(line);
+    std::string field;
+    while (std::getline(stream, field, ',')) {
+        while (!field.empty() && (field.back() == '\r' || field.back() == ' ' || field.back() == '\t')) {
+            field.pop_back();
+        }
+        while (!field.empty() && (field.front() == ' ' || field.front() == '\t')) {
+            field.erase(field.begin());
+        }
+        fields.push_back(field);
+    }
+    return fields;
+}
+
+bool ParseDouble(const std::string& text, double& value)
+{
+    try {
+        std::size_t parsed = 0;
+        value = std::stod(text, &parsed);
+        return parsed == text.size() && std::isfinite(value);
+    } catch (...) {
+        return false;
+    }
 }
 
 }  // namespace
 
-Trajectory::Trajectory(const std::string urdf_file_path)
-    : urdf_file_path_(urdf_file_path)
+Trajectory::Trajectory(std::string csv_file_path)
+    : csv_file_path_(std::move(csv_file_path))
 {
 }
 
-bool Trajectory::generate(std::chrono::high_resolution_clock::duration trajectory_time, const std::vector<float>& init_pos)
+bool Trajectory::load(const std::vector<float>& init_pos, double move_to_start_duration_sec)
 {
-    if (!load_joint_limits()) {
+    std::ifstream csv(csv_file_path_);
+    if (!csv.is_open() || init_pos.empty()) {
         return false;
     }
 
-    if (init_pos.size() != lower_limits_.size()) {
+    std::string line;
+    if (!std::getline(csv, line)) {
         return false;
     }
 
-    duration_sec_ = std::chrono::duration<double>(trajectory_time).count();
-    if (duration_sec_ <= kMinDurationSec) {
+    const std::vector<std::string> header = SplitCsvLine(line);
+    if (header.size() != init_pos.size() + 1 || header.front() != "time") {
         return false;
     }
-
-    base_frequency_ = 2.0 * kPi / duration_sec_;
-    coefficients_.assign(lower_limits_.size(), std::vector<FourierTerm>(kHarmonicCount));
-    initial_positions_.resize(lower_limits_.size());
-    center_positions_.resize(lower_limits_.size());
-    move_to_center_duration_sec_ = kMinMoveToCenterDurationSec;
-
-    for (std::size_t joint = 0; joint < coefficients_.size(); ++joint) {
-        const double range = upper_limits_[joint] - lower_limits_[joint];
-        if (range <= 0.0) {
+    for (std::size_t joint = 0; joint < init_pos.size(); ++joint) {
+        if (header[joint + 1] != "pos_" + std::to_string(joint)) {
             return false;
         }
-
-        const double initial_position = static_cast<double>(init_pos[joint]);
-        if (initial_position < lower_limits_[joint] || initial_position > upper_limits_[joint]) {
-            return false;
-        }
-
-        initial_positions_[joint] = initial_position;
-        center_positions_[joint] = 0.5 * (lower_limits_[joint] + upper_limits_[joint]);
-
-        if (velocity_limits_[joint] > 0.0 && IsFiniteLimit(velocity_limits_[joint])) {
-            const double displacement = std::abs(center_positions_[joint] - initial_positions_[joint]);
-            const double velocity_limit = kMoveVelocityLimitRatio * velocity_limits_[joint];
-            if (velocity_limit > std::numeric_limits<double>::epsilon()) {
-                move_to_center_duration_sec_ =
-                    std::max(move_to_center_duration_sec_, 1.875 * displacement / velocity_limit);
-            }
-        }
     }
 
-    for (std::size_t joint = 0; joint < coefficients_.size(); ++joint) {
-        const double range = upper_limits_[joint] - lower_limits_[joint];
-        const double limit_margin = range * kLimitMarginRatio;
-        const double soft_lower = lower_limits_[joint] + limit_margin;
-        const double soft_upper = upper_limits_[joint] - limit_margin;
-        const double center_position = center_positions_[joint];
-
-        const double upper_room = soft_upper - center_position;
-        const double lower_room = center_position - soft_lower;
-        const double position_amplitude_limit = std::max(0.0, std::min(upper_room, lower_room));
-        if (position_amplitude_limit <= std::numeric_limits<double>::epsilon()) {
+    std::vector<double> times;
+    std::vector<std::vector<float>> positions;
+    while (std::getline(csv, line)) {
+        if (line.empty()) {
             continue;
         }
 
-        double raw_position_bound = 0.0;
-        double raw_velocity_bound = 0.0;
-
-        for (std::size_t harmonic = 0; harmonic < kHarmonicCount; ++harmonic) {
-            const double harmonic_index = static_cast<double>(harmonic + 1);
-            const double joint_index = static_cast<double>(joint + 1);
-            FourierTerm& term = coefficients_[joint][harmonic];
-
-            term.sin_coeff = std::sin(0.73 * joint_index * harmonic_index) / harmonic_index;
-            term.cos_coeff = std::cos(1.17 * joint_index + 0.41 * harmonic_index) / (harmonic_index * harmonic_index);
+        const std::vector<std::string> fields = SplitCsvLine(line);
+        if (fields.size() != init_pos.size() + 1) {
+            return false;
         }
 
-        double initial_velocity_sum = 0.0;
-        double initial_acceleration_sum = 0.0;
-        for (std::size_t harmonic = 1; harmonic < kHarmonicCount; ++harmonic) {
-            const double harmonic_index = static_cast<double>(harmonic + 1);
-            initial_velocity_sum += harmonic_index * coefficients_[joint][harmonic].sin_coeff;
-            initial_acceleration_sum += harmonic_index * harmonic_index * coefficients_[joint][harmonic].cos_coeff;
+        double time_sec = 0.0;
+        if (!ParseDouble(fields.front(), time_sec)) {
+            return false;
         }
-        coefficients_[joint][0].sin_coeff = -initial_velocity_sum;
-        coefficients_[joint][0].cos_coeff = -initial_acceleration_sum;
-
-        for (std::size_t harmonic = 0; harmonic < kHarmonicCount; ++harmonic) {
-            const double harmonic_index = static_cast<double>(harmonic + 1);
-            const FourierTerm& term = coefficients_[joint][harmonic];
-            raw_position_bound += std::abs(term.sin_coeff) + 2.0 * std::abs(term.cos_coeff);
-            raw_velocity_bound += harmonic_index * base_frequency_ *
-                                  (std::abs(term.sin_coeff) + std::abs(term.cos_coeff));
+        if (!times.empty() && time_sec <= times.back()) {
+            return false;
         }
 
-        double scale = position_amplitude_limit / std::max(raw_position_bound, std::numeric_limits<double>::epsilon());
-        if (velocity_limits_[joint] > 0.0 && IsFiniteLimit(velocity_limits_[joint])) {
-            const double velocity_amplitude_limit = kExcitationVelocityLimitRatio * velocity_limits_[joint];
-            scale = std::min(scale, velocity_amplitude_limit /
-                                        std::max(raw_velocity_bound, std::numeric_limits<double>::epsilon()));
+        std::vector<float> row(init_pos.size(), 0.0F);
+        for (std::size_t joint = 0; joint < init_pos.size(); ++joint) {
+            double value = 0.0;
+            if (!ParseDouble(fields[joint + 1], value)) {
+                return false;
+            }
+            row[joint] = static_cast<float>(value);
         }
 
-        for (auto& term : coefficients_[joint]) {
-            term.sin_coeff *= scale;
-            term.cos_coeff *= scale;
+        times.push_back(time_sec);
+        positions.push_back(std::move(row));
+    }
+
+    if (times.size() < 2 || times.front() < -kMinDurationSec) {
+        return false;
+    }
+
+    const double first_time = times.front();
+    if (std::abs(first_time) > kMinDurationSec) {
+        for (double& time_sec : times) {
+            time_sec -= first_time;
         }
     }
 
-    generated_ = true;
+    initial_positions_ = init_pos;
+    sample_times_ = std::move(times);
+    sample_positions_ = std::move(positions);
+    move_to_start_duration_sec_ = std::max(move_to_start_duration_sec, kMinDurationSec);
+    loaded_ = true;
     started_ = false;
     return true;
 }
 
 bool Trajectory::start(std::chrono::time_point<std::chrono::high_resolution_clock> time_point)
 {
-    if (!generated_) {
+    if (!loaded_) {
         return false;
     }
 
@@ -152,7 +134,7 @@ bool Trajectory::start(std::chrono::time_point<std::chrono::high_resolution_cloc
 bool Trajectory::sample(std::chrono::time_point<std::chrono::high_resolution_clock> time_point,
                         std::vector<float>& joint_exp_pos)
 {
-    if (!generated_ || !started_) {
+    if (!loaded_ || !started_) {
         return false;
     }
 
@@ -161,16 +143,13 @@ bool Trajectory::sample(std::chrono::time_point<std::chrono::high_resolution_clo
         elapsed_sec = 0.0;
     }
 
-    joint_exp_pos.resize(coefficients_.size());
-    if (elapsed_sec < move_to_center_duration_sec_) {
-        for (std::size_t joint = 0; joint < coefficients_.size(); ++joint) {
-            joint_exp_pos[joint] = static_cast<float>(evaluate_move_to_center_joint(joint, elapsed_sec));
+    joint_exp_pos.resize(initial_positions_.size());
+    if (elapsed_sec < move_to_start_duration_sec_) {
+        for (std::size_t joint = 0; joint < initial_positions_.size(); ++joint) {
+            joint_exp_pos[joint] = static_cast<float>(evaluate_move_to_start_joint(joint, elapsed_sec));
         }
     } else {
-        const double excitation_elapsed_sec = std::fmod(elapsed_sec - move_to_center_duration_sec_, duration_sec_);
-        for (std::size_t joint = 0; joint < coefficients_.size(); ++joint) {
-            joint_exp_pos[joint] = static_cast<float>(evaluate_joint(joint, excitation_elapsed_sec));
-        }
+        evaluate_playback(elapsed_sec - move_to_start_duration_sec_, joint_exp_pos);
     }
 
     return true;
@@ -178,103 +157,49 @@ bool Trajectory::sample(std::chrono::time_point<std::chrono::high_resolution_clo
 
 double Trajectory::total_duration() const
 {
-    return move_to_center_duration_sec_ + duration_sec_;
+    if (sample_times_.empty()) {
+        return move_to_start_duration_sec_;
+    }
+    return move_to_start_duration_sec_ + sample_times_.back();
 }
 
-bool Trajectory::load_joint_limits()
+double Trajectory::move_to_start_duration() const
 {
-    if (limits_loaded_) {
-        return true;
-    }
-
-    urdf::Model model;
-    if (!model.initFile(urdf_file_path_)) {
-        return false;
-    }
-
-    const urdf::LinkConstSharedPtr root_link = model.getRoot();
-    if (!root_link) {
-        return false;
-    }
-
-    lower_limits_.clear();
-    upper_limits_.clear();
-    velocity_limits_.clear();
-
-    const auto append_joint_limits = [this](const urdf::Joint& joint) {
-        double lower = kDefaultLowerLimit;
-        double upper = kDefaultUpperLimit;
-        double velocity = 0.0;
-
-        if (joint.limits) {
-            lower = joint.limits->lower;
-            upper = joint.limits->upper;
-            velocity = joint.limits->velocity;
-        }
-
-        if (!IsFiniteLimit(lower) || !IsFiniteLimit(upper) || lower >= upper) {
-            lower = kDefaultLowerLimit;
-            upper = kDefaultUpperLimit;
-        }
-
-        lower_limits_.push_back(lower);
-        upper_limits_.push_back(upper);
-        velocity_limits_.push_back(velocity);
-    };
-
-    const std::function<void(const urdf::LinkConstSharedPtr&)> visit_link =
-        [&](const urdf::LinkConstSharedPtr& link) {
-            for (const auto& child_joint : link->child_joints) {
-                if (!child_joint) {
-                    continue;
-                }
-
-                if (child_joint->type == urdf::Joint::REVOLUTE || child_joint->type == urdf::Joint::CONTINUOUS ||
-                    child_joint->type == urdf::Joint::PRISMATIC) {
-                    append_joint_limits(*child_joint);
-                }
-
-                const urdf::LinkConstSharedPtr child_link = model.getLink(child_joint->child_link_name);
-                if (child_link) {
-                    visit_link(child_link);
-                }
-            }
-        };
-
-    visit_link(root_link);
-
-    if (lower_limits_.empty()) {
-        return false;
-    }
-
-    limits_loaded_ = true;
-    return true;
+    return move_to_start_duration_sec_;
 }
 
-double Trajectory::evaluate_joint(std::size_t joint_index, double elapsed_sec) const
-{
-    const double lower = lower_limits_[joint_index];
-    const double upper = upper_limits_[joint_index];
-    double position = center_positions_[joint_index];
-
-    for (std::size_t harmonic = 0; harmonic < coefficients_[joint_index].size(); ++harmonic) {
-        const double harmonic_index = static_cast<double>(harmonic + 1);
-        const double phase = harmonic_index * base_frequency_ * elapsed_sec;
-        const FourierTerm& term = coefficients_[joint_index][harmonic];
-        position += term.sin_coeff * std::sin(phase) + term.cos_coeff * (std::cos(phase) - 1.0);
-    }
-
-    return std::clamp(position, lower, upper);
-}
-
-double Trajectory::evaluate_move_to_center_joint(std::size_t joint_index, double elapsed_sec) const
+double Trajectory::evaluate_move_to_start_joint(std::size_t joint_index, double elapsed_sec) const
 {
     const double normalized_time =
-        std::clamp(elapsed_sec / std::max(move_to_center_duration_sec_, kMinDurationSec), 0.0, 1.0);
+        std::clamp(elapsed_sec / std::max(move_to_start_duration_sec_, kMinDurationSec), 0.0, 1.0);
     const double blend = smooth_step_quintic(normalized_time);
-    const double position =
-        initial_positions_[joint_index] + (center_positions_[joint_index] - initial_positions_[joint_index]) * blend;
-    return std::clamp(position, lower_limits_[joint_index], upper_limits_[joint_index]);
+    return initial_positions_[joint_index] +
+           (sample_positions_.front()[joint_index] - initial_positions_[joint_index]) * blend;
+}
+
+void Trajectory::evaluate_playback(double elapsed_sec, std::vector<float>& joint_exp_pos) const
+{
+    if (elapsed_sec <= sample_times_.front()) {
+        joint_exp_pos = sample_positions_.front();
+        return;
+    }
+    if (elapsed_sec >= sample_times_.back()) {
+        joint_exp_pos = sample_positions_.back();
+        return;
+    }
+
+    const auto upper =
+        std::upper_bound(sample_times_.begin(), sample_times_.end(), elapsed_sec);
+    const std::size_t next_index = static_cast<std::size_t>(upper - sample_times_.begin());
+    const std::size_t prev_index = next_index - 1;
+    const double segment_duration = sample_times_[next_index] - sample_times_[prev_index];
+    const double alpha = (elapsed_sec - sample_times_[prev_index]) / std::max(segment_duration, kMinDurationSec);
+
+    for (std::size_t joint = 0; joint < joint_exp_pos.size(); ++joint) {
+        const double start = static_cast<double>(sample_positions_[prev_index][joint]);
+        const double end = static_cast<double>(sample_positions_[next_index][joint]);
+        joint_exp_pos[joint] = static_cast<float>(start + (end - start) * alpha);
+    }
 }
 
 double Trajectory::smooth_step_quintic(double normalized_time)
