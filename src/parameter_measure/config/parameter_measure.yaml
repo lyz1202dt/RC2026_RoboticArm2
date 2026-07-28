@@ -9,3 +9,4 @@ arm_measure:
     joint_dof: 6
     move_to_start_duration: 3.0
     control_period: 0.02
+    discard_initial_samples: 5

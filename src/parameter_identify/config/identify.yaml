@@ -6,6 +6,9 @@ data:
   decimate: false
   decimation_factor: 10
   max_samples: 0
+  acceleration_source: computed
+  acceleration_smoothing_window: 11
+  acceleration_smoothing_polyorder: 3
 
 trajectory_generation:
   duration: 10.0
@@ -31,7 +34,14 @@ reconstruction:
   enabled: true
   method: nullspace
   prior_source: urdf
+  physical_projection: true
   mass_min: 1.0e-6
+  projection_psd_floor: 1.0e-9
+  psd_eig_tol: -1.0e-10
+  inertia_eig_tol: -1.0e-9
+  solver: cvxopt
+  max_seconds:
+  require_physical: true
 
 output:
   write_report: true

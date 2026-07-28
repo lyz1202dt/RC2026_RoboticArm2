@@ -36,6 +36,7 @@ ParameterMeasure::ParameterMeasure(const rclcpp::Node::SharedPtr node)
     node_->declare_parameter<int>("joint_dof", 6);
     node_->declare_parameter<double>("move_to_start_duration", 3.0);
     node_->declare_parameter<double>("control_period", 0.02);
+    node_->declare_parameter<int>("discard_initial_samples", 5);
 
     model_path_ = node_->get_parameter("model_path").as_string();
     if (model_path_.empty()) {
@@ -45,15 +46,14 @@ ParameterMeasure::ParameterMeasure(const rclcpp::Node::SharedPtr node)
     joint_target_topic_ = node_->get_parameter("joint_target_topic").as_string();
     csv_file_path_ = node_->get_parameter("csv_file_path").as_string();
     trajectory_file_path_ = node_->get_parameter("trajectory_file_path").as_string();
-    joint_dof_ = static_cast<int>(std::max<int64_t>(node_->get_parameter("joint_dof").as_int(), 1));
+    joint_dof_ = static_cast<int>(std::clamp<int64_t>(node_->get_parameter("joint_dof").as_int(), 1, 6));
     move_to_start_duration_sec_ = std::max(node_->get_parameter("move_to_start_duration").as_double(), 0.1);
     control_period_sec_ = std::max(node_->get_parameter("control_period").as_double(), 0.005);
+    discard_initial_samples_ = static_cast<int>(std::max<int64_t>(node_->get_parameter("discard_initial_samples").as_int(), 0));
 
     latest_joint_pos_.assign(static_cast<std::size_t>(joint_dof_), 0.0F);
     latest_joint_vel_.assign(static_cast<std::size_t>(joint_dof_), 0.0F);
-    latest_joint_acc_.assign(static_cast<std::size_t>(joint_dof_), 0.0F);
     latest_joint_torque_.assign(static_cast<std::size_t>(joint_dof_), 0.0F);
-    previous_joint_vel_.assign(static_cast<std::size_t>(joint_dof_), 0.0F);
 
     joint_state_sub_ = node_->create_subscription<robot_interfaces::msg::Arm>(
         joint_state_topic_, rclcpp::SensorDataQoS(),
@@ -92,6 +92,8 @@ rcl_interfaces::msg::SetParametersResult ParameterMeasure::on_parameters_changed
             csv_file_path_ = param.as_string();
         } else if (param.get_name() == "trajectory_file_path") {
             trajectory_file_path_ = param.as_string();
+        } else if (param.get_name() == "discard_initial_samples") {
+            discard_initial_samples_ = static_cast<int>(std::max<int64_t>(param.as_int(), 0));
         }
     }
     return result;
@@ -99,28 +101,13 @@ rcl_interfaces::msg::SetParametersResult ParameterMeasure::on_parameters_changed
 
 void ParameterMeasure::jointStateCallback(const robot_interfaces::msg::Arm::SharedPtr msg)
 {
-    const auto now = std::chrono::high_resolution_clock::now();
     std::lock_guard<std::mutex> lock(state_mutex_);
-
-    previous_state_time_ = latest_state_time_;
-    previous_joint_vel_ = latest_joint_vel_;
-    latest_state_time_ = now;
 
     for (int i = 0; i < joint_dof_; ++i) {
         const auto index = static_cast<std::size_t>(i);
         latest_joint_pos_[index] = msg->motor[index].rad;
         latest_joint_vel_[index] = msg->motor[index].omega;
         latest_joint_torque_[index] = msg->motor[index].torque;
-    }
-
-    if (has_joint_state_) {
-        const double dt = std::chrono::duration<double>(latest_state_time_ - previous_state_time_).count();
-        if (dt > 1e-6) {
-            for (int i = 0; i < joint_dof_; ++i) {
-                const auto index = static_cast<std::size_t>(i);
-                latest_joint_acc_[index] = (latest_joint_vel_[index] - previous_joint_vel_[index]) / dt;
-            }
-        }
     }
 
     has_joint_state_ = true;
@@ -152,6 +139,10 @@ void ParameterMeasure::measure_thread_func()
         resetting_start_measure_ = false;
     };
 
+    const std::string trajectory_file_path = trajectory_file_path_;
+    const double move_to_start_duration_sec = move_to_start_duration_sec_;
+    const int discard_initial_samples = discard_initial_samples_;
+
     std::vector<float> init_pos;
     {
         std::unique_lock<std::mutex> lock(state_mutex_);
@@ -167,15 +158,15 @@ void ParameterMeasure::measure_thread_func()
         init_pos = latest_joint_pos_;
     }
 
-    if (trajectory_file_path_.empty()) {
+    if (trajectory_file_path.empty()) {
         RCLCPP_ERROR(node_->get_logger(), "trajectory_file_path is empty; generate or provide an expected trajectory CSV first");
         finish();
         return;
     }
 
-    Trajectory trajectory(trajectory_file_path_);
-    if (!trajectory.load(init_pos, move_to_start_duration_sec_)) {
-        RCLCPP_ERROR(node_->get_logger(), "Failed to load expected trajectory CSV: %s", trajectory_file_path_.c_str());
+    Trajectory trajectory(trajectory_file_path);
+    if (!trajectory.load(init_pos, move_to_start_duration_sec)) {
+        RCLCPP_ERROR(node_->get_logger(), "Failed to load expected trajectory CSV: %s", trajectory_file_path.c_str());
         finish();
         return;
     }
@@ -190,6 +181,7 @@ void ParameterMeasure::measure_thread_func()
 
     std::vector<float> command_pos;
     bool recording_started = false;
+    int discarded_samples = 0;
     while (!exit_requested_ && std::chrono::high_resolution_clock::now() <= end_time) {
         const auto now = std::chrono::high_resolution_clock::now();
         if (trajectory.sample(now, command_pos)) {
@@ -197,21 +189,26 @@ void ParameterMeasure::measure_thread_func()
         }
 
         if (!recording_started && now >= record_start_time) {
-            if (!record.start(joint_dof_, csv_file_path)) {
+            if (!record.start(joint_dof_, csv_file_path, record_start_time)) {
                 RCLCPP_ERROR(node_->get_logger(), "Failed to open measurement CSV: %s", csv_file_path.c_str());
                 finish();
                 return;
             }
             recording_started = true;
             RCLCPP_INFO(node_->get_logger(), "Started recording identification data to: %s", csv_file_path.c_str());
+            std::this_thread::sleep_until(now + period);
+            continue;
         }
 
         std::vector<float> joint_pos;
         std::vector<float> joint_vel;
-        std::vector<float> joint_acc;
         std::vector<float> joint_torque;
-        if (recording_started && snapshot_joint_state(joint_pos, joint_vel, joint_acc, joint_torque)) {
-            record.record(now, joint_pos, joint_vel, joint_acc, joint_torque);
+        if (recording_started && snapshot_joint_state(joint_pos, joint_vel, joint_torque)) {
+            if (discarded_samples < discard_initial_samples) {
+                ++discarded_samples;
+            } else {
+                record.record(now, joint_pos, joint_vel, joint_torque);
+            }
         }
 
         std::this_thread::sleep_until(now + period);
@@ -260,7 +257,7 @@ void ParameterMeasure::publish_joint_target(const std::vector<float>& joint_pos)
 }
 
 bool ParameterMeasure::snapshot_joint_state(std::vector<float>& joint_pos, std::vector<float>& joint_vel,
-                                            std::vector<float>& joint_acc, std::vector<float>& joint_torque)
+                                            std::vector<float>& joint_torque)
 {
     std::lock_guard<std::mutex> lock(state_mutex_);
     if (!has_joint_state_) {
@@ -269,7 +266,6 @@ bool ParameterMeasure::snapshot_joint_state(std::vector<float>& joint_pos, std::
 
     joint_pos = latest_joint_pos_;
     joint_vel = latest_joint_vel_;
-    joint_acc = latest_joint_acc_;
     joint_torque = latest_joint_torque_;
     return true;
 }

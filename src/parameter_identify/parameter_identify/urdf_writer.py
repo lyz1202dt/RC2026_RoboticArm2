@@ -8,6 +8,7 @@ from typing import Mapping
 
 
 INERTIAL_KEYS = ("m", "mx", "my", "mz", "Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz")
+INERTIA_KEYS = ("Ixx", "Ixy", "Iyy", "Ixz", "Iyz", "Izz")
 
 
 def joint_child_link_map(urdf_path: str | Path) -> dict[str, str]:
@@ -47,7 +48,7 @@ def write_identified_urdf(
         if not math.isfinite(mass) or mass <= 0.0:
             continue
 
-        xyz = (p["mx"] / mass, p["my"] / mass, p["mz"] / mass)
+        xyz, inertia_at_com = dynamic_parameters_to_urdf_inertial(p)
 
         inertial = link.find("inertial")
         if inertial is None:
@@ -67,12 +68,12 @@ def write_identified_urdf(
         inertia = inertial.find("inertia")
         if inertia is None:
             inertia = ET.SubElement(inertial, "inertia")
-        inertia.set("ixx", _fmt(p["Ixx"]))
-        inertia.set("ixy", _fmt(p["Ixy"]))
-        inertia.set("ixz", _fmt(p["Ixz"]))
-        inertia.set("iyy", _fmt(p["Iyy"]))
-        inertia.set("iyz", _fmt(p["Iyz"]))
-        inertia.set("izz", _fmt(p["Izz"]))
+        inertia.set("ixx", _fmt(inertia_at_com["Ixx"]))
+        inertia.set("ixy", _fmt(inertia_at_com["Ixy"]))
+        inertia.set("ixz", _fmt(inertia_at_com["Ixz"]))
+        inertia.set("iyy", _fmt(inertia_at_com["Iyy"]))
+        inertia.set("iyz", _fmt(inertia_at_com["Iyz"]))
+        inertia.set("izz", _fmt(inertia_at_com["Izz"]))
 
         updated_links.append(link_name or joint_name)
 
@@ -81,6 +82,37 @@ def write_identified_urdf(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     tree.write(output_path, encoding="utf-8", xml_declaration=True)
     return updated_links
+
+
+def dynamic_parameters_to_urdf_inertial(
+    parameters: Mapping[str, float],
+) -> tuple[tuple[float, float, float], dict[str, float]]:
+    """Convert Pinocchio dynamic parameters to URDF inertial fields.
+
+    Pinocchio dynamic parameters store the inertia about the link reference
+    frame origin: I_O = I_C + m * S(c).T * S(c). URDF stores the inertia in
+    the inertial frame, whose origin is the center of mass, so we subtract the
+    parallel-axis term before writing the tensor.
+    """
+    mass = float(parameters["m"])
+    if not math.isfinite(mass) or mass <= 0.0:
+        raise ValueError(f"mass must be positive and finite, got {mass!r}")
+
+    cx = float(parameters["mx"]) / mass
+    cy = float(parameters["my"]) / mass
+    cz = float(parameters["mz"]) / mass
+    c2 = cx * cx + cy * cy + cz * cz
+
+    inertia_at_origin = {key: float(parameters[key]) for key in INERTIA_KEYS}
+    inertia_at_com = {
+        "Ixx": inertia_at_origin["Ixx"] - mass * (c2 - cx * cx),
+        "Ixy": inertia_at_origin["Ixy"] + mass * cx * cy,
+        "Iyy": inertia_at_origin["Iyy"] - mass * (c2 - cy * cy),
+        "Ixz": inertia_at_origin["Ixz"] + mass * cx * cz,
+        "Iyz": inertia_at_origin["Iyz"] + mass * cy * cz,
+        "Izz": inertia_at_origin["Izz"] - mass * (c2 - cz * cz),
+    }
+    return (cx, cy, cz), inertia_at_com
 
 
 def _fmt(value: float) -> str:

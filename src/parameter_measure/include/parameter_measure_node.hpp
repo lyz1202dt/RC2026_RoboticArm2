@@ -29,7 +29,7 @@ private:
     std::vector<float> current_joint_position() const;
     void publish_joint_target(const std::vector<float>& joint_pos) const;
     bool snapshot_joint_state(std::vector<float>& joint_pos, std::vector<float>& joint_vel,
-                              std::vector<float>& joint_acc, std::vector<float>& joint_torque);
+                              std::vector<float>& joint_torque);
 
     rclcpp::Node::SharedPtr node_;
     rclcpp::Subscription<robot_interfaces::msg::Arm>::SharedPtr joint_state_sub_;
@@ -41,11 +41,7 @@ private:
     bool has_joint_state_{false};
     std::vector<float> latest_joint_pos_;
     std::vector<float> latest_joint_vel_;
-    std::vector<float> latest_joint_acc_;
     std::vector<float> latest_joint_torque_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> latest_state_time_;
-    std::chrono::time_point<std::chrono::high_resolution_clock> previous_state_time_;
-    std::vector<float> previous_joint_vel_;
 
     std::mutex thread_mutex_;
     std::shared_ptr<std::thread> measure_deal_thread;
@@ -61,4 +57,5 @@ private:
     int joint_dof_{6};
     double move_to_start_duration_sec_{3.0};
     double control_period_sec_{0.02};
+    int discard_initial_samples_{5};
 };

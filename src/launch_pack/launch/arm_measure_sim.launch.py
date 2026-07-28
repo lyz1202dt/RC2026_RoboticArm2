@@ -41,7 +41,7 @@ def generate_launch_description():
     csv_file_path_arg = DeclareLaunchArgument(
         "csv_file_path",
         default_value="",
-        description="Output CSV path for measured joint position/velocity/acceleration/torque data",
+        description="Output CSV path for measured joint position/velocity/torque data",
     )
 
     move_to_start_duration_arg = DeclareLaunchArgument(
@@ -54,6 +54,12 @@ def generate_launch_description():
         "control_period",
         default_value="0.02",
         description="Measurement command publish period in seconds",
+    )
+
+    discard_initial_samples_arg = DeclareLaunchArgument(
+        "discard_initial_samples",
+        default_value="5",
+        description="Number of initial recorded samples to discard after trajectory playback starts",
     )
 
     start_measure_arg = DeclareLaunchArgument(
@@ -106,6 +112,7 @@ def generate_launch_description():
                 "csv_file_path": LaunchConfiguration("csv_file_path"),
                 "move_to_start_duration": LaunchConfiguration("move_to_start_duration"),
                 "control_period": LaunchConfiguration("control_period"),
+                "discard_initial_samples": LaunchConfiguration("discard_initial_samples"),
                 "start_measure": LaunchConfiguration("start_measure"),
             }
         ],
@@ -129,6 +136,7 @@ def generate_launch_description():
             csv_file_path_arg,
             move_to_start_duration_arg,
             control_period_arg,
+            discard_initial_samples_arg,
             start_measure_arg,
             robot_state_pub,
             mujoco,

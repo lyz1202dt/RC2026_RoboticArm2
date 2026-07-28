@@ -8,7 +8,11 @@ import numpy as np
 import yaml
 
 from .csv_loader import load_measurement_csv
-from .urdf_writer import INERTIAL_KEYS, write_identified_urdf
+from .urdf_writer import (
+    INERTIAL_KEYS,
+    dynamic_parameters_to_urdf_inertial,
+    write_identified_urdf,
+)
 from .vendor import add_vendored_figaroh, load_vendored_figaroh_module
 
 
@@ -58,6 +62,9 @@ def identify(
     reconstruction_module = load_vendored_figaroh_module(
         "_figaroh_reconstruction", "figaroh/identification/reconstruction.py"
     )
+    physical_module = load_vendored_figaroh_module(
+        "_figaroh_physical_consistency", "figaroh/identification/physical_consistency.py"
+    )
     build_regressor_basic = regressor_module.build_regressor_basic
     QRDecomposer = qr_module.QRDecomposer
     BaseResult = reconstruction_module.BaseResult
@@ -69,7 +76,14 @@ def identify(
 
     dof = len(active_joints)
     data_cfg = config.get("data", {})
-    data = load_measurement_csv(csv_path, dof=dof, max_samples=int(data_cfg.get("max_samples", 0)))
+    data = load_measurement_csv(
+        csv_path,
+        dof=dof,
+        max_samples=int(data_cfg.get("max_samples", 0)),
+        acceleration_source=str(data_cfg.get("acceleration_source", "computed")),
+        smoothing_window=int(data_cfg.get("acceleration_smoothing_window", 11)),
+        smoothing_polyorder=int(data_cfg.get("acceleration_smoothing_polyorder", 3)),
+    )
 
     model = pin.buildModelFromUrdf(str(input_urdf))
     robot = _RobotModel(model)
@@ -118,6 +132,10 @@ def identify(
     full_parameters = dict(params_std)
 
     recon_cfg = config.get("reconstruction", {})
+    reconstruction_status = "disabled"
+    reconstruction_residual = None
+    reconstruction_base_residual_after_projection = None
+    physical_projection_report: dict[str, Any] | None = None
     if bool(recon_cfg.get("enabled", True)):
         base_result = BaseResult(
             M=np.asarray(decomposer.get_M(), dtype=float),
@@ -132,13 +150,63 @@ def identify(
             model=model,
             joint_names=list(model.names[1:]),
             mass_min=float(recon_cfg.get("mass_min", 1e-6)),
+            psd_eig_tol=float(recon_cfg.get("psd_eig_tol", -1e-10)),
+            solver=str(recon_cfg.get("solver", "cvxopt")),
+            max_seconds=float(recon_cfg["max_seconds"]) if recon_cfg.get("max_seconds") is not None else None,
         )
         full_parameters.update(recon.as_dict())
         reconstruction_status = recon.status
         reconstruction_residual = recon.base_residual_norm
-    else:
-        reconstruction_status = "disabled"
-        reconstruction_residual = None
+
+        if bool(recon_cfg.get("physical_projection", False)):
+            full_parameters, physical_projection_report = _project_physical_parameters(
+                full_parameters,
+                list(model.names[1:]),
+                physical_module=physical_module,
+                mass_min=float(recon_cfg.get("mass_min", 1e-6)),
+                psd_eig_tol=float(
+                    recon_cfg.get(
+                        "projection_psd_floor",
+                        recon_cfg.get("psd_eig_tol", -1e-10),
+                    )
+                ),
+                solver=str(recon_cfg.get("solver", "cvxopt")),
+                max_seconds=(
+                    float(recon_cfg["max_seconds"])
+                    if recon_cfg.get("max_seconds") is not None
+                    else None
+                ),
+            )
+            theta_after_projection = _parameter_vector_from_dict(
+                full_parameters,
+                base_result.params_r,
+            )
+            reconstruction_base_residual_after_projection = float(
+                np.linalg.norm(base_result.M @ theta_after_projection - base_result.phi_base)
+            )
+
+    physical_issues = _validate_physical_parameters(
+        full_parameters,
+        list(model.names[1:]),
+        mass_min=float(recon_cfg.get("mass_min", 1e-6)),
+        psd_eig_tol=float(recon_cfg.get("psd_eig_tol", -1e-10)),
+        inertia_eig_tol=float(recon_cfg.get("inertia_eig_tol", 1e-10)),
+        physical_module=physical_module,
+    )
+    require_physical = bool(recon_cfg.get("require_physical", True))
+    if reconstruction_status != "ok" and require_physical:
+        raise RuntimeError(
+            f"Physical reconstruction did not complete successfully: status={reconstruction_status}. "
+            "Install picos/cvxopt or set reconstruction.require_physical=false to allow diagnostic output only."
+        )
+    if physical_issues and require_physical:
+        issue_text = "; ".join(
+            f"{issue['joint']}: {', '.join(issue['issues'])}" for issue in physical_issues
+        )
+        raise RuntimeError(
+            "Refusing to write a non-physical identified URDF. "
+            f"Issues: {issue_text}"
+        )
 
     updated_links = write_identified_urdf(
         input_urdf=input_urdf,
@@ -153,6 +221,7 @@ def identify(
         "output_urdf": str(output_urdf),
         "samples": int(data.positions.shape[0]),
         "identified_rows": int(tau_reduced.shape[0]),
+        "acceleration_source": data.acceleration_source,
         "active_joints": active_joints,
         "model_joints": list(model.names[1:]),
         "base_parameter_count": int(len(phi_base)),
@@ -162,6 +231,12 @@ def identify(
         "correlation": _correlation(tau_reduced, tau_estimated),
         "reconstruction_status": reconstruction_status,
         "reconstruction_residual_norm": reconstruction_residual,
+        "reconstruction_base_residual_after_projection": reconstruction_base_residual_after_projection,
+        "physical_projection": physical_projection_report,
+        "physical_validation": {
+            "passed": not physical_issues,
+            "issues": physical_issues,
+        },
         "updated_links": updated_links,
         "identified_inertial_parameters": _inertial_parameter_subset(full_parameters, list(model.names[1:])),
     }
@@ -312,6 +387,127 @@ def _correlation(a: np.ndarray, b: np.ndarray) -> float:
     if a.size < 2 or np.std(a) == 0.0 or np.std(b) == 0.0:
         return 0.0
     return float(np.corrcoef(a.reshape(-1), b.reshape(-1))[0, 1])
+
+
+def _project_physical_parameters(
+    parameter_dict: Mapping[str, float],
+    joint_names: list[str],
+    *,
+    physical_module: Any,
+    mass_min: float,
+    psd_eig_tol: float,
+    solver: str,
+    max_seconds: float | None,
+) -> tuple[dict[str, float], dict[str, Any]]:
+    p10_by_joint = physical_module.p10_by_joint_from_param_dict(
+        parameter_dict=parameter_dict,
+        joint_names=joint_names,
+    )
+    projected_p10_by_joint, projection_report = physical_module.project_robot_p10_lmi(
+        p10_by_joint,
+        mass_min=mass_min,
+        psd_eig_tol=psd_eig_tol,
+        solver=solver,
+        max_seconds=max_seconds,
+    )
+    projected_parameters = physical_module.param_dict_with_p10_by_joint(
+        parameter_dict=dict(parameter_dict),
+        p10_by_joint=projected_p10_by_joint,
+    )
+    return projected_parameters, _projection_report_to_dict(projection_report)
+
+
+def _projection_report_to_dict(report: Any) -> dict[str, Any]:
+    per_link = {}
+    for joint, item in getattr(report, "per_link", {}).items():
+        per_link[str(joint)] = {
+            "status": str(getattr(item, "status", "unknown")),
+            "mass": _optional_float(getattr(item, "mass", None)),
+            "min_eig": _optional_float(getattr(item, "min_eig", None)),
+            "objective": _optional_float(getattr(item, "objective", None)),
+            "solver": getattr(item, "solver", None),
+            "message": getattr(item, "message", None),
+            "runtime": _optional_float(getattr(item, "runtime", None)),
+        }
+    return {
+        "status": str(getattr(report, "status", "unknown")),
+        "projected_links": int(getattr(report, "projected_links", 0)),
+        "failed_links": int(getattr(report, "failed_links", 0)),
+        "per_link": per_link,
+    }
+
+
+def _optional_float(value: Any) -> float | None:
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parameter_vector_from_dict(parameter_dict: Mapping[str, float], names: list[str]) -> np.ndarray:
+    return np.asarray([float(parameter_dict[name]) for name in names], dtype=float)
+
+
+def _validate_physical_parameters(
+    parameter_dict: Mapping[str, float],
+    joint_names: list[str],
+    *,
+    mass_min: float,
+    psd_eig_tol: float,
+    inertia_eig_tol: float,
+    physical_module: Any,
+) -> list[dict[str, Any]]:
+    issues: list[dict[str, Any]] = []
+    for joint_name in joint_names:
+        missing = [key for key in INERTIAL_KEYS if f"{key}_{joint_name}" not in parameter_dict]
+        if missing:
+            issues.append({"joint": joint_name, "issues": [f"missing {', '.join(missing)}"]})
+            continue
+
+        p = {key: float(parameter_dict[f"{key}_{joint_name}"]) for key in INERTIAL_KEYS}
+        joint_issues: list[str] = []
+        if not all(np.isfinite(value) for value in p.values()):
+            joint_issues.append("non-finite inertial parameter")
+        if p["m"] < mass_min:
+            joint_issues.append(f"mass {p['m']:.6g} < {mass_min:.6g}")
+
+        p10 = np.asarray([p[key] for key in INERTIAL_KEYS], dtype=float)
+        pseudo_report = physical_module.check_p10_feasibility(
+            p10,
+            mass_min=mass_min,
+            psd_eig_tol=psd_eig_tol,
+        )
+        if pseudo_report.status != "feasible":
+            joint_issues.append(
+                "pseudo-inertia is not positive semidefinite "
+                f"(min eigenvalue {pseudo_report.min_eig:.6g})"
+            )
+
+        _, inertia_at_com = dynamic_parameters_to_urdf_inertial(p)
+        inertia = np.asarray(
+            [
+                [inertia_at_com["Ixx"], inertia_at_com["Ixy"], inertia_at_com["Ixz"]],
+                [inertia_at_com["Ixy"], inertia_at_com["Iyy"], inertia_at_com["Iyz"]],
+                [inertia_at_com["Ixz"], inertia_at_com["Iyz"], inertia_at_com["Izz"]],
+            ],
+            dtype=float,
+        )
+        eigvals = np.linalg.eigvalsh(inertia)
+        if np.min(eigvals) <= inertia_eig_tol:
+            joint_issues.append(
+                "inertia matrix is not positive definite "
+                f"(min eigenvalue {float(np.min(eigvals)):.6g})"
+            )
+
+        principal = np.sort(eigvals)
+        if principal[0] + principal[1] + inertia_eig_tol < principal[2]:
+            joint_issues.append("principal moments violate triangle inequality")
+
+        if joint_issues:
+            issues.append({"joint": joint_name, "issues": joint_issues})
+    return issues
 
 
 def _inertial_parameter_subset(parameter_dict: Mapping[str, float], joint_names: list[str]) -> dict[str, dict[str, float]]:

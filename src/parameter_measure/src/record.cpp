@@ -7,7 +7,8 @@ Record::Record()
 {
 }
 
-bool Record::start(int joint_dof, const std::string csv_file_path)
+bool Record::start(int joint_dof, const std::string csv_file_path,
+                   std::chrono::time_point<std::chrono::high_resolution_clock> start_time)
 {
     if (joint_dof <= 0) {
         return false;
@@ -23,7 +24,7 @@ bool Record::start(int joint_dof, const std::string csv_file_path)
     }
 
     joint_dof_ = joint_dof;
-    start_time_ = std::chrono::high_resolution_clock::now();
+    start_time_ = start_time;
     is_recording_ = true;
     write_header();
     return csv_file_.good();
@@ -45,9 +46,9 @@ bool Record::stop()
 
 bool Record::record(std::chrono::time_point<std::chrono::high_resolution_clock> time_point,
                     const std::vector<float>& joint_pos, const std::vector<float>& joint_vel,
-                    const std::vector<float>& joint_acc, const std::vector<float>& joint_torque)
+                    const std::vector<float>& joint_torque)
 {
-    if (!is_recording_ || !csv_file_.is_open() || !check_joint_data(joint_pos, joint_vel, joint_acc, joint_torque)) {
+    if (!is_recording_ || !csv_file_.is_open() || !check_joint_data(joint_pos, joint_vel, joint_torque)) {
         return false;
     }
 
@@ -62,7 +63,6 @@ bool Record::record(std::chrono::time_point<std::chrono::high_resolution_clock> 
 
     write_vector(joint_pos);
     write_vector(joint_vel);
-    write_vector(joint_acc);
     write_vector(joint_torque);
     csv_file_ << '\n';
 
@@ -81,14 +81,13 @@ void Record::write_header()
 
     write_joint_names("pos");
     write_joint_names("vel");
-    write_joint_names("acc");
     write_joint_names("torque");
     csv_file_ << '\n';
 }
 
 bool Record::check_joint_data(const std::vector<float>& joint_pos, const std::vector<float>& joint_vel,
-                              const std::vector<float>& joint_acc, const std::vector<float>& joint_torque) const
+                              const std::vector<float>& joint_torque) const
 {
     const auto dof = static_cast<std::size_t>(joint_dof_);
-    return joint_pos.size() == dof && joint_vel.size() == dof && joint_acc.size() == dof && joint_torque.size() == dof;
+    return joint_pos.size() == dof && joint_vel.size() == dof && joint_torque.size() == dof;
 }
