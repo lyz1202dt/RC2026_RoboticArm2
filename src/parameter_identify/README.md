@@ -67,10 +67,18 @@ trajectory_generation:
 
 reconstruction:
   enabled: true
-  method: nullspace
+  method: sdp
   prior_source: urdf
-  physical_projection: true
+  physical_projection: false
+  strict_base_constraints: false
+  base_residual_weight: 1.0e6
   require_physical: true
+  cad_constraints:
+    source: urdf
+    mass_scale_min: 0.8
+    mass_scale_max: 1.2
+    com_margin_abs: 0.002
+    com_margin_rel: 0.1
 ```
 
 ## 生成激励轨迹
@@ -189,11 +197,19 @@ correlation: ...
 
 `reconstruction_status`：完整参数重构状态。
 
+`reconstruction_objective`：全局 SDP 重构时相对 URDF 先验的加权距离目标值；`method: nullspace` 时通常为空。
+
+`strict_base_constraints`：为 `true` 时，SDP 严格满足已辨识基参数等式；为 `false` 时，SDP 在目标函数中惩罚基参数残差。录制数据存在噪声或未建模摩擦时，严格等式可能与物理可行约束冲突，推荐先使用默认的松弛模式。
+
+`base_residual_weight`：`strict_base_constraints: false` 时基参数残差项的权重。值越大，输出参数越贴近辨识出的基参数；值过大时可能导致求解更困难或结果更接近物理边界。
+
+`cad_constraints`：从 URDF/CAD 先验派生质量和质心一阶矩边界，并加入全局 SDP。默认质量允许 CAD 值的 80% 到 120%，质心一阶矩允许相对 10% 或绝对 `0.002 kg*m` 的余量，避免噪声基参数把完整参数推到明显不可用的范围。
+
 `physical_projection`：逐连杆物理可行投影状态。
 
 `physical_validation.passed`：最终写出的 URDF 是否通过质量、惯量和伪惯量物理检查。
 
-`reconstruction_base_residual_after_projection`：物理投影后相对已辨识基参数的偏差。这个值不一定为 0，因为逐连杆物理投影会优先保证 URDF 参数物理可用。
+`reconstruction_base_residual_after_projection`：启用后置逐连杆物理投影时，相对已辨识基参数的偏差。默认使用全局 SDP 重构并关闭后置投影，因此该字段通常为空；如果手动开启逐连杆投影，这个值不一定为 0，因为逐连杆投影会优先保证 URDF 参数物理可用。
 
 ## 工作流程示例
 

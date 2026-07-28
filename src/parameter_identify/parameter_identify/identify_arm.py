@@ -65,10 +65,14 @@ def identify(
     physical_module = load_vendored_figaroh_module(
         "_figaroh_physical_consistency", "figaroh/identification/physical_consistency.py"
     )
+    cad_module = load_vendored_figaroh_module(
+        "_figaroh_cad_constraints", "figaroh/identification/cad_constraints.py"
+    )
     build_regressor_basic = regressor_module.build_regressor_basic
     QRDecomposer = qr_module.QRDecomposer
     BaseResult = reconstruction_module.BaseResult
     reconstruct_full_parameters = reconstruction_module.reconstruct_full_parameters
+    build_cad_constraints_from_config = cad_module.build_cad_constraints_from_config
 
     active_joints = list(config.get("model", {}).get("active_joints", []))
     if not active_joints:
@@ -134,13 +138,23 @@ def identify(
     recon_cfg = config.get("reconstruction", {})
     reconstruction_status = "disabled"
     reconstruction_residual = None
+    reconstruction_objective = None
     reconstruction_base_residual_after_projection = None
     physical_projection_report: dict[str, Any] | None = None
     if bool(recon_cfg.get("enabled", True)):
+        cad_constraints = build_cad_constraints_from_config(
+            recon_cfg.get("cad_constraints", {}),
+            model=model,
+        )
+        recon_params, recon_M = _expand_base_mapping_to_full_parameters(
+            np.asarray(decomposer.get_M(), dtype=float),
+            list(decomposer.get_M_labels()[1] or params_reduced),
+            list(params_std.keys()),
+        )
         base_result = BaseResult(
-            M=np.asarray(decomposer.get_M(), dtype=float),
+            M=recon_M,
             phi_base=np.asarray(phi_base, dtype=float).reshape(-1),
-            params_r=list(decomposer.get_M_labels()[1] or params_reduced),
+            params_r=recon_params,
         )
         recon = reconstruct_full_parameters(
             base_result,
@@ -151,12 +165,16 @@ def identify(
             joint_names=list(model.names[1:]),
             mass_min=float(recon_cfg.get("mass_min", 1e-6)),
             psd_eig_tol=float(recon_cfg.get("psd_eig_tol", -1e-10)),
+            strict_base_constraints=bool(recon_cfg.get("strict_base_constraints", True)),
+            base_residual_weight=float(recon_cfg.get("base_residual_weight", 1.0e6)),
             solver=str(recon_cfg.get("solver", "cvxopt")),
             max_seconds=float(recon_cfg["max_seconds"]) if recon_cfg.get("max_seconds") is not None else None,
+            cad_constraints=cad_constraints,
         )
         full_parameters.update(recon.as_dict())
         reconstruction_status = recon.status
         reconstruction_residual = recon.base_residual_norm
+        reconstruction_objective = recon.objective
 
         if bool(recon_cfg.get("physical_projection", False)):
             full_parameters, physical_projection_report = _project_physical_parameters(
@@ -231,12 +249,14 @@ def identify(
         "correlation": _correlation(tau_reduced, tau_estimated),
         "reconstruction_status": reconstruction_status,
         "reconstruction_residual_norm": reconstruction_residual,
+        "reconstruction_objective": reconstruction_objective,
         "reconstruction_base_residual_after_projection": reconstruction_base_residual_after_projection,
         "physical_projection": physical_projection_report,
         "physical_validation": {
             "passed": not physical_issues,
             "issues": physical_issues,
         },
+        "cad_constraints": _cad_constraints_summary(cad_constraints) if bool(recon_cfg.get("enabled", True)) else None,
         "updated_links": updated_links,
         "identified_inertial_parameters": _inertial_parameter_subset(full_parameters, list(model.names[1:])),
     }
@@ -365,6 +385,28 @@ def _remove_zero_columns(
     return W[:, keep], tau, reduced_params
 
 
+def _expand_base_mapping_to_full_parameters(
+    M_reduced: np.ndarray,
+    reduced_params: list[str],
+    full_params: list[str],
+) -> tuple[list[str], np.ndarray]:
+    """Embed the base-parameter map into the full inertial parameter vector.
+
+    Zero regressor columns are removed before base-parameter extraction, but
+    they still need to be SDP variables so each link has a complete p10 block
+    for physical-consistency constraints.
+    """
+    full_index = {name: idx for idx, name in enumerate(full_params)}
+    M_full = np.zeros((M_reduced.shape[0], len(full_params)), dtype=float)
+    for reduced_col, name in enumerate(reduced_params):
+        try:
+            full_col = full_index[name]
+        except KeyError as exc:
+            raise ValueError(f"Reduced parameter {name!r} is missing from the full parameter list") from exc
+        M_full[:, full_col] = M_reduced[:, reduced_col]
+    return full_params, M_full
+
+
 def _decimate_stacked_rows(
     W: np.ndarray,
     tau: np.ndarray,
@@ -437,6 +479,18 @@ def _projection_report_to_dict(report: Any) -> dict[str, Any]:
     }
 
 
+def _cad_constraints_summary(cad_constraints: Any | None) -> dict[str, int] | None:
+    if cad_constraints is None:
+        return None
+    return {
+        "mass_bounds": len(getattr(cad_constraints, "mass_bounds", {})),
+        "com_bounds": sum(
+            len(axes) for axes in getattr(cad_constraints, "com_bounds", {}).values()
+        ),
+        "symmetry_pairs": len(getattr(cad_constraints, "symmetry_pairs", [])),
+    }
+
+
 def _optional_float(value: Any) -> float | None:
     if value is None:
         return None
@@ -474,10 +528,11 @@ def _validate_physical_parameters(
             joint_issues.append(f"mass {p['m']:.6g} < {mass_min:.6g}")
 
         p10 = np.asarray([p[key] for key in INERTIAL_KEYS], dtype=float)
+        verify_psd_tol = 0.0 if psd_eig_tol > 0.0 else psd_eig_tol
         pseudo_report = physical_module.check_p10_feasibility(
             p10,
             mass_min=mass_min,
-            psd_eig_tol=psd_eig_tol,
+            psd_eig_tol=verify_psd_tol,
         )
         if pseudo_report.status != "feasible":
             joint_issues.append(
@@ -502,7 +557,8 @@ def _validate_physical_parameters(
             )
 
         principal = np.sort(eigvals)
-        if principal[0] + principal[1] + inertia_eig_tol < principal[2]:
+        triangle_tol = abs(float(inertia_eig_tol))
+        if principal[0] + principal[1] + triangle_tol < principal[2]:
             joint_issues.append("principal moments violate triangle inequality")
 
         if joint_issues:

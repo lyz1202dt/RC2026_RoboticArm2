@@ -15,7 +15,7 @@ trajectory_generation:
   sample_time: 0.02
   harmonics: 5
   attempts: 250
-  seed: 2026
+  seed: 20051202
   limit_margin_ratio: 0.12
   velocity_limit_ratio: 0.35
   acceleration_limit: 8.0
@@ -32,16 +32,24 @@ identification:
 
 reconstruction:
   enabled: true
-  method: nullspace
+  method: sdp
   prior_source: urdf
-  physical_projection: true
+  physical_projection: false
+  strict_base_constraints: false
+  base_residual_weight: 1.0e6
   mass_min: 1.0e-6
   projection_psd_floor: 1.0e-9
-  psd_eig_tol: -1.0e-10
+  psd_eig_tol: 1.0e-9
   inertia_eig_tol: -1.0e-9
   solver: cvxopt
   max_seconds:
   require_physical: true
+  cad_constraints:
+    source: urdf
+    mass_scale_min: 0.8
+    mass_scale_max: 1.2
+    com_margin_abs: 0.002
+    com_margin_rel: 0.1
 
 output:
   write_report: true
