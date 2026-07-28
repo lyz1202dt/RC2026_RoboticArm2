@@ -11,13 +11,13 @@ data:
   acceleration_smoothing_polyorder: 3
 
 trajectory_generation:
-  duration: 10.0
+  duration: 8.0
   sample_time: 0.02
   harmonics: 5
   attempts: 250
   seed: 20051202
   limit_margin_ratio: 0.12
-  velocity_limit_ratio: 0.35
+  velocity_limit_ratio: 0.5
   acceleration_limit: 8.0
   ground_clearance: 0.02
   ground_check_links: [link2, link3, link4, link5, link6]
@@ -37,7 +37,7 @@ reconstruction:
   physical_projection: false
   strict_base_constraints: false
   base_residual_weight: 1.0e6
-  mass_min: 1.0e-6
+  mass_min: 1.0e-3
   projection_psd_floor: 1.0e-9
   psd_eig_tol: 1.0e-9
   inertia_eig_tol: -1.0e-9
