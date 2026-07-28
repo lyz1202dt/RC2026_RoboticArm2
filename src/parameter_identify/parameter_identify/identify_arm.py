@@ -177,6 +177,8 @@ def identify(
             max_seconds=float(recon_cfg["max_seconds"]) if recon_cfg.get("max_seconds") is not None else None,
             cad_constraints=cad_constraints,
             shape_prior=recon_cfg.get("shape_prior", {}),
+            tensor_trust_region=recon_cfg.get("tensor_trust_region", {}),
+            central_moment_prior=recon_cfg.get("central_moment_prior", {}),
         )
         full_parameters.update(recon.as_dict())
         reconstruction_status = recon.status
@@ -265,6 +267,11 @@ def identify(
         },
         "cad_constraints": _cad_constraints_summary(cad_constraints) if bool(recon_cfg.get("enabled", True)) else None,
         "reconstruction_prior_weights": _prior_weight_summary(reconstruction_weights) if bool(recon_cfg.get("enabled", True)) else None,
+        "shape_prior": _shape_prior_summary(recon_cfg.get("shape_prior", {})),
+        "tensor_trust_region": _tensor_trust_region_summary(recon_cfg.get("tensor_trust_region", {})),
+        "central_moment_prior": _central_moment_prior_summary(
+            recon_cfg.get("central_moment_prior", {})
+        ),
         "equivalent_inertia_boxes": _equivalent_box_summary(
             nominal_parameters=params_std,
             identified_parameters=full_parameters,
@@ -482,6 +489,44 @@ def _prior_weight_summary(weights: np.ndarray | None) -> dict[str, float | int] 
         "max": float(np.max(weights)),
         "mean": float(np.mean(weights)),
     }
+
+
+def _shape_prior_summary(cfg: Mapping[str, Any]) -> dict[str, Any] | None:
+    if not cfg or not bool(cfg.get("enabled", False)):
+        return None
+    keys = ("length_scale_min", "length_scale_max", "min_length_abs")
+    return {key: cfg[key] for key in keys if key in cfg}
+
+
+def _tensor_trust_region_summary(cfg: Mapping[str, Any]) -> dict[str, Any] | None:
+    if not cfg or not bool(cfg.get("enabled", False)):
+        return None
+    keys = (
+        "diagonal_scale_min",
+        "diagonal_scale_max",
+        "diagonal_abs_margin",
+        "offdiag_abs_margin",
+        "offdiag_rel_margin",
+        "offdiag_diag_fraction",
+        "linearized_com_offdiagonal",
+        "com_offdiag_abs_margin",
+        "com_offdiag_rel_margin",
+        "com_offdiag_diag_fraction",
+    )
+    return {key: cfg[key] for key in keys if key in cfg}
+
+
+def _central_moment_prior_summary(cfg: Mapping[str, Any]) -> dict[str, Any] | None:
+    if not cfg or not bool(cfg.get("enabled", False)):
+        return None
+    keys = (
+        "weight",
+        "diagonal_weight",
+        "offdiagonal_weight",
+        "min_scale",
+        "per_joint",
+    )
+    return {key: cfg[key] for key in keys if key in cfg}
 
 
 def _correlation(a: np.ndarray, b: np.ndarray) -> float:
