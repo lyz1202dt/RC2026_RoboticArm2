@@ -141,6 +141,7 @@ def identify(
     reconstruction_objective = None
     reconstruction_base_residual_after_projection = None
     physical_projection_report: dict[str, Any] | None = None
+    reconstruction_weights: np.ndarray | None = None
     if bool(recon_cfg.get("enabled", True)):
         cad_constraints = build_cad_constraints_from_config(
             recon_cfg.get("cad_constraints", {}),
@@ -156,12 +157,17 @@ def identify(
             phi_base=np.asarray(phi_base, dtype=float).reshape(-1),
             params_r=recon_params,
         )
+        reconstruction_weights = _reconstruction_prior_weights(
+            recon_params,
+            recon_cfg.get("prior_weights", {}),
+        )
         recon = reconstruct_full_parameters(
             base_result,
             method=str(recon_cfg.get("method", "nullspace")),
             params_std_prior=params_std,
             prior_source=str(recon_cfg.get("prior_source", "dict")),
             model=model,
+            weights=reconstruction_weights,
             joint_names=list(model.names[1:]),
             mass_min=float(recon_cfg.get("mass_min", 1e-6)),
             psd_eig_tol=float(recon_cfg.get("psd_eig_tol", -1e-10)),
@@ -170,6 +176,7 @@ def identify(
             solver=str(recon_cfg.get("solver", "cvxopt")),
             max_seconds=float(recon_cfg["max_seconds"]) if recon_cfg.get("max_seconds") is not None else None,
             cad_constraints=cad_constraints,
+            shape_prior=recon_cfg.get("shape_prior", {}),
         )
         full_parameters.update(recon.as_dict())
         reconstruction_status = recon.status
@@ -257,6 +264,12 @@ def identify(
             "issues": physical_issues,
         },
         "cad_constraints": _cad_constraints_summary(cad_constraints) if bool(recon_cfg.get("enabled", True)) else None,
+        "reconstruction_prior_weights": _prior_weight_summary(reconstruction_weights) if bool(recon_cfg.get("enabled", True)) else None,
+        "equivalent_inertia_boxes": _equivalent_box_summary(
+            nominal_parameters=params_std,
+            identified_parameters=full_parameters,
+            joint_names=list(model.names[1:]),
+        ),
         "updated_links": updated_links,
         "identified_inertial_parameters": _inertial_parameter_subset(full_parameters, list(model.names[1:])),
     }
@@ -425,6 +438,52 @@ def _decimate_stacked_rows(
     return W[idx, :], tau[idx]
 
 
+def _reconstruction_prior_weights(
+    params: list[str],
+    cfg: Mapping[str, Any],
+) -> np.ndarray | None:
+    if not cfg or not bool(cfg.get("enabled", False)):
+        return None
+
+    defaults = {
+        "mass": 1.0,
+        "first_moment": 10.0,
+        "inertia_diagonal": 50.0,
+        "inertia_offdiagonal": 50.0,
+    }
+    weights_cfg = cfg.get("weights", {})
+    if isinstance(weights_cfg, Mapping):
+        defaults.update({str(key): float(value) for key, value in weights_cfg.items()})
+    scale = float(cfg.get("scale", 1.0))
+
+    weights = []
+    for name in params:
+        key = name.split("_", 1)[0]
+        if key == "m":
+            value = defaults["mass"]
+        elif key in {"mx", "my", "mz"}:
+            value = defaults["first_moment"]
+        elif key in {"Ixx", "Iyy", "Izz"}:
+            value = defaults["inertia_diagonal"]
+        elif key in {"Ixy", "Ixz", "Iyz"}:
+            value = defaults["inertia_offdiagonal"]
+        else:
+            value = 1.0
+        weights.append(max(float(value) * scale, 1e-12))
+    return np.asarray(weights, dtype=float)
+
+
+def _prior_weight_summary(weights: np.ndarray | None) -> dict[str, float | int] | None:
+    if weights is None:
+        return None
+    return {
+        "count": int(weights.size),
+        "min": float(np.min(weights)),
+        "max": float(np.max(weights)),
+        "mean": float(np.mean(weights)),
+    }
+
+
 def _correlation(a: np.ndarray, b: np.ndarray) -> float:
     if a.size < 2 or np.std(a) == 0.0 or np.std(b) == 0.0:
         return 0.0
@@ -577,6 +636,78 @@ def _inertial_parameter_subset(parameter_dict: Mapping[str, float], joint_names:
         if values:
             subset[joint_name] = values
     return subset
+
+
+def _equivalent_box_summary(
+    *,
+    nominal_parameters: Mapping[str, float],
+    identified_parameters: Mapping[str, float],
+    joint_names: list[str],
+) -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
+    for joint_name in joint_names:
+        nominal = _equivalent_box_dimensions(nominal_parameters, joint_name)
+        identified = _equivalent_box_dimensions(identified_parameters, joint_name)
+        item: dict[str, Any] = {
+            "nominal": nominal,
+            "identified": identified,
+        }
+        if nominal is not None and identified is not None:
+            ratios: list[float | None] = []
+            for idx, nominal_value in enumerate(nominal["dimensions"]):
+                if nominal_value > 0.0:
+                    ratios.append(float(identified["dimensions"][idx] / nominal_value))
+                else:
+                    ratios.append(None)
+            finite = [ratio for ratio in ratios if ratio is not None and np.isfinite(ratio)]
+            item["dimension_ratio_identified_over_nominal"] = ratios
+            item["min_dimension_ratio"] = float(min(finite)) if finite else None
+        result[joint_name] = item
+    return result
+
+
+def _equivalent_box_dimensions(
+    parameter_dict: Mapping[str, float],
+    joint_name: str,
+) -> dict[str, Any] | None:
+    if not all(f"{key}_{joint_name}" in parameter_dict for key in INERTIAL_KEYS):
+        return None
+
+    p = {key: float(parameter_dict[f"{key}_{joint_name}"]) for key in INERTIAL_KEYS}
+    try:
+        _, inertia_at_com = dynamic_parameters_to_urdf_inertial(p)
+    except (KeyError, ValueError):
+        return None
+
+    mass = p["m"]
+    inertia = np.asarray(
+        [
+            [inertia_at_com["Ixx"], inertia_at_com["Ixy"], inertia_at_com["Ixz"]],
+            [inertia_at_com["Ixy"], inertia_at_com["Iyy"], inertia_at_com["Iyz"]],
+            [inertia_at_com["Ixz"], inertia_at_com["Iyz"], inertia_at_com["Izz"]],
+        ],
+        dtype=float,
+    )
+    eigvals = np.linalg.eigvalsh(inertia)
+    if mass <= 0.0 or not np.all(np.isfinite(eigvals)):
+        return None
+
+    jx, jy, jz = [float(value) for value in eigvals]
+    dims_sq = np.asarray(
+        [
+            6.0 * (jy + jz - jx) / mass,
+            6.0 * (jx + jz - jy) / mass,
+            6.0 * (jx + jy - jz) / mass,
+        ],
+        dtype=float,
+    )
+    dims = np.sqrt(np.maximum(dims_sq, 0.0))
+    return {
+        "mass": float(mass),
+        "principal_inertia": [float(value) for value in eigvals],
+        "dimensions": [float(value) for value in np.sort(dims)],
+        "raw_dimensions_squared": [float(value) for value in dims_sq],
+    }
 
 
 if __name__ == "__main__":

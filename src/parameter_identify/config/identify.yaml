@@ -44,6 +44,17 @@ reconstruction:
   solver: cvxopt
   max_seconds:
   require_physical: true
+  prior_weights:
+    enabled: true
+    weights:
+      mass: 1.0
+      first_moment: 10.0
+      inertia_diagonal: 50.0
+      inertia_offdiagonal: 50.0
+  shape_prior:
+    enabled: true
+    length_scale_min: 0.5
+    min_length_abs: 0.0
   cad_constraints:
     source: urdf
     mass_scale_min: 0.8
