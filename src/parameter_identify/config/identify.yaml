@@ -1,0 +1,25 @@
+model:
+  active_joints: [joint1, joint2, joint3, joint4, joint5, joint6]
+
+data:
+  sample_time: 0.02
+  decimate: false
+  decimation_factor: 10
+  max_samples: 0
+
+identification:
+  zero_tolerance: 1.0e-8
+  qr_tolerance: 1.0e-8
+  weighted_least_squares: false
+  has_friction: false
+  has_actuator_inertia: false
+  has_joint_offset: false
+
+reconstruction:
+  enabled: true
+  method: nullspace
+  prior_source: urdf
+  mass_min: 1.0e-6
+
+output:
+  write_report: true
