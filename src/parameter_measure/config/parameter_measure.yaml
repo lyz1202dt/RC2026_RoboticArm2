@@ -1,0 +1,10 @@
+arm_measure:
+  ros__parameters:
+    start_measure: false
+    model_path: ""
+    joint_state_topic: "myjoints_state"
+    joint_target_topic: "myjoints_target"
+    csv_file_path: ""
+    joint_dof: 6
+    trajectory_duration: 20.0
+    control_period: 0.02
