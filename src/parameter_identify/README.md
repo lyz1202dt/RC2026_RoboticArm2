@@ -125,6 +125,42 @@ rejected by ground clearance: ...
 
 生成的 `/tmp/optimized_expected_trajectory.csv` 可以交给 `parameter_measure` 使用。`parameter_measure` 会先通过五次多项式插值移动到 CSV 的起点，然后按 CSV 中的时间和期望位置发送轨迹，同时录制实际关节位置、速度和力矩。
 
+## 启动仿真测量并录制数据
+
+生成期望轨迹后，可以用 `launch_pack` 中的 `arm_measure_sim.launch.py` 拉起 MuJoCo 仿真、控制器和 `parameter_measure` 测量节点。推荐直接指定轨迹输入和录制输出路径，并让测量节点启动后自动开始：
+
+```bash
+source install/setup.bash
+
+ros2 launch launch_pack arm_measure_sim.launch.py \
+  trajectory_file_path:=/tmp/optimized_expected_trajectory.csv \
+  csv_file_path:=/tmp/measured_for_identification.csv \
+  start_measure:=true \
+  move_to_start_duration:=3.0 \
+  control_period:=0.02 \
+  discard_initial_samples:=5
+```
+
+常用 launch 参数：
+
+`trajectory_file_path`：`generate_trajectory` 生成的期望关节位置轨迹 CSV。
+
+`csv_file_path`：测量节点写出的辨识数据 CSV；如果留空，会在启动目录下生成带时间戳的 `parameter_measure_*.csv`。
+
+`start_measure`：为 `true` 时启动后自动执行轨迹并录制；默认是 `false`。
+
+`move_to_start_duration`：从当前关节位置用五次多项式移动到轨迹起点的时间，单位为秒。
+
+`control_period`：测量节点发送期望关节位置并记录数据的周期，通常和 `identify.yaml` 中的 `data.sample_time` 保持一致。
+
+`discard_initial_samples`：轨迹正式开始后丢弃的前若干条记录，用来避开刚开始录制时的瞬态。
+
+如果希望先拉起仿真、检查状态后再开始录制，可以不传 `start_measure:=true`，然后在另一个终端触发：
+
+```bash
+ros2 param set /arm_measure start_measure true
+```
+
 ## 对录制数据进行参数辨识
 
 `identify_arm` 读取 `parameter_measure` 录制的数据 CSV。当前推荐的录制 CSV 格式是：
@@ -224,10 +260,15 @@ ros2 run parameter_identify generate_trajectory \
   --config src/parameter_identify/config/identify.yaml
 ```
 
-然后启动测量节点，让机械臂执行 `/tmp/optimized_expected_trajectory.csv` 并录制数据，例如保存为：
+然后启动仿真测量，让机械臂执行 `/tmp/optimized_expected_trajectory.csv` 并录制为 `/tmp/measured_for_identification.csv`：
 
-```text
-/tmp/measured_for_identification.csv
+```bash
+ros2 launch launch_pack arm_measure_sim.launch.py \
+  trajectory_file_path:=/tmp/optimized_expected_trajectory.csv \
+  csv_file_path:=/tmp/measured_for_identification.csv \
+  move_to_start_duration:=3.0 \
+  control_period:=0.02 \
+  discard_initial_samples:=5
 ```
 
 最后运行辨识：

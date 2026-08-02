@@ -160,6 +160,7 @@ def identify(
         reconstruction_weights = _reconstruction_prior_weights(
             recon_params,
             recon_cfg.get("prior_weights", {}),
+            params_std,
         )
         recon = reconstruct_full_parameters(
             base_result,
@@ -266,7 +267,10 @@ def identify(
             "issues": physical_issues,
         },
         "cad_constraints": _cad_constraints_summary(cad_constraints) if bool(recon_cfg.get("enabled", True)) else None,
-        "reconstruction_prior_weights": _prior_weight_summary(reconstruction_weights) if bool(recon_cfg.get("enabled", True)) else None,
+        "reconstruction_prior_weights": _prior_weight_summary(
+            reconstruction_weights,
+            recon_cfg.get("prior_weights", {}),
+        ) if bool(recon_cfg.get("enabled", True)) else None,
         "shape_prior": _shape_prior_summary(recon_cfg.get("shape_prior", {})),
         "tensor_trust_region": _tensor_trust_region_summary(recon_cfg.get("tensor_trust_region", {})),
         "central_moment_prior": _central_moment_prior_summary(
@@ -448,6 +452,7 @@ def _decimate_stacked_rows(
 def _reconstruction_prior_weights(
     params: list[str],
     cfg: Mapping[str, Any],
+    prior: Mapping[str, float] | None = None,
 ) -> np.ndarray | None:
     if not cfg or not bool(cfg.get("enabled", False)):
         return None
@@ -462,12 +467,17 @@ def _reconstruction_prior_weights(
     if isinstance(weights_cfg, Mapping):
         defaults.update({str(key): float(value) for key, value in weights_cfg.items()})
     scale = float(cfg.get("scale", 1.0))
+    normalize_mass = bool(cfg.get("normalize_mass", False))
+    mass_reference_floor = max(float(cfg.get("mass_reference_floor", 1.0e-3)), 1.0e-12)
 
     weights = []
     for name in params:
         key = name.split("_", 1)[0]
         if key == "m":
             value = defaults["mass"]
+            if normalize_mass:
+                mass_reference = abs(float(prior.get(name, 0.0))) if prior else 0.0
+                value /= max(mass_reference, mass_reference_floor)
         elif key in {"mx", "my", "mz"}:
             value = defaults["first_moment"]
         elif key in {"Ixx", "Iyy", "Izz"}:
@@ -480,15 +490,23 @@ def _reconstruction_prior_weights(
     return np.asarray(weights, dtype=float)
 
 
-def _prior_weight_summary(weights: np.ndarray | None) -> dict[str, float | int] | None:
+def _prior_weight_summary(
+    weights: np.ndarray | None,
+    cfg: Mapping[str, Any] | None = None,
+) -> dict[str, float | int | bool] | None:
     if weights is None:
         return None
-    return {
+    summary: dict[str, float | int | bool] = {
         "count": int(weights.size),
         "min": float(np.min(weights)),
         "max": float(np.max(weights)),
         "mean": float(np.mean(weights)),
     }
+    if cfg:
+        summary["normalize_mass"] = bool(cfg.get("normalize_mass", False))
+        if "mass_reference_floor" in cfg:
+            summary["mass_reference_floor"] = float(cfg["mass_reference_floor"])
+    return summary
 
 
 def _shape_prior_summary(cfg: Mapping[str, Any]) -> dict[str, Any] | None:

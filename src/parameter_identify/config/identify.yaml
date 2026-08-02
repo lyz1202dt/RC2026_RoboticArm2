@@ -46,8 +46,10 @@ reconstruction:
   require_physical: true
   prior_weights:
     enabled: true
+    normalize_mass: true
+    mass_reference_floor: 1.0e-3
     weights:
-      mass: 1.0
+      mass: 400.0
       first_moment: 10.0
       inertia_diagonal: 50.0
       inertia_offdiagonal: 50.0
